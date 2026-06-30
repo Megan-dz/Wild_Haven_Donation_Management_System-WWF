@@ -1,36 +1,21 @@
+# Digital Information Systems Analysis of WWF India's Donation Management Platform
 
+> **Course:** Digital Business Systems (ECD223-3)  
+> **Institution:** CHRIST (Deemed to Be University)
 
- ![A logo for a universityAI-generated content may be incorrect.][image1]
+---
 
-**CIA-2 (DRAFT)**
+## Table of Contents
 
-Digital Business Systems 
+1. Organization Overview
+2. Information and Decision Making
+3. Business Information Systems Analysis
+4. Digital Business Workflow Analysis
+5. Strategic Advantage Through Digital Systems
+6. Challenges & Recommendations
+7. References
 
-**Topic-**
-
-**Digital Information Systems Analysis of WWF India's Donation Management Platform**
-
- 
-
-Course code- ECD223-3
-
-**FACULTY- Dr. Chandravesh Chaudhari**
-
-**CHRIST (Deemed to Be University)** 
-
-Submitted By
-
-Megan Anriya Dcruz (2533334)
-
-Agasthithayaagaran Saravanen (2533303) 
-
-Esha Naidu (2533325)
-
-Anshuman Vasisht (2533309)
-
-Uppalapati Harshith (2533359)
-
-## 
+---
 
 1. ## **Organization Overview: WWF (World Wildlife Fund)**
 
@@ -96,7 +81,18 @@ This integration ensures smooth information flow, faster decision-making, better
 
 **4\. Digital Business Workflow Analysis**
 
-The workflow diagram given below shows how a donation is processed from start to finish.
+The workflow diagram below illustrates how a donation is processed from start to finish.
+
+
+```mermaid
+flowchart TD
+A[Donor visits Workplace Giving Platform]-->B[Selects Specific Donation Program]
+B-->C[Enters Personal Details & Donation Amount]
+C-->D[Payment Gateway Processes Payment]
+D-->E[Donation Recorded in Database]
+E-->F[Receipt Generated & Confirmation Email Sent]
+```
+
 
 ![][image2]
 
