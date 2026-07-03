@@ -2,7 +2,8 @@
 
 # Digital Information Systems Analysis of WWF India's Donation Management Platform
 
-**CIA-2 FINAL — Digital Business Systems**
+**CIA-2:
+ Digital Business Systems**
 **Course code:** ECD223-3
 **Faculty:** Dr. Chandravesh Chaudhari
 **Institution:** CHRIST (Deemed to Be University)
