@@ -1,1 +1,1 @@
-[logo](images/chart2.png)
+[logo](Wild_Haven_Logo.png)
