@@ -2,22 +2,8 @@
 
 # Digital Information Systems Analysis of WWF India's Donation Management Platform
 
-# CIA-2: Digital Business Systems
 
-**Course Code:** ECD223-3
-
-**Faculty:** Dr. Chandravesh Chaudhari
-
-**Institution:** CHRIST (Deemed to Be University)
-
-**Submitted By:**
-
-- Megan Anriya Dcruz (2533334)
-- Agasthithayaagaran Saravanen (2533303)
-- Esha Naidu (2533325)
-- Anshuman Vasisht (2533309)
-- Uppalapati Harshith (2533359)
-
+This repository contains a research report on Digital Information Systems Analysis of WWF India's Donation Management Platform. The report explores how WWF India uses digital business systems to manage donations, support decision-making, improve donor engagement, and enhance operational efficiency. It was prepared by Megan Anriya Dcruz (2533334), Agasthithayaagaran Saravanen (2533303), Esha Naidu (2533325), Anshuman Vasisht (2533309), and Uppalapati Harshith (2533359), undergraduate students at CHRIST (Deemed to Be University), Bengaluru, and is shared here for educational and portfolio purposes.
 ---
 
 ## 1. Organization Overview: WWF (World Wildlife Fund)
