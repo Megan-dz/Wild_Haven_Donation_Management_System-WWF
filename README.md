@@ -1,4 +1,4 @@
-![University logo](images/logo1.png)
+
 
 # Digital Information Systems Analysis of WWF India's Donation Management Platform
 
