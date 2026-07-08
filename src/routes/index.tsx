@@ -283,26 +283,6 @@ function DonatePage() {
         </div>
       </section>
 
-      {/* Ways to Give */}
-      <section id="ways" className="py-24">
-        <div className="container-page grid lg:grid-cols-3 gap-8">
-          {[
-            { t: "Become a Guardian", d: "A monthly gift that funds year-round protection.", cta: "Start monthly giving" },
-            { t: "Corporate Partnerships", d: "Align your brand with wildlife conservation through CSR.", cta: "Partner with us" },
-            { t: "Legacy & Planned Giving", d: "Leave a lasting legacy for India's forests and wildlife.", cta: "Learn about legacies" },
-          ].map((w) => (
-            <div key={w.t} className="rounded-2xl border border-border bg-card p-8 hover:border-primary/40 transition">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-display text-lg">
-                ✽
-              </div>
-              <h3 className="font-display text-2xl mt-5">{w.t}</h3>
-              <p className="text-muted-foreground mt-3">{w.d}</p>
-              <a href="#donate" className="mt-5 inline-block text-primary text-sm font-medium hover:underline">{w.cta} →</a>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* CTA */}
       <section className="py-20">
         <div className="container-page">
