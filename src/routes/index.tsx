@@ -176,9 +176,31 @@ function DonatePage() {
                   </div>
                 </div>
 
-                <Button className="w-full h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-base">
-                  Continue to Donate →
-                </Button>
+                {confirmed ? (
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-center space-y-2">
+                    <div className="font-display text-xl text-primary">Thank you! 🐾</div>
+                    <p className="text-sm text-muted-foreground">
+                      Your {confirmed.frequency === "monthly" ? "monthly" : "one-time"} gift of{" "}
+                      <span className="font-semibold text-foreground">₹{confirmed.amount.toLocaleString("en-IN")}</span>{" "}
+                      has been received. A receipt will be emailed to you.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmed(null)}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Make another donation
+                    </button>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={handleDonate}
+                    disabled={!canDonate}
+                    className="w-full h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-base disabled:opacity-50"
+                  >
+                    Continue to Donate →
+                  </Button>
+                )}
                 <p className="text-[11px] text-center text-muted-foreground">
                   Secure payments · Cards, UPI & Net Banking accepted
                 </p>
