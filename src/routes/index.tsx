@@ -348,7 +348,6 @@ function DonatePage() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><a href="#mission" className="hover:text-primary">Our Mission</a></li>
               <li><a href="#impact" className="hover:text-primary">Impact</a></li>
-              <li><a href="#ways" className="hover:text-primary">Ways to Give</a></li>
               <li><a href="#faq" className="hover:text-primary">FAQ</a></li>
             </ul>
           </div>
