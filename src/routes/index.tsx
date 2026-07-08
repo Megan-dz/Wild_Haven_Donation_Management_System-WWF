@@ -20,8 +20,15 @@ function DonatePage() {
   const [frequency, setFrequency] = useState<"one-time" | "monthly">("one-time");
   const [amount, setAmount] = useState<number>(2500);
   const [custom, setCustom] = useState("");
+  const [confirmed, setConfirmed] = useState<null | { amount: number; frequency: "one-time" | "monthly" }>(null);
 
   const finalAmount = custom ? Number(custom) : amount;
+  const canDonate = Number.isFinite(finalAmount) && finalAmount >= 100;
+
+  const handleDonate = () => {
+    if (!canDonate) return;
+    setConfirmed({ amount: finalAmount, frequency });
+  };
 
   return (
     <div className="min-h-screen">
