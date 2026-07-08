@@ -264,22 +264,20 @@ function DonatePage() {
           </div>
           <div className="mt-14 grid md:grid-cols-3 gap-6">
             {[
-              { img: leopardImage, amt: "₹1,000", title: "Guard a Snow Leopard", desc: "Funds one week of high-altitude patrols in the Himalayas." },
-              { img: elephantImage, amt: "₹5,000", title: "Rescue an Elephant", desc: "Provides emergency veterinary care and safe relocation." },
-              { img: forestImage, amt: "₹25,000", title: "Restore One Acre", desc: "Reforests native trees and revives a degraded corridor." },
-            ].map((c) => (
-              <article key={c.title} className="group rounded-2xl overflow-hidden bg-card border border-border shadow-sm hover:shadow-xl transition">
-                <div className="aspect-[4/3] overflow-hidden">
-                  <img src={c.img} alt={c.title} width={1000} height={750} loading="lazy" className="h-full w-full object-cover group-hover:scale-105 transition duration-700" />
+              { amt: "₹1,000", title: "Guard a Snow Leopard", desc: "Funds one week of high-altitude patrols in the Himalayas." },
+              { amt: "₹5,000", title: "Rescue an Elephant", desc: "Provides emergency veterinary care and safe relocation." },
+              { amt: "₹25,000", title: "Restore One Acre", desc: "Reforests native trees and revives a degraded corridor." },
+            ].map((c, i) => (
+              <article key={c.title} className="group rounded-2xl bg-card border border-border p-8 shadow-sm hover:shadow-xl hover:border-primary/30 transition">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-xs uppercase tracking-wider text-muted-foreground">0{i + 1}</span>
+                  <div className="text-primary font-display text-3xl">{c.amt}</div>
                 </div>
-                <div className="p-6">
-                  <div className="text-primary font-display text-2xl">{c.amt}</div>
-                  <h3 className="font-display text-xl mt-1">{c.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-2">{c.desc}</p>
-                  <a href="#donate" className="mt-4 inline-flex items-center text-sm font-medium text-primary hover:gap-2 gap-1 transition-all">
-                    Give this gift →
-                  </a>
-                </div>
+                <h3 className="font-display text-xl mt-4">{c.title}</h3>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{c.desc}</p>
+                <a href="#donate" className="mt-5 inline-flex items-center text-sm font-medium text-primary hover:gap-2 gap-1 transition-all">
+                  Give this gift →
+                </a>
               </article>
             ))}
           </div>
