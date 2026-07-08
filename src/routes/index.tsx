@@ -43,7 +43,6 @@ function DonatePage() {
           <nav className="hidden md:flex items-center gap-8 text-sm">
             <a href="#mission" className="hover:text-primary transition">Our Mission</a>
             <a href="#impact" className="hover:text-primary transition">Impact</a>
-            <a href="#ways" className="hover:text-primary transition">Ways to Give</a>
             <a href="#faq" className="hover:text-primary transition">FAQ</a>
           </nav>
           <a href="#donate">
