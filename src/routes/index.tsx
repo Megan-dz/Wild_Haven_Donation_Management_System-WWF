@@ -380,8 +380,8 @@ function DonatePage() {
           <div>
             <div className="text-xs uppercase tracking-wider font-semibold mb-3">Contact</div>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>hello@wildhaven.org</li>
-              <li>+91 98765 43210</li>
+              <li><a href="mailto:hello@wildhaven.org" className="hover:text-primary">hello@wildhaven.org</a></li>
+              <li><a href="tel:+919876543210" className="hover:text-primary">+91 98765 43210</a></li>
               <li>New Delhi, India</li>
             </ul>
           </div>
