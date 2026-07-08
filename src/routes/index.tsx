@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import logoAsset from "@/assets/wild-haven-logo.png.asset.json";
 import heroImage from "@/assets/hero-wildlife.jpg";
