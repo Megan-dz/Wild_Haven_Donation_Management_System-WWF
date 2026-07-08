@@ -15,6 +15,7 @@ export const Route = createFileRoute("/")({
 const AMOUNTS = [500, 1000, 2500, 5000, 10000, 25000];
 
 function DonatePage() {
+  const navigate = useNavigate();
   const [frequency, setFrequency] = useState<"one-time" | "monthly">("one-time");
   const [amount, setAmount] = useState<number>(2500);
   const [custom, setCustom] = useState("");
@@ -25,8 +26,9 @@ function DonatePage() {
 
   const handleDonate = () => {
     if (!canDonate) return;
-    setConfirmed({ amount: finalAmount, frequency });
+    navigate({ to: "/payment", search: { amount: finalAmount, frequency } });
   };
+
 
   return (
     <div className="min-h-screen">
