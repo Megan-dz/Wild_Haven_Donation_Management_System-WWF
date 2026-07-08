@@ -2,9 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import logoAsset from "@/assets/wild-haven-logo.png.asset.json";
 import heroImage from "@/assets/hero-wildlife.jpg";
-import elephantImage from "@/assets/impact-elephant.jpg";
 import forestImage from "@/assets/impact-forest.jpg";
-import leopardImage from "@/assets/impact-leopard.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,7 +43,6 @@ function DonatePage() {
           <nav className="hidden md:flex items-center gap-8 text-sm">
             <a href="#mission" className="hover:text-primary transition">Our Mission</a>
             <a href="#impact" className="hover:text-primary transition">Impact</a>
-            <a href="#ways" className="hover:text-primary transition">Ways to Give</a>
             <a href="#faq" className="hover:text-primary transition">FAQ</a>
           </nav>
           <a href="#donate">
@@ -266,45 +263,23 @@ function DonatePage() {
           </div>
           <div className="mt-14 grid md:grid-cols-3 gap-6">
             {[
-              { img: leopardImage, amt: "₹1,000", title: "Guard a Snow Leopard", desc: "Funds one week of high-altitude patrols in the Himalayas." },
-              { img: elephantImage, amt: "₹5,000", title: "Rescue an Elephant", desc: "Provides emergency veterinary care and safe relocation." },
-              { img: forestImage, amt: "₹25,000", title: "Restore One Acre", desc: "Reforests native trees and revives a degraded corridor." },
-            ].map((c) => (
-              <article key={c.title} className="group rounded-2xl overflow-hidden bg-card border border-border shadow-sm hover:shadow-xl transition">
-                <div className="aspect-[4/3] overflow-hidden">
-                  <img src={c.img} alt={c.title} width={1000} height={750} loading="lazy" className="h-full w-full object-cover group-hover:scale-105 transition duration-700" />
+              { amt: "₹1,000", title: "Guard a Snow Leopard", desc: "Funds one week of high-altitude patrols in the Himalayas." },
+              { amt: "₹5,000", title: "Rescue an Elephant", desc: "Provides emergency veterinary care and safe relocation." },
+              { amt: "₹25,000", title: "Restore One Acre", desc: "Reforests native trees and revives a degraded corridor." },
+            ].map((c, i) => (
+              <article key={c.title} className="group rounded-2xl bg-card border border-border p-8 shadow-sm hover:shadow-xl hover:border-primary/30 transition">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-xs uppercase tracking-wider text-muted-foreground">0{i + 1}</span>
+                  <div className="text-primary font-display text-3xl">{c.amt}</div>
                 </div>
-                <div className="p-6">
-                  <div className="text-primary font-display text-2xl">{c.amt}</div>
-                  <h3 className="font-display text-xl mt-1">{c.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-2">{c.desc}</p>
-                  <a href="#donate" className="mt-4 inline-flex items-center text-sm font-medium text-primary hover:gap-2 gap-1 transition-all">
-                    Give this gift →
-                  </a>
-                </div>
+                <h3 className="font-display text-xl mt-4">{c.title}</h3>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{c.desc}</p>
+                <a href="#donate" className="mt-5 inline-flex items-center text-sm font-medium text-primary hover:gap-2 gap-1 transition-all">
+                  Give this gift →
+                </a>
               </article>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Ways to Give */}
-      <section id="ways" className="py-24">
-        <div className="container-page grid lg:grid-cols-3 gap-8">
-          {[
-            { t: "Become a Guardian", d: "A monthly gift that funds year-round protection.", cta: "Start monthly giving" },
-            { t: "Corporate Partnerships", d: "Align your brand with wildlife conservation through CSR.", cta: "Partner with us" },
-            { t: "Legacy & Planned Giving", d: "Leave a lasting legacy for India's forests and wildlife.", cta: "Learn about legacies" },
-          ].map((w) => (
-            <div key={w.t} className="rounded-2xl border border-border bg-card p-8 hover:border-primary/40 transition">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-display text-lg">
-                ✽
-              </div>
-              <h3 className="font-display text-2xl mt-5">{w.t}</h3>
-              <p className="text-muted-foreground mt-3">{w.d}</p>
-              <a href="#donate" className="mt-5 inline-block text-primary text-sm font-medium hover:underline">{w.cta} →</a>
-            </div>
-          ))}
         </div>
       </section>
 
@@ -373,7 +348,6 @@ function DonatePage() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><a href="#mission" className="hover:text-primary">Our Mission</a></li>
               <li><a href="#impact" className="hover:text-primary">Impact</a></li>
-              <li><a href="#ways" className="hover:text-primary">Ways to Give</a></li>
               <li><a href="#faq" className="hover:text-primary">FAQ</a></li>
             </ul>
           </div>
