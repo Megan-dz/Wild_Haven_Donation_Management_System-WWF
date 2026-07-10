@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import logoAsset from "@/assets/wild-haven-logo.png.asset.json";
 import heroImage from "@/assets/hero-wildlife.jpg";
@@ -230,17 +230,26 @@ function DonatePage() {
               </p>
               <div className="mt-8 grid sm:grid-cols-2 gap-4">
                 {[
-                  { t: "Species Protection", d: "Tigers, elephants, snow leopards & more." },
-                  { t: "Habitat Restoration", d: "Reviving forests, rivers and wetlands." },
-                  { t: "Anti-Poaching", d: "Training and equipping forest patrols." },
-                  { t: "Community Programs", d: "Livelihoods that reward coexistence." },
+                  { t: "Species Protection", d: "Tigers, elephants, snow leopards & more.", slug: "species-protection" },
+                  { t: "Habitat Restoration", d: "Reviving forests, rivers and wetlands.", slug: "habitat-restoration" },
+                  { t: "Anti-Poaching", d: "Training and equipping forest patrols.", slug: "anti-poaching" },
+                  { t: "Community Programs", d: "Livelihoods that reward coexistence.", slug: "community-programs" },
                 ].map((f) => (
-                  <div key={f.t} className="rounded-xl border border-border bg-card p-5">
-                    <div className="font-display text-lg text-primary">{f.t}</div>
+                  <Link
+                    key={f.t}
+                    to="/programs/$slug"
+                    params={{ slug: f.slug }}
+                    className="group rounded-xl border border-border bg-card p-5 hover:border-primary/40 hover:shadow-md transition block"
+                  >
+                    <div className="font-display text-lg text-primary flex items-center justify-between">
+                      {f.t}
+                      <span className="opacity-0 group-hover:opacity-100 transition text-base">→</span>
+                    </div>
                     <div className="text-sm text-muted-foreground mt-1">{f.d}</div>
-                  </div>
+                  </Link>
                 ))}
               </div>
+
             </div>
             <div className="relative">
               <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-xl">
