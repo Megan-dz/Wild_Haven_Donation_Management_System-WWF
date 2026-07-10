@@ -144,7 +144,7 @@ function ProgramPage() {
           <p className="mt-8 text-muted-foreground text-lg leading-relaxed">{program.intro}</p>
 
           <div className="mt-12 grid grid-cols-3 gap-6">
-            {program.stats.map((s) => (
+            {program.stats.map((s: { n: string; l: string }) => (
               <div key={s.l} className="rounded-xl border border-border bg-card p-5">
                 <div className="font-display text-3xl text-primary">{s.n}</div>
                 <div className="text-xs text-muted-foreground mt-1">{s.l}</div>
@@ -156,7 +156,7 @@ function ProgramPage() {
 
       <section className="py-20">
         <div className="container-page max-w-3xl space-y-10">
-          {program.sections.map((s) => (
+          {program.sections.map((s: { h: string; p: string }) => (
             <div key={s.h}>
               <h2 className="font-display text-2xl text-primary">{s.h}</h2>
               <p className="mt-3 text-muted-foreground leading-relaxed">{s.p}</p>
