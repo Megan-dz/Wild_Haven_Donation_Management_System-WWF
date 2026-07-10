@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProgramsSlugRouteImport } from './routes/programs.$slug'
+import { Route as ImpactSlugRouteImport } from './routes/impact.$slug'
 
 const PaymentRoute = PaymentRouteImport.update({
   id: '/payment',
@@ -28,34 +29,43 @@ const ProgramsSlugRoute = ProgramsSlugRouteImport.update({
   path: '/programs/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ImpactSlugRoute = ImpactSlugRouteImport.update({
+  id: '/impact/$slug',
+  path: '/impact/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/payment': typeof PaymentRoute
+  '/impact/$slug': typeof ImpactSlugRoute
   '/programs/$slug': typeof ProgramsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/payment': typeof PaymentRoute
+  '/impact/$slug': typeof ImpactSlugRoute
   '/programs/$slug': typeof ProgramsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/payment': typeof PaymentRoute
+  '/impact/$slug': typeof ImpactSlugRoute
   '/programs/$slug': typeof ProgramsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/payment' | '/programs/$slug'
+  fullPaths: '/' | '/payment' | '/impact/$slug' | '/programs/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/payment' | '/programs/$slug'
-  id: '__root__' | '/' | '/payment' | '/programs/$slug'
+  to: '/' | '/payment' | '/impact/$slug' | '/programs/$slug'
+  id: '__root__' | '/' | '/payment' | '/impact/$slug' | '/programs/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PaymentRoute: typeof PaymentRoute
+  ImpactSlugRoute: typeof ImpactSlugRoute
   ProgramsSlugRoute: typeof ProgramsSlugRoute
 }
 
@@ -82,12 +92,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProgramsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/impact/$slug': {
+      id: '/impact/$slug'
+      path: '/impact/$slug'
+      fullPath: '/impact/$slug'
+      preLoaderRoute: typeof ImpactSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PaymentRoute: PaymentRoute,
+  ImpactSlugRoute: ImpactSlugRoute,
   ProgramsSlugRoute: ProgramsSlugRoute,
 }
 export const routeTree = rootRouteImport

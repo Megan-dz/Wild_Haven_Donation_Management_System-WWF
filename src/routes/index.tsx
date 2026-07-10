@@ -274,21 +274,26 @@ function DonatePage() {
           </div>
           <div className="mt-14 grid md:grid-cols-3 gap-6">
             {[
-              { amt: "₹1,000", title: "Guard a Snow Leopard", desc: "Funds one week of high-altitude patrols in the Himalayas." },
-              { amt: "₹5,000", title: "Rescue an Elephant", desc: "Provides emergency veterinary care and safe relocation." },
-              { amt: "₹25,000", title: "Restore One Acre", desc: "Reforests native trees and revives a degraded corridor." },
+              { slug: "snow-leopard", amt: "₹1,000", title: "Guard a Snow Leopard", desc: "Funds one week of high-altitude patrols in the Himalayas." },
+              { slug: "elephant-rescue", amt: "₹5,000", title: "Rescue an Elephant", desc: "Provides emergency veterinary care and safe relocation." },
+              { slug: "restore-acre", amt: "₹25,000", title: "Restore One Acre", desc: "Reforests native trees and revives a degraded corridor." },
             ].map((c, i) => (
-              <article key={c.title} className="group rounded-2xl bg-card border border-border p-8 shadow-sm hover:shadow-xl hover:border-primary/30 transition">
+              <Link
+                key={c.title}
+                to="/impact/$slug"
+                params={{ slug: c.slug }}
+                className="group rounded-2xl bg-card border border-border p-8 shadow-sm hover:shadow-xl hover:border-primary/30 transition block"
+              >
                 <div className="flex items-baseline gap-3">
                   <span className="text-xs uppercase tracking-wider text-muted-foreground">0{i + 1}</span>
                   <div className="text-primary font-display text-3xl">{c.amt}</div>
                 </div>
                 <h3 className="font-display text-xl mt-4">{c.title}</h3>
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{c.desc}</p>
-                <a href="#donate" className="mt-5 inline-flex items-center text-sm font-medium text-primary hover:gap-2 gap-1 transition-all">
-                  Give this gift →
-                </a>
-              </article>
+                <span className="mt-5 inline-flex items-center text-sm font-medium text-primary group-hover:gap-2 gap-1 transition-all">
+                  See progress & give →
+                </span>
+              </Link>
             ))}
           </div>
         </div>
