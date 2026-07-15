@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Wild Haven India – Admin"
+version = "1.0.0"
+id = "artifacts/admin-dashboard"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22133
+
+[services.development]
+run = "pnpm --filter @workspace/admin-dashboard run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/admin-dashboard", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/admin-dashboard/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22133"
+BASE_PATH = "/"

@@ -3,20 +3,27 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Wild Haven India Admin API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: donations
+    description: Donation operations
+  - name: campaigns
+    description: Campaign operations
+  - name: donors
+    description: Donor operations
+  - name: dashboard
+    description: Dashboard analytics
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +31,592 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /donations:
+    get:
+      operationId: listDonations
+      tags: [donations]
+      summary: List all donations
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: campaignId
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of donations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Donation"
+    post:
+      operationId: createDonation
+      tags: [donations]
+      summary: Create a donation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DonationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donation"
+
+  /donations/{id}:
+    get:
+      operationId: getDonation
+      tags: [donations]
+      summary: Get a donation by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Donation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donation"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateDonation
+      tags: [donations]
+      summary: Update a donation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DonationUpdate"
+      responses:
+        "200":
+          description: Updated donation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donation"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteDonation
+      tags: [donations]
+      summary: Delete a donation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /campaigns:
+    get:
+      operationId: listCampaigns
+      tags: [campaigns]
+      summary: List all campaigns
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of campaigns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Campaign"
+    post:
+      operationId: createCampaign
+      tags: [campaigns]
+      summary: Create a campaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CampaignInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+
+  /campaigns/{id}:
+    get:
+      operationId: getCampaign
+      tags: [campaigns]
+      summary: Get a campaign by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateCampaign
+      tags: [campaigns]
+      summary: Update a campaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CampaignUpdate"
+      responses:
+        "200":
+          description: Updated campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "404":
+          description: Not found
+
+  /donors:
+    get:
+      operationId: listDonors
+      tags: [donors]
+      summary: List all donors
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of donors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Donor"
+    post:
+      operationId: createDonor
+      tags: [donors]
+      summary: Create a donor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DonorInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donor"
+
+  /donors/{id}:
+    get:
+      operationId: getDonor
+      tags: [donors]
+      summary: Get a donor by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Donor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donor"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateDonor
+      tags: [donors]
+      summary: Update a donor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DonorUpdate"
+      responses:
+        "200":
+          description: Updated donor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donor"
+        "404":
+          description: Not found
+
+  /donors/{id}/donations:
+    get:
+      operationId: getDonorDonations
+      tags: [donors]
+      summary: Get all donations for a donor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Donor's donations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Donation"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard summary statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent donation activity feed
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /dashboard/monthly-totals:
+    get:
+      operationId: getMonthlyTotals
+      tags: [dashboard]
+      summary: Get monthly donation totals for the past 12 months
+      responses:
+        "200":
+          description: Monthly totals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MonthlyTotal"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    Donation:
+      type: object
+      required: [id, donorName, donorEmail, amount, status, createdAt]
+      properties:
+        id:
+          type: integer
+        donorId:
+          type: ["integer", "null"]
+        campaignId:
+          type: ["integer", "null"]
+        campaignName:
+          type: ["string", "null"]
+        donorName:
+          type: string
+        donorEmail:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [pending, completed, refunded]
+        paymentMethod:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    DonationInput:
+      type: object
+      required: [donorName, donorEmail, amount]
+      properties:
+        donorId:
+          type: integer
+        campaignId:
+          type: integer
+        donorName:
+          type: string
+        donorEmail:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [pending, completed, refunded]
+        paymentMethod:
+          type: string
+        notes:
+          type: string
+
+    DonationUpdate:
+      type: object
+      properties:
+        campaignId:
+          type: integer
+        donorName:
+          type: string
+        donorEmail:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [pending, completed, refunded]
+        paymentMethod:
+          type: string
+        notes:
+          type: string
+
+    Campaign:
+      type: object
+      required: [id, name, species, targetAmount, raisedAmount, status, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        species:
+          type: string
+        targetAmount:
+          type: number
+        raisedAmount:
+          type: number
+        donorCount:
+          type: integer
+        status:
+          type: string
+          enum: [active, completed, paused]
+        imageUrl:
+          type: ["string", "null"]
+        startDate:
+          type: ["string", "null"]
+        endDate:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    CampaignInput:
+      type: object
+      required: [name, species, targetAmount]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        species:
+          type: string
+        targetAmount:
+          type: number
+        status:
+          type: string
+          enum: [active, completed, paused]
+        imageUrl:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+
+    CampaignUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        species:
+          type: string
+        targetAmount:
+          type: number
+        status:
+          type: string
+          enum: [active, completed, paused]
+        imageUrl:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+
+    Donor:
+      type: object
+      required: [id, name, email, totalDonated, donationCount, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: ["string", "null"]
+        totalDonated:
+          type: number
+        donationCount:
+          type: integer
+        firstDonationAt:
+          type: ["string", "null"]
+        lastDonationAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    DonorInput:
+      type: object
+      required: [name, email]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+
+    DonorUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+
+    DashboardStats:
+      type: object
+      required: [totalDonations, totalAmount, activeCampaigns, totalDonors, completedDonations, pendingDonations, refundedDonations, totalCampaigns]
+      properties:
+        totalDonations:
+          type: integer
+        totalAmount:
+          type: number
+        activeCampaigns:
+          type: integer
+        totalCampaigns:
+          type: integer
+        totalDonors:
+          type: integer
+        completedDonations:
+          type: integer
+        pendingDonations:
+          type: integer
+        refundedDonations:
+          type: integer
+
+    ActivityItem:
+      type: object
+      required: [id, donorName, amount, status, campaignName, createdAt]
+      properties:
+        id:
+          type: integer
+        donorName:
+          type: string
+        donorEmail:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+        campaignName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    MonthlyTotal:
+      type: object
+      required: [month, year, totalAmount, donationCount]
+      properties:
+        month:
+          type: integer
+        year:
+          type: integer
+        totalAmount:
+          type: number
+        donationCount:
+          type: integer

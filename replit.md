@@ -1,10 +1,11 @@
-# [Project name]
+# Wild Haven India – Admin Dashboard
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Internal employee portal for the Wild Haven India wildlife conservation nonprofit. Staff use this to track donations, manage fundraising campaigns, and view donor records.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/admin-dashboard run dev` — run the frontend (port auto-assigned)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -14,6 +15,7 @@ _Replace the heading above with the project's name, and this line with one sente
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: React + Vite + Tailwind CSS + Recharts + Wouter
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
@@ -22,15 +24,18 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
-
-## Architecture decisions
-
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- `lib/api-spec/openapi.yaml` — API contract (source of truth)
+- `lib/db/src/schema/` — DB schema (campaigns.ts, donors.ts, donations.ts)
+- `artifacts/api-server/src/routes/` — Express route handlers (donations, campaigns, donors, dashboard)
+- `artifacts/admin-dashboard/src/` — React frontend
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- **Dashboard** (`/`) — headline stats, monthly funding chart, recent activity, campaign progress
+- **Donations** (`/donations`) — searchable/filterable donation ledger, add/edit modal
+- **Campaigns** (`/campaigns`) — campaign grid with progress bars, add/edit modal
+- **Donors** (`/donors`) — donor directory, click-through to donor detail
+- **Donor Detail** (`/donors/:id`) — donor info + full donation history
 
 ## User preferences
 
@@ -38,7 +43,9 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- After changing `lib/api-spec/openapi.yaml`, always run codegen before using the updated types
+- After changing `lib/*` packages, run `pnpm run typecheck:libs` before artifact typechecks
+- Never use `console.log` in server code — use `req.log` in handlers or the singleton `logger`
 
 ## Pointers
 
