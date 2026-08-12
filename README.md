@@ -1,6 +1,7 @@
 
 
-# Digital Information Systems Analysis of WWF India's Donation Management Platformmmmm
+# Digital Information Systems Analysis of WWF India's Donation Management Platform
+
 
 
 This repository contains a research report that examines how WWF India uses digital business systems to manage donations, support decision-making, improve donor engagement, and enhance operational efficiency. It was prepared by Megan Anriya Dcruz (2533334), Agasthithayaagaran Saravanen (2533303), Esha Naidu (2533325), Anshuman Vasisht (2533309), and Uppalapati Harshith (2533359), undergraduate students at CHRIST (Deemed to Be University), Bangalore, and is shared here for educational and portfolio purposes.
@@ -8,7 +9,7 @@ This repository contains a research report that examines how WWF India uses digi
 
 ## 1. Organization Overview: WWF (World Wildlife Fund)
 
-### 1.1 Nature of Business
+### 1.1 Nature of Busines
 
 Founded in 1961, this Switzerland-based NGO and advocacy group for wildlife, the World Wildlife Fund (WWF), works for a sustainable relationship between humans and the environment. As the largest conservation group on the planet, WWF protects the mountains, wetlands, rivers, savannas and the ocean on nearly every continent in close to 100 countries. Unlike profit-driven organizations, WWF relies heavily on public donations, with funds being reinvested into its conservation initiatives rather than distributed as profit. Through its donation platform, WWF enables individuals to directly support conservation efforts and contribute to building a future in which humans live in harmony with nature.
 
