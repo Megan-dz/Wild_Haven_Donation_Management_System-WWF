@@ -226,5 +226,6 @@ Its visible architecture can be documented as a presentation layer backed by app
 Wild Haven India website preview: **[preview--wild-haven-india.lovable.app](https://preview--wild-haven-india.lovable.app/)**
 
 > **Confidence:** High for the functional/site-structure description visible in the supplied screenshots; moderate for the conceptual architecture; low for any implementation-specific technology, database, payment, or hosting details not visible in the screenshots.
+
 ![System architecture diagram](images/figure1.png)
 ![System architecture diagram](images/figure2.png)
