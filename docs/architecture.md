@@ -87,7 +87,7 @@ The visible experience supports several user types. The following roles are **fu
 At a conceptual level, the website follows a **layered web-application architecture**. Visitors interact with a browser-based presentation layer. The application layer controls page navigation, donation-form behavior, validation, and content presentation. A data layer can persist donation and content information, while external services can handle payment processing and donor communications.
 
 <p align="center">
-  <img src="images/figure1.png" alt="Conceptual system architecture diagram" width="700">
+  <img src= "../images/figure1.png" alt="Conceptual system architecture diagram" width="700">
 </p>
 
 <p align="center"><sub><b>Figure 1.</b> Conceptual system architecture based on the visible website functionality.</sub></p>
