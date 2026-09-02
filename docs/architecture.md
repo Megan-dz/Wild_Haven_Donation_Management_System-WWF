@@ -13,7 +13,7 @@
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
 1. [Scope and Source Basis](#-scope-and-source-basis)
 2. [Website Overview](#1-website-overview)
@@ -34,11 +34,11 @@
 
 ---
 
-## 🔎 Scope and Source Basis
+##  Scope and Source Basis
 
 This document explains the Wild Haven India wildlife-conservation donation website from a **functional and conceptual architecture** perspective. It is based on the supplied website screenshots and the visible user interface: the home/donation experience, Our Mission content, Impact cards, donation call-to-action, FAQ section, and footer contact information.
 
-> **⚠️ Important:** The screenshots do not expose the underlying source code, database schema, APIs, payment provider, hosting configuration, or authentication implementation. Where these implementation details are not visible, the architecture below is explicitly described as **conceptual or recommended** rather than confirmed.
+> ** Important:** The screenshots do not expose the underlying source code, database schema, APIs, payment provider, hosting configuration, or authentication implementation. Where these implementation details are not visible, the architecture below is explicitly described as **conceptual or recommended** rather than confirmed.
 
 ---
 
@@ -73,12 +73,12 @@ The visible experience supports several user types. The following roles are **fu
 
 ## 3. Site Structure
 
-- 🏠 **Home / donation section** — introduces the conservation mission and presents the primary donation form.
-- 🎯 **Our Mission** — explains Wild Haven's conservation approach, including species protection, habitat restoration, anti-poaching, and community programs.
-- 📊 **Impact** — connects contribution amounts to tangible conservation outcomes such as patrols, rescue support, and habitat restoration.
-- ❓ **FAQ** — answers common donor questions about tax deductibility, use of funds, monthly-donation cancellation, and international donations.
-- 💳 **Donation call-to-action** — provides repeated entry points into the donation experience.
-- 📍 **Footer** — provides organizational description, navigation links, email, phone, and location information.
+-  **Home / donation section** — introduces the conservation mission and presents the primary donation form.
+-  **Our Mission** — explains Wild Haven's conservation approach, including species protection, habitat restoration, anti-poaching, and community programs.
+-  **Impact** — connects contribution amounts to tangible conservation outcomes such as patrols, rescue support, and habitat restoration.
+-  **FAQ** — answers common donor questions about tax deductibility, use of funds, monthly-donation cancellation, and international donations.
+-  **Donation call-to-action** — provides repeated entry points into the donation experience.
+-  **Footer** — provides organizational description, navigation links, email, phone, and location information.
 
 ---
 
@@ -148,14 +148,14 @@ The donation interface is the central transactional component visible in the scr
 
 > The following are **recommended** architecture requirements for a production donation platform. They are not claims that each control is already implemented.
 
-- 🔒 Process card/payment information through a compliant payment provider rather than storing raw payment credentials in the website database.
-- 🔒 Use HTTPS for all pages and API communication.
-- ✅ Validate donation amounts on both the client and server sides.
-- 🔑 Protect administrative functions with authentication and role-based authorization.
-- 🔑 Restrict access to donor records using least-privilege permissions.
-- 🗄️ Store only the donor information required for donation processing, receipts, compliance, and communication.
-- 📝 Log transaction status and application errors without exposing sensitive payment data.
-- 🔁 Protect recurring-payment operations with provider-side controls and secure webhook verification.
+-  Process card/payment information through a compliant payment provider rather than storing raw payment credentials in the website database.
+-  Use HTTPS for all pages and API communication.
+-  Validate donation amounts on both the client and server sides.
+-  Protect administrative functions with authentication and role-based authorization.
+-  Restrict access to donor records using least-privilege permissions.
+-  Store only the donor information required for donation processing, receipts, compliance, and communication.
+-  Log transaction status and application errors without exposing sensitive payment data.
+-  Protect recurring-payment operations with provider-side controls and secure webhook verification.
 
 ---
 
@@ -177,12 +177,12 @@ The donation interface is the central transactional component visible in the scr
 
 ## 11. Accessibility and Usability
 
-- ⌨️ Provide keyboard-accessible navigation and controls.
-- 🏷️ Use semantic headings and landmarks for the Mission, Impact, FAQ, and footer sections.
-- 🔽 Ensure FAQ expand/collapse controls expose their state to assistive technologies.
-- 🏷️ Provide accessible labels and error messages for donation amount fields.
-- 🎨 Maintain sufficient text contrast and visible focus states.
-- 📱 Ensure donation controls and navigation remain usable on mobile and tablet screen sizes.
+-  Provide keyboard-accessible navigation and controls.
+-  Use semantic headings and landmarks for the Mission, Impact, FAQ, and footer sections.
+-  Ensure FAQ expand/collapse controls expose their state to assistive technologies.
+-  Provide accessible labels and error messages for donation amount fields.
+-  Maintain sufficient text contrast and visible focus states.
+-  Ensure donation controls and navigation remain usable on mobile and tablet screen sizes.
 
 ---
 
@@ -221,7 +221,7 @@ Its visible architecture can be documented as a presentation layer backed by app
 
 ---
 
-## 📌 Source
+##  Source
 
 Wild Haven India website preview: **[preview--wild-haven-india.lovable.app](https://preview--wild-haven-india.lovable.app/)**
 
