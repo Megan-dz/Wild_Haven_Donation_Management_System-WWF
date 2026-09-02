@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🐾 Wild Haven India
+#  Wild Haven India
 ### Website System Architecture & Functional Overview
 
 *Documentation draft • Version 1.0*
@@ -113,7 +113,7 @@ At a conceptual level, the website follows a **layered web-application architect
 The donation interface is the central transactional component visible in the screenshots. It allows a visitor to switch between one-time and monthly giving, select a predefined amount, or enter a custom amount. The UI then displays the selected gift before the visitor proceeds with the transaction.
 
 <p align="center">
-  <img src="images/figure2.png" alt="Conceptual donation workflow diagram" width="700">
+  <img src="![System architecture diagram](../images/figure2.png)" alt="Conceptual donation workflow diagram" width="700">
 </p>
 
 <p align="center"><sub><b>Figure 2.</b> Conceptual donation workflow.</sub></p>
@@ -227,5 +227,4 @@ Wild Haven India website preview: **[preview--wild-haven-india.lovable.app](http
 
 > **Confidence:** High for the functional/site-structure description visible in the supplied screenshots; moderate for the conceptual architecture; low for any implementation-specific technology, database, payment, or hosting details not visible in the screenshots.
 
-![System architecture diagram](../images/figure1.png)
-![System architecture diagram](../images/figure2.png)
+
