@@ -113,7 +113,7 @@ At a conceptual level, the website follows a **layered web-application architect
 The donation interface is the central transactional component visible in the screenshots. It allows a visitor to switch between one-time and monthly giving, select a predefined amount, or enter a custom amount. The UI then displays the selected gift before the visitor proceeds with the transaction.
 
 <p align="center">
-  <img src="![System architecture diagram](../images/figure2.png)" alt="Conceptual donation workflow diagram" width="700">
+   <img src="../images/figure2.png" alt="Conceptual donation workflow diagram" width="700">
 </p>
 
 <p align="center"><sub><b>Figure 2.</b> Conceptual donation workflow.</sub></p>
