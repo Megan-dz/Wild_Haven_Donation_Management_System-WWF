@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and, ilike, or, sql } from "drizzle-orm";
+import { eq, and, ilike, or } from "drizzle-orm";
 import { db, donationsTable, campaignsTable, donorsTable } from "@workspace/db";
 import {
   ListDonationsQueryParams,
@@ -9,6 +9,10 @@ import {
   UpdateDonationBody,
   DeleteDonationParams,
 } from "@workspace/api-zod";
+import {
+  refreshCampaignAggregates,
+  refreshDonorAggregates,
+} from "../lib/donation-aggregates";
 
 const router: IRouter = Router();
 
@@ -70,40 +74,25 @@ router.post("/donations", async (req, res): Promise<void> => {
   const { donorId, campaignId, donorName, donorEmail, amount, status, paymentMethod, notes } =
     parsed.data;
 
-  const [donation] = await db
-    .insert(donationsTable)
-    .values({
-      donorId: donorId ?? null,
-      campaignId: campaignId ?? null,
-      donorName,
-      donorEmail,
-      amount: String(amount),
-      status: status ?? "pending",
-      paymentMethod: paymentMethod ?? null,
-      notes: notes ?? null,
-    })
-    .returning();
-
-  // Update donor stats if donorId given
-  if (donorId) {
-    await db
-      .update(donorsTable)
-      .set({
-        totalDonated: sql`total_donated + ${String(amount)}`,
-        donationCount: sql`donation_count + 1`,
-        lastDonationAt: sql`NOW()`,
-        firstDonationAt: sql`COALESCE(first_donation_at, NOW())`,
+  const donation = await db.transaction(async (tx) => {
+    const [created] = await tx
+      .insert(donationsTable)
+      .values({
+        donorId: donorId ?? null,
+        campaignId: campaignId ?? null,
+        donorName,
+        donorEmail,
+        amount: String(amount),
+        status: status ?? "pending",
+        paymentMethod: paymentMethod ?? null,
+        notes: notes ?? null,
       })
-      .where(eq(donorsTable.id, donorId));
-  }
+      .returning();
 
-  // Update campaign raised amount if status is completed
-  if (campaignId && (status ?? "pending") === "completed") {
-    await db
-      .update(campaignsTable)
-      .set({ raisedAmount: sql`raised_amount + ${String(amount)}` })
-      .where(eq(campaignsTable.id, campaignId));
-  }
+    if (donorId) await refreshDonorAggregates(tx, donorId);
+    if (campaignId) await refreshCampaignAggregates(tx, campaignId);
+    return created;
+  });
 
   const campaignRow = campaignId
     ? await db.select({ name: campaignsTable.name }).from(campaignsTable).where(eq(campaignsTable.id, campaignId)).limit(1)
@@ -168,20 +157,41 @@ router.patch("/donations/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const updates: Record<string, unknown> = {};
-  if (parsed.data.donorName !== undefined) updates.donorName = parsed.data.donorName;
-  if (parsed.data.donorEmail !== undefined) updates.donorEmail = parsed.data.donorEmail;
-  if (parsed.data.amount !== undefined) updates.amount = String(parsed.data.amount);
-  if (parsed.data.status !== undefined) updates.status = parsed.data.status;
-  if (parsed.data.paymentMethod !== undefined) updates.paymentMethod = parsed.data.paymentMethod;
-  if (parsed.data.notes !== undefined) updates.notes = parsed.data.notes;
-  if (parsed.data.campaignId !== undefined) updates.campaignId = parsed.data.campaignId;
+  const updated = await db.transaction(async (tx) => {
+    const [existing] = await tx
+      .select()
+      .from(donationsTable)
+      .where(eq(donationsTable.id, params.data.id))
+      .limit(1);
 
-  const [updated] = await db
-    .update(donationsTable)
-    .set(updates)
-    .where(eq(donationsTable.id, params.data.id))
-    .returning();
+    if (!existing) return null;
+
+    const updates: Record<string, unknown> = {};
+    if (parsed.data.donorName !== undefined) updates.donorName = parsed.data.donorName;
+    if (parsed.data.donorEmail !== undefined) updates.donorEmail = parsed.data.donorEmail;
+    if (parsed.data.amount !== undefined) updates.amount = String(parsed.data.amount);
+    if (parsed.data.status !== undefined) updates.status = parsed.data.status;
+    if (parsed.data.paymentMethod !== undefined) updates.paymentMethod = parsed.data.paymentMethod;
+    if (parsed.data.notes !== undefined) updates.notes = parsed.data.notes;
+    if (parsed.data.campaignId !== undefined) updates.campaignId = parsed.data.campaignId;
+
+    const [result] =
+      Object.keys(updates).length === 0
+        ? [existing]
+        : await tx
+            .update(donationsTable)
+            .set(updates)
+            .where(eq(donationsTable.id, params.data.id))
+            .returning();
+
+    if (existing.donorId) await refreshDonorAggregates(tx, existing.donorId);
+    if (existing.campaignId) await refreshCampaignAggregates(tx, existing.campaignId);
+    if (result?.campaignId && result.campaignId !== existing.campaignId) {
+      await refreshCampaignAggregates(tx, result.campaignId);
+    }
+
+    return result;
+  });
 
   if (!updated) {
     res.status(404).json({ error: "Donation not found" });
@@ -207,10 +217,17 @@ router.delete("/donations/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const [deleted] = await db
-    .delete(donationsTable)
-    .where(eq(donationsTable.id, params.data.id))
-    .returning();
+  const deleted = await db.transaction(async (tx) => {
+    const [removed] = await tx
+      .delete(donationsTable)
+      .where(eq(donationsTable.id, params.data.id))
+      .returning();
+
+    if (!removed) return null;
+    if (removed.donorId) await refreshDonorAggregates(tx, removed.donorId);
+    if (removed.campaignId) await refreshCampaignAggregates(tx, removed.campaignId);
+    return removed;
+  });
 
   if (!deleted) {
     res.status(404).json({ error: "Donation not found" });

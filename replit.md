@@ -10,6 +10,7 @@ Internal employee portal for the Wild Haven India wildlife conservation nonprofi
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- `pnpm --filter @workspace/db run typecheck` — typecheck the database package
 - Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
@@ -28,6 +29,7 @@ Internal employee portal for the Wild Haven India wildlife conservation nonprofi
 - `lib/db/src/schema/` — DB schema (campaigns.ts, donors.ts, donations.ts)
 - `artifacts/api-server/src/routes/` — Express route handlers (donations, campaigns, donors, dashboard)
 - `artifacts/admin-dashboard/src/` — React frontend
+- `docs/database.md` — database setup, source map, and aggregate semantics
 
 ## Product
 

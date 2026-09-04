@@ -2,6 +2,9 @@ import { pgTable, text, serial, timestamp, numeric, integer } from "drizzle-orm/
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
+export const campaignStatuses = ["active", "completed", "paused"] as const;
+export const campaignStatusSchema = z.enum(campaignStatuses);
+
 export const campaignsTable = pgTable("campaigns", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -22,6 +25,8 @@ export const insertCampaignSchema = createInsertSchema(campaignsTable).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  status: campaignStatusSchema.optional(),
 });
 export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
 export type Campaign = typeof campaignsTable.$inferSelect;

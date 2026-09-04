@@ -19,6 +19,8 @@ export const insertDonorSchema = createInsertSchema(donorsTable).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  email: z.string().email(),
 });
 export type InsertDonor = z.infer<typeof insertDonorSchema>;
 export type Donor = typeof donorsTable.$inferSelect;

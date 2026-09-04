@@ -4,10 +4,17 @@ import { z } from "zod/v4";
 import { donorsTable } from "./donors";
 import { campaignsTable } from "./campaigns";
 
+export const donationStatuses = ["pending", "completed", "refunded"] as const;
+export const donationStatusSchema = z.enum(donationStatuses);
+
 export const donationsTable = pgTable("donations", {
   id: serial("id").primaryKey(),
-  donorId: integer("donor_id").references(() => donorsTable.id),
-  campaignId: integer("campaign_id").references(() => campaignsTable.id),
+  donorId: integer("donor_id").references(() => donorsTable.id, {
+    onDelete: "set null",
+  }),
+  campaignId: integer("campaign_id").references(() => campaignsTable.id, {
+    onDelete: "set null",
+  }),
   donorName: text("donor_name").notNull(),
   donorEmail: text("donor_email").notNull(),
   amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
@@ -22,6 +29,8 @@ export const insertDonationSchema = createInsertSchema(donationsTable).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  status: donationStatusSchema.optional(),
 });
 export type InsertDonation = z.infer<typeof insertDonationSchema>;
 export type Donation = typeof donationsTable.$inferSelect;

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, count, sum, sql } from "drizzle-orm";
+import { eq, count, sql } from "drizzle-orm";
 import { db, donationsTable, campaignsTable, donorsTable } from "@workspace/db";
 import { GetRecentActivityQueryParams } from "@workspace/api-zod";
 
@@ -9,7 +9,7 @@ router.get("/dashboard/stats", async (_req, res): Promise<void> => {
   const [donationStats] = await db
     .select({
       totalDonations: count(donationsTable.id),
-      totalAmount: sum(donationsTable.amount),
+      totalAmount: sql<string>`COALESCE(SUM(CASE WHEN ${donationsTable.status} = 'completed' THEN ${donationsTable.amount} ELSE 0 END), 0)`,
     })
     .from(donationsTable);
 
@@ -94,7 +94,8 @@ router.get("/dashboard/monthly-totals", async (_req, res): Promise<void> => {
       COALESCE(SUM(amount), 0)::float AS "totalAmount",
       COUNT(*)::int AS "donationCount"
     FROM donations
-    WHERE created_at >= NOW() - INTERVAL '12 months'
+    WHERE status = 'completed'
+      AND created_at >= NOW() - INTERVAL '12 months'
     GROUP BY year, month
     ORDER BY year ASC, month ASC
   `);
