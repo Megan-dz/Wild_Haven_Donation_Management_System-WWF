@@ -47,4 +47,9 @@ app.use(
 
 app.use("/api", router);
 
+app.use((err: unknown, _req: Parameters<Express["use"]>[0], res: any, _next: Parameters<Express["use"]>[2]) => {
+  logger.error({ err }, "Unhandled API error");
+  res.status(500).json({ error: "Internal server error" });
+});
+
 export default app;

@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Response } from "express";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db, activityTable, campaignsTable, donationsTable, donorsTable } from "@workspace/db";
 import {
@@ -40,6 +40,20 @@ import {
   listDonationRecords,
   listDonorRecords,
 } from "../lib/portal-data";
+import { logger } from "../lib/logger";
+
+const isDuplicateRecordError = (error: unknown): boolean =>
+  typeof error === "object" && error !== null && "code" in error && error.code === "23505";
+
+const handleCrudError = (error: unknown, res: Response, entity: string): void => {
+  if (isDuplicateRecordError(error)) {
+    res.status(409).json({ error: `${entity} already exists` });
+    return;
+  }
+
+  logger.error({ err: error, entity }, "CRUD operation failed");
+  res.status(500).json({ error: "Internal server error" });
+};
 
 const router: IRouter = Router();
 router.use(requireAuth);
@@ -135,9 +149,14 @@ router.post("/donors", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [donor] = await db.insert(donorsTable).values(parsed.data).returning();
-  await addActivity("donor", "New donor added", `${donor.name} was added to the donor directory.`);
-  res.status(201).json(await getDonorRecord(donor.id));
+
+  try {
+    const [donor] = await db.insert(donorsTable).values(parsed.data).returning();
+    await addActivity("donor", "New donor added", `${donor.name} was added to the donor directory.`);
+    res.status(201).json(await getDonorRecord(donor.id));
+  } catch (error) {
+    handleCrudError(error, res, "Donor");
+  }
 });
 
 router.get("/donors/:id", async (req, res): Promise<void> => {
@@ -165,12 +184,17 @@ router.patch("/donors/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: body.error.message });
     return;
   }
-  const [donor] = await db.update(donorsTable).set(body.data).where(eq(donorsTable.id, params.data.id)).returning();
-  if (!donor) {
-    res.status(404).json({ error: "Donor not found" });
-    return;
+
+  try {
+    const [donor] = await db.update(donorsTable).set(body.data).where(eq(donorsTable.id, params.data.id)).returning();
+    if (!donor) {
+      res.status(404).json({ error: "Donor not found" });
+      return;
+    }
+    res.json(await getDonorRecord(donor.id));
+  } catch (error) {
+    handleCrudError(error, res, "Donor");
   }
-  res.json(await getDonorRecord(donor.id));
 });
 
 router.delete("/donors/:id", async (req, res): Promise<void> => {
@@ -179,12 +203,17 @@ router.delete("/donors/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [donor] = await db.delete(donorsTable).where(eq(donorsTable.id, params.data.id)).returning();
-  if (!donor) {
-    res.status(404).json({ error: "Donor not found" });
-    return;
+
+  try {
+    const [donor] = await db.delete(donorsTable).where(eq(donorsTable.id, params.data.id)).returning();
+    if (!donor) {
+      res.status(404).json({ error: "Donor not found" });
+      return;
+    }
+    res.sendStatus(204);
+  } catch (error) {
+    handleCrudError(error, res, "Donor");
   }
-  res.sendStatus(204);
 });
 
 router.get("/donations", async (req, res): Promise<void> => {
@@ -203,20 +232,25 @@ router.post("/donations", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [donation] = await db
-    .insert(donationsTable)
-    .values({
-      donorId: parsed.data.donorId,
-      amountCents: Math.round(parsed.data.amount * 100),
-      frequency: parsed.data.frequency,
-      status: parsed.data.status,
-      campaignId: parsed.data.campaignId,
-      donatedAt: parsed.data.donatedAt,
-      receiptNumber: `WH-${Date.now().toString().slice(-8)}`,
-    })
-    .returning();
-  await addActivity("donation", "Donation recorded", `₹${parsed.data.amount.toLocaleString("en-IN")} donation added to the ledger.`);
-  res.status(201).json(await getDonationRecord(donation.id));
+
+  try {
+    const [donation] = await db
+      .insert(donationsTable)
+      .values({
+        donorId: parsed.data.donorId,
+        amountCents: Math.round(parsed.data.amount * 100),
+        frequency: parsed.data.frequency,
+        status: parsed.data.status,
+        campaignId: parsed.data.campaignId,
+        donatedAt: parsed.data.donatedAt,
+        receiptNumber: `WH-${Date.now().toString().slice(-8)}`,
+      })
+      .returning();
+    await addActivity("donation", "Donation recorded", `₹${parsed.data.amount.toLocaleString("en-IN")} donation added to the ledger.`);
+    res.status(201).json(await getDonationRecord(donation.id));
+  } catch (error) {
+    handleCrudError(error, res, "Donation");
+  }
 });
 
 router.get("/donations/:id", async (req, res): Promise<void> => {
@@ -244,19 +278,24 @@ router.patch("/donations/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: body.error.message });
     return;
   }
-  const update = {
-    ...(body.data.amount === undefined ? {} : { amountCents: Math.round(body.data.amount * 100) }),
-    ...(body.data.frequency === undefined ? {} : { frequency: body.data.frequency }),
-    ...(body.data.status === undefined ? {} : { status: body.data.status }),
-    ...(body.data.campaignId === undefined ? {} : { campaignId: body.data.campaignId }),
-    ...(body.data.donatedAt === undefined ? {} : { donatedAt: body.data.donatedAt }),
-  };
-  const [donation] = await db.update(donationsTable).set(update).where(eq(donationsTable.id, params.data.id)).returning();
-  if (!donation) {
-    res.status(404).json({ error: "Donation not found" });
-    return;
+
+  try {
+    const update = {
+      ...(body.data.amount === undefined ? {} : { amountCents: Math.round(body.data.amount * 100) }),
+      ...(body.data.frequency === undefined ? {} : { frequency: body.data.frequency }),
+      ...(body.data.status === undefined ? {} : { status: body.data.status }),
+      ...(body.data.campaignId === undefined ? {} : { campaignId: body.data.campaignId }),
+      ...(body.data.donatedAt === undefined ? {} : { donatedAt: body.data.donatedAt }),
+    };
+    const [donation] = await db.update(donationsTable).set(update).where(eq(donationsTable.id, params.data.id)).returning();
+    if (!donation) {
+      res.status(404).json({ error: "Donation not found" });
+      return;
+    }
+    res.json(await getDonationRecord(donation.id));
+  } catch (error) {
+    handleCrudError(error, res, "Donation");
   }
-  res.json(await getDonationRecord(donation.id));
 });
 
 router.delete("/donations/:id", async (req, res): Promise<void> => {
@@ -265,12 +304,17 @@ router.delete("/donations/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [donation] = await db.delete(donationsTable).where(eq(donationsTable.id, params.data.id)).returning();
-  if (!donation) {
-    res.status(404).json({ error: "Donation not found" });
-    return;
+
+  try {
+    const [donation] = await db.delete(donationsTable).where(eq(donationsTable.id, params.data.id)).returning();
+    if (!donation) {
+      res.status(404).json({ error: "Donation not found" });
+      return;
+    }
+    res.sendStatus(204);
+  } catch (error) {
+    handleCrudError(error, res, "Donation");
   }
-  res.sendStatus(204);
 });
 
 router.get("/campaigns", async (req, res): Promise<void> => {
@@ -289,12 +333,17 @@ router.post("/campaigns", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [campaign] = await db.insert(campaignsTable).values({
-    ...parsed.data,
-    goalCents: Math.round(parsed.data.goal * 100),
-  }).returning();
-  await addActivity("campaign", "Campaign created", `${campaign.name} was added to the campaign portfolio.`);
-  res.status(201).json(await getCampaignRecord(campaign.id));
+
+  try {
+    const [campaign] = await db.insert(campaignsTable).values({
+      ...parsed.data,
+      goalCents: Math.round(parsed.data.goal * 100),
+    }).returning();
+    await addActivity("campaign", "Campaign created", `${campaign.name} was added to the campaign portfolio.`);
+    res.status(201).json(await getCampaignRecord(campaign.id));
+  } catch (error) {
+    handleCrudError(error, res, "Campaign");
+  }
 });
 
 router.get("/campaigns/:id", async (req, res): Promise<void> => {
@@ -322,17 +371,22 @@ router.patch("/campaigns/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: body.error.message });
     return;
   }
-  const update = {
-    ...body.data,
-    ...(body.data.goal === undefined ? {} : { goalCents: Math.round(body.data.goal * 100) }),
-  };
-  delete (update as { goal?: number }).goal;
-  const [campaign] = await db.update(campaignsTable).set(update).where(eq(campaignsTable.id, params.data.id)).returning();
-  if (!campaign) {
-    res.status(404).json({ error: "Campaign not found" });
-    return;
+
+  try {
+    const update = {
+      ...body.data,
+      ...(body.data.goal === undefined ? {} : { goalCents: Math.round(body.data.goal * 100) }),
+    };
+    delete (update as { goal?: number }).goal;
+    const [campaign] = await db.update(campaignsTable).set(update).where(eq(campaignsTable.id, params.data.id)).returning();
+    if (!campaign) {
+      res.status(404).json({ error: "Campaign not found" });
+      return;
+    }
+    res.json(await getCampaignRecord(campaign.id));
+  } catch (error) {
+    handleCrudError(error, res, "Campaign");
   }
-  res.json(await getCampaignRecord(campaign.id));
 });
 
 router.delete("/campaigns/:id", async (req, res): Promise<void> => {
@@ -341,12 +395,17 @@ router.delete("/campaigns/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [campaign] = await db.delete(campaignsTable).where(eq(campaignsTable.id, params.data.id)).returning();
-  if (!campaign) {
-    res.status(404).json({ error: "Campaign not found" });
-    return;
+
+  try {
+    const [campaign] = await db.delete(campaignsTable).where(eq(campaignsTable.id, params.data.id)).returning();
+    if (!campaign) {
+      res.status(404).json({ error: "Campaign not found" });
+      return;
+    }
+    res.sendStatus(204);
+  } catch (error) {
+    handleCrudError(error, res, "Campaign");
   }
-  res.sendStatus(204);
 });
 
 router.get("/impact", async (_req, res): Promise<void> => {
