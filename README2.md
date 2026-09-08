@@ -24,13 +24,13 @@ This is the first thing a visitor sees. It has a large emotional headline ("Give
 - Below the headline, three **impact statistics** are displayed prominently: 1.2M+ acres protected, 48 rescue missions, 12k supporters. These numbers build credibility and trust immediately, before asking for money.
 - The "Donate Now" button scrolls/links directly into the donation widget, reducing friction for someone ready to give right away.
 - "Learn More" is aimed at visitors who want context first — it would guide them toward the Mission section.
-<img width="2348" height="558" alt="Screenshot 2026-09-08 175534" src="https://github.com/user-attachments/assets/0f0cac94-2c8c-4ab9-8a16-673d397ff340" />
+<img width="1070" height="968" alt="Screenshot 2026-09-08 175314" src="https://github.com/user-attachments/assets/6364502d-44c2-4dd0-b78f-321e1b77ab74" />
+
 
 ---
 
 ## 3. Donation Widget (Right side of homepage)
 This is a compact, self-contained donation form that sits alongside the hero section, so it's visible without scrolling.
-<img width="742" height="1074" alt="Screenshot 2026-09-08 175639" src="https://github.com/user-attachments/assets/ae993a02-f953-42c8-9c09-84dddaabc4a8" />
 
 **Features:**
 - **One-Time vs. Monthly toggle** — lets the donor choose whether this is a single donation or a recurring monthly one.
@@ -38,26 +38,22 @@ This is a compact, self-contained donation form that sits alongside the hero sec
 - **Custom amount field** — for donors who want to give an amount not listed.
 - **Live "Your gift" summary box** — updates instantly as soon as an amount is picked, showing the exact figure (e.g., "₹2,500") along with a note that it's eligible for 50% tax exemption under Section 80G of the Income Tax Act. This reassures Indian donors about the legal/tax benefit of giving.
 - **"Continue to Donate" button** at the bottom — this is what actually moves the user forward into the payment process (explained in section 7).
-
+<img width="742" height="1074" alt="Screenshot 2026-09-08 175639" src="https://github.com/user-attachments/assets/ae993a02-f953-42c8-9c09-84dddaabc4a8" />
 ---
 
 ## 4. Our Mission Section
 This section (reached either by scrolling or clicking "Our Mission" in the navbar) explains the organization's purpose in more depth.
-<img width="942" height="1026" alt="Screenshot 2026-09-08 175916" src="https://github.com/user-attachments/assets/b830dc73-fb68-49fb-91bc-4ea6d94cbb61" />
-
 
 **Features:**
 - Headline: "A living haven for the wild things worth saving," followed by a paragraph explaining Wild Haven's geographic scope — from the Sundarbans mangroves to the Himalayan foothills.
 - A **transparency statement**: "92 paise of every rupee you give goes directly to conservation work on the ground" — this is a trust-building feature, showing donors exactly how their money is used.
 - Two highlighted sub-categories are shown as cards: **Species Protection** (tigers, elephants, snow leopards, etc.) and **Habitat Restoration** (reviving forests, rivers, wetlands) — each is clickable and leads to more detail (see section 6 for Habitat Restoration's dedicated page).
 - A large accompanying photo (sunlight through forest canopy) reinforces the emotional, nature-focused branding.
-
+<img width="942" height="1026" alt="Screenshot 2026-09-08 175916" src="https://github.com/user-attachments/assets/b830dc73-fb68-49fb-91bc-4ea6d94cbb61" />
 ---
 
 ## 5. Impact Section
 This section is where the NGO shows donors exactly what specific amounts of money accomplish, broken into three concrete "giving tiers."
-<img width="984" height="1010" alt="Screenshot 2026-09-08 180006" src="https://github.com/user-attachments/assets/ca46e4c9-09ff-44b7-9220-18a4b43c7ecf" />
-
 
 
 **Features:**
@@ -79,12 +75,11 @@ When clicked, this opens a new page (`/impact/snow-leopard`) that includes:
 - Suggestions for other causes at the bottom (Rescue an Elephant, Restore One Acre), encouraging the donor to explore further even after landing on one page
 
 This shows the site isn't a single static donation form — each cause functions like its own mini-campaign page with real tracked data.
-
+<img width="984" height="1010" alt="Screenshot 2026-09-08 180006" src="https://github.com/user-attachments/assets/ca46e4c9-09ff-44b7-9220-18a4b43c7ecf" />
 ---
 
 ## 6. Habitat Restoration Page (Program Page)
 Similar to the snow leopard page, this is a separate dedicated page (`/programs/habitat-restoration`) reached by clicking on the "Habitat Restoration" card from the Mission section.
-<img width="1282" height="778" alt="Screenshot 2026-09-08 180442" src="https://github.com/user-attachments/assets/05ad6ba2-1464-4b0f-9249-169e01da3fc4" />
 
 **Features:**
 - Headline: "Habitat Restoration – Reviving forests, rivers and wetlands"
@@ -93,7 +88,7 @@ Similar to the snow leopard page, this is a separate dedicated page (`/programs/
 - A "← Back home" button to easily return to the main site
 
 This confirms the site supports **multiple structured program pages**, not just one generic "donate" button — each cause/program has its own content, stats, and framing.
-
+<img width="1282" height="778" alt="Screenshot 2026-09-08 180442" src="https://github.com/user-attachments/assets/05ad6ba2-1464-4b0f-9249-169e01da3fc4" />
 ---
 
 ## 7. FAQ Section
