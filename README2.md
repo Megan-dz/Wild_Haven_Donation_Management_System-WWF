@@ -1,57 +1,125 @@
 ![Wild Haven Logo](images/Wild_Haven_Logo.png)
 
-# Wild Haven Website – Demo Walkthrough
+# Wild Haven Website – Demo Walkthrough (Detailed)
 
 ## What it is
-A donation website for a wildlife conservation NGO (demo brand "Wild Haven"), built using Lovable AI. It lets visitors learn about conservation work and donate money.
+Wild Haven is a donation and awareness website for a wildlife conservation NGO (a demo brand created for this project), built using **Lovable AI** — a tool that generates functional websites from prompts. The site's purpose is twofold: educate visitors about India's endangered wildlife and the threats they face, and convert that awareness into actual donations through a smooth, guided flow. Below is a walkthrough of every component, with its features explained directly underneath it.
 
-## Components & Features (in order of use)
+## 1. Navbar (Our Mission / Impact / FAQ / Donate)
+The navigation bar sits fixed at the top of every page and contains the Wild Haven logo/name on the left and four links/buttons on the right: **Our Mission, Impact, FAQ,** and a highlighted **Donate** button.
 
-**1. Navbar (Our Mission / Impact / FAQ)**
-Clicking any of these doesn't open a new page — it **scrolls straight down** to that section on the same page (anchor navigation). No reloading, instant jump.
+**Features:**
+- Clicking "Our Mission," "Impact," or "FAQ" does **not load a new page** — instead, the browser **smoothly scrolls down** to that specific section on the same homepage. This is called anchor navigation (visible in the URL as `#mission`, `#impact`, `#faq`).
+- Because there's no full page reload, the transition feels instant and keeps the user in context.
+- The "Donate" button in the navbar is always visible, so no matter where the user scrolls, they can jump straight to donating.
+- The navbar stays consistent across every sub-page (campaign pages, payment page), giving the site a unified feel, though sub-pages replace the nav links with a simple "← Back home" button for easier return navigation.
 
-**2. Homepage Hero Section**
-Big heading with wildlife photo background, a short mission line, and two buttons ("Donate Now" / "Learn More"). Below it are impact stats (1.2M+ acres protected, 48 rescue missions, 12k supporters) to build trust right away.
+---
 
-**3. Donation Widget (on homepage)**
-Lets the user pick a preset amount (₹500–₹25,000) or type a custom one, and toggle between One-Time and Monthly. The "Your gift" summary **updates instantly** as the amount changes.
+## 2. Homepage Hero Section
+This is the first thing a visitor sees. It has a large emotional headline ("Give a home to India's wild"), a soft background photo of wildlife, a short paragraph about the threats animals face (poaching, habitat loss, climate change), and two call-to-action buttons: "Donate Now" and "Learn More."
 
-**4. Our Mission Section**
-Explains what Wild Haven does and where (Sundarbans, Himalayas), plus fund transparency info (92 paise of every ₹1 goes directly to fieldwork).
+**Features:**
+- Below the headline, three **impact statistics** are displayed prominently: 1.2M+ acres protected, 48 rescue missions, 12k supporters. These numbers build credibility and trust immediately, before asking for money.
+- The "Donate Now" button scrolls/links directly into the donation widget, reducing friction for someone ready to give right away.
+- "Learn More" is aimed at visitors who want context first — it would guide them toward the Mission section.
 
-**5. Impact Section**
-Shows specific causes to donate to:
-- Guard a Snow Leopard – ₹1,000
-- Rescue an Elephant – ₹5,000
-- Restore One Acre – ₹25,000
+---
 
-Clicking **"See progress & give →"** on any of these **opens a dedicated page for that cause**, showing a description, key stats, and a live progress bar (% funded, amount raised, amount still needed). This same thing happens for "Habitat Restoration" too — it opens its own page with its own stats (acres restored, trees planted, wetlands revived).
+## 3. Donation Widget (Right side of homepage)
+This is a compact, self-contained donation form that sits alongside the hero section, so it's visible without scrolling.
 
-**6. FAQ Section**
-Lists common questions (tax-deductibility, fund usage, cancelling monthly donations, international donations). Clicking a question **expands it** to reveal the answer, keeping the page clean until needed.
-<img width="1600" height="900" alt="faq" src="https://github.com/user-attachments/assets/e5ed5307-39ba-4183-ae1f-c8b705230163" />
+**Features:**
+- **One-Time vs. Monthly toggle** — lets the donor choose whether this is a single donation or a recurring monthly one.
+- **Preset amount buttons** (₹500, ₹1,000, ₹2,500, ₹5,000, ₹10,000, ₹25,000) — one click selects an amount, and it's visually highlighted (outlined in red) to confirm the selection.
+- **Custom amount field** — for donors who want to give an amount not listed.
+- **Live "Your gift" summary box** — updates instantly as soon as an amount is picked, showing the exact figure (e.g., "₹2,500") along with a note that it's eligible for 50% tax exemption under Section 80G of the Income Tax Act. This reassures Indian donors about the legal/tax benefit of giving.
+- **"Continue to Donate" button** at the bottom — this is what actually moves the user forward into the payment process (explained in section 7).
 
+---
 
-**7. Continue to Donate → Payment Page**
-Clicking this carries the chosen amount over automatically (e.g., ₹2,500 shows up pre-filled) and opens the payment page with two options:
-- **Card** – enter name, card number, expiry, CVV
-- **UPI/QR** – switching to this tab **generates a QR code instantly**, along with a transaction ID and UPI handle, so the user can scan and pay with their phone
+## 4. Our Mission Section
+This section (reached either by scrolling or clicking "Our Mission" in the navbar) explains the organization's purpose in more depth.
 
-<img width="1600" height="900" alt="payment" src="https://github.com/user-attachments/assets/9f1a27ed-3955-408c-af92-08a684a150ff" />
+**Features:**
+- Headline: "A living haven for the wild things worth saving," followed by a paragraph explaining Wild Haven's geographic scope — from the Sundarbans mangroves to the Himalayan foothills.
+- A **transparency statement**: "92 paise of every rupee you give goes directly to conservation work on the ground" — this is a trust-building feature, showing donors exactly how their money is used.
+- Two highlighted sub-categories are shown as cards: **Species Protection** (tigers, elephants, snow leopards, etc.) and **Habitat Restoration** (reviving forests, rivers, wetlands) — each is clickable and leads to more detail (see section 6 for Habitat Restoration's dedicated page).
+- A large accompanying photo (sunlight through forest canopy) reinforces the emotional, nature-focused branding.
 
+---
 
-## Summary of Interactive Features
-- Scroll-to-section navigation
-- Live-updating donation amount/summary
-- One-Time vs Monthly toggle
-- Clickable cause cards → open detailed sub-pages with progress tracking
-- Expandable FAQ accordion
-- Dual payment methods, with QR code generated on demand
-- Real-time progress tracking (% funded, amount raised/needed) per cause
-- Two payment options: card form and auto-generated UPI QR code
-- Consistent branding (colors, fonts, images) across every page
+## 5. Impact Section
+This section is where the NGO shows donors exactly what specific amounts of money accomplish, broken into three concrete "giving tiers."
 
-## 5. Observations
-- The interactivity (QR generation on payment, dedicated pages per cause) shows the site is functionally wired, not just a static design — Lovable generated real component logic and routing, not just visuals.
-- The design choices (serif fonts, deep red/cream palette, wildlife imagery) are consistent and purposeful, giving it a premium NGO feel similar to real conservation orgs.
-- Since it's a preview/demo build, actual payment processing and backend donation tracking (e.g., real-time updates to "raised" amounts) would need to be integrated separately for production use.
+**Features:**
+- **Guard a Snow Leopard – ₹1,000** — funds one week of high-altitude patrols in the Himalayas.
+- **Rescue an Elephant – ₹5,000** — provides emergency veterinary care and safe relocation.
+- **Restore One Acre – ₹25,000** — funds reforestation of native trees in a degraded area.
+- Each card has a **"See progress & give →" link**, which is one of the most interactive parts of the site: clicking it takes the user to a **completely separate, dedicated page** for that specific cause (not just a popup or expanded section).
+
+### Example: "Guard a Snow Leopard" dedicated page
+When clicked, this opens a new page (`/impact/snow-leopard`) that includes:
+- A longer description of the cause (fewer than 500 snow leopards left in India, why patrols matter)
+- Supporting stats: ~500 individuals remaining, 12,400 km² of range protected, 38 guards funded this year
+- A **live campaign progress tracker** showing:
+  - **67% funded**
+  - **Raised: ₹16.9 L**
+  - **Goal: ₹25.0 L**
+  - **Still needed: ₹8.2 L**
+- A note that progress is "updated weekly" and that "92% goes to programs"
+- Suggestions for other causes at the bottom (Rescue an Elephant, Restore One Acre), encouraging the donor to explore further even after landing on one page
+
+This shows the site isn't a single static donation form — each cause functions like its own mini-campaign page with real tracked data.
+
+---
+
+## 6. Habitat Restoration Page (Program Page)
+Similar to the snow leopard page, this is a separate dedicated page (`/programs/habitat-restoration`) reached by clicking on the "Habitat Restoration" card from the Mission section.
+
+**Features:**
+- Headline: "Habitat Restoration – Reviving forests, rivers and wetlands"
+- Explains the reasoning: "A tiger without a forest is a tiger without a future," covering restoration work from Sundarbans mangroves to Western Ghats rainforests
+- Three stat cards: **1.2M acres under restoration, 4.8M native trees planted, 31 wetlands revived**
+- A "← Back home" button to easily return to the main site
+
+This confirms the site supports **multiple structured program pages**, not just one generic "donate" button — each cause/program has its own content, stats, and framing.
+
+---
+
+## 7. FAQ Section
+Positioned near the bottom of the homepage, this addresses common donor hesitations before they commit to giving.
+
+**Features:**
+- Questions include: "Is my donation tax-deductible?", "How is my money used?", "Can I cancel my monthly donation?", "Do you accept international donations?"
+- Each question uses an **accordion/expandable format** — clicking the "+" icon expands the answer inline, keeping the page uncluttered until the user wants more information.
+- This is a common UX pattern for trust-building on donation sites, since it answers objections right before the "ask."
+
+---
+
+## 8. Payment Page
+This is the final step, reached after clicking "Continue to Donate" from the homepage donation widget.
+
+**Features:**
+- The selected amount and frequency are **carried over automatically** via the URL (e.g., `/payment?amount=2500&frequency=one-time`), so the user doesn't have to re-enter anything — it shows "One-time gift of ₹2,500" pre-filled at the top.
+- Two payment method tabs:
+  - **Card** — fields for Name on Card, Card Number, Expiry (MM/YY), and CVV
+  - **UPI/QR** — switching to this tab **dynamically generates a QR code** on the right side of the screen, along with a unique **Transaction ID** (e.g., WH-RULEMZCW) and a **UPI handle** (wildhaven@upi), so the donor could scan it with a banking app to pay
+- A **"Pay ₹2,500"** button at the bottom confirms the donation
+- A disclaimer at the bottom clearly states: **"This is a demo checkout. No real payment is processed"** — confirming this is a functional prototype built for demonstration, not a live payment gateway
+
+---
+
+## Summary Table of All Interactive Features
+
+| Component | Interactive Feature |
+|---|---|
+| Navbar | Scroll-to-section navigation (no page reload) |
+| Hero Section | Stats build trust; CTA buttons guide user flow |
+| Donation Widget | Live-updating amount selection + One-Time/Monthly toggle |
+| Our Mission | Clickable cards linking to deeper program pages |
+| Impact Section | Each cause opens its own page with live progress tracking |
+| Habitat Restoration Page | Dedicated stats and content, separate from homepage |
+| FAQ | Expandable accordion answers |
+| Payment Page | Auto-filled amount, QR code generation, dual payment methods |
+
