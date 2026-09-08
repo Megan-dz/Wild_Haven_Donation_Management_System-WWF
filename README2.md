@@ -18,7 +18,6 @@ The navigation bar sits fixed at the top of every page and contains the Wild Hav
 
 ## 2. Homepage Hero Section
 This is the first thing a visitor sees. It has a large emotional headline ("Give a home to India's wild"), a soft background photo of wildlife, a short paragraph about the threats animals face (poaching, habitat loss, climate change), and two call-to-action buttons: "Donate Now" and "Learn More."
-<img width="1070" height="968" alt="Screenshot 2026-09-08 175314" src="https://github.com/user-attachments/assets/39aec54c-7bd3-49b3-b0f2-d93eea12fc4a" />
 
 
 **Features:**
@@ -44,6 +43,8 @@ This is a compact, self-contained donation form that sits alongside the hero sec
 
 ## 4. Our Mission Section
 This section (reached either by scrolling or clicking "Our Mission" in the navbar) explains the organization's purpose in more depth.
+<img width="942" height="1026" alt="Screenshot 2026-09-08 175916" src="https://github.com/user-attachments/assets/b830dc73-fb68-49fb-91bc-4ea6d94cbb61" />
+
 
 **Features:**
 - Headline: "A living haven for the wild things worth saving," followed by a paragraph explaining Wild Haven's geographic scope — from the Sundarbans mangroves to the Himalayan foothills.
@@ -55,6 +56,9 @@ This section (reached either by scrolling or clicking "Our Mission" in the navba
 
 ## 5. Impact Section
 This section is where the NGO shows donors exactly what specific amounts of money accomplish, broken into three concrete "giving tiers."
+<img width="984" height="1010" alt="Screenshot 2026-09-08 180006" src="https://github.com/user-attachments/assets/ca46e4c9-09ff-44b7-9220-18a4b43c7ecf" />
+
+
 
 **Features:**
 - **Guard a Snow Leopard – ₹1,000** — funds one week of high-altitude patrols in the Himalayas.
@@ -80,6 +84,7 @@ This shows the site isn't a single static donation form — each cause functions
 
 ## 6. Habitat Restoration Page (Program Page)
 Similar to the snow leopard page, this is a separate dedicated page (`/programs/habitat-restoration`) reached by clicking on the "Habitat Restoration" card from the Mission section.
+<img width="1282" height="778" alt="Screenshot 2026-09-08 180442" src="https://github.com/user-attachments/assets/05ad6ba2-1464-4b0f-9249-169e01da3fc4" />
 
 **Features:**
 - Headline: "Habitat Restoration – Reviving forests, rivers and wetlands"
@@ -98,6 +103,7 @@ Positioned near the bottom of the homepage, this addresses common donor hesitati
 - Questions include: "Is my donation tax-deductible?", "How is my money used?", "Can I cancel my monthly donation?", "Do you accept international donations?"
 - Each question uses an **accordion/expandable format** — clicking the "+" icon expands the answer inline, keeping the page uncluttered until the user wants more information.
 - This is a common UX pattern for trust-building on donation sites, since it answers objections right before the "ask."
+<img width="1538" height="836" alt="Screenshot 2026-09-08 180107" src="https://github.com/user-attachments/assets/96e695dd-daab-4d97-88ea-9d16b56da6a0" />
 
 ---
 
@@ -111,6 +117,7 @@ This is the final step, reached after clicking "Continue to Donate" from the hom
   - **UPI/QR** — switching to this tab **dynamically generates a QR code** on the right side of the screen, along with a unique **Transaction ID** (e.g., WH-RULEMZCW) and a **UPI handle** (wildhaven@upi), so the donor could scan it with a banking app to pay
 - A **"Pay ₹2,500"** button at the bottom confirms the donation
 - A disclaimer at the bottom clearly states: **"This is a demo checkout. No real payment is processed"** — confirming this is a functional prototype built for demonstration, not a live payment gateway
+<img width="1196" height="822" alt="Screenshot 2026-09-08 180125" src="https://github.com/user-attachments/assets/1e0054ef-e923-4245-9262-e0950358d5b4" />
 
 ---
 
