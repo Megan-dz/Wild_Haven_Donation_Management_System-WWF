@@ -29,13 +29,16 @@ Clicking **"See progress & give →"** on any of these **opens a dedicated page 
 
 **6. FAQ Section**
 Lists common questions (tax-deductibility, fund usage, cancelling monthly donations, international donations). Clicking a question **expands it** to reveal the answer, keeping the page clean until needed.
+<img width="1600" height="900" alt="faq" src="https://github.com/user-attachments/assets/e5ed5307-39ba-4183-ae1f-c8b705230163" />
+
 
 **7. Continue to Donate → Payment Page**
 Clicking this carries the chosen amount over automatically (e.g., ₹2,500 shows up pre-filled) and opens the payment page with two options:
 - **Card** – enter name, card number, expiry, CVV
 - **UPI/QR** – switching to this tab **generates a QR code instantly**, along with a transaction ID and UPI handle, so the user can scan and pay with their phone
 
-A note confirms it's a demo checkout — no real payment is processed.
+<img width="1600" height="900" alt="payment" src="https://github.com/user-attachments/assets/9f1a27ed-3955-408c-af92-08a684a150ff" />
+
 
 ## Summary of Interactive Features
 - Scroll-to-section navigation
