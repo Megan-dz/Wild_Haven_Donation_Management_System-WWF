@@ -18,16 +18,20 @@ The navigation bar sits fixed at the top of every page and contains the Wild Hav
 
 ## 2. Homepage Hero Section
 This is the first thing a visitor sees. It has a large emotional headline ("Give a home to India's wild"), a soft background photo of wildlife, a short paragraph about the threats animals face (poaching, habitat loss, climate change), and two call-to-action buttons: "Donate Now" and "Learn More."
+<img width="1070" height="968" alt="Screenshot 2026-09-08 175314" src="https://github.com/user-attachments/assets/39aec54c-7bd3-49b3-b0f2-d93eea12fc4a" />
+
 
 **Features:**
 - Below the headline, three **impact statistics** are displayed prominently: 1.2M+ acres protected, 48 rescue missions, 12k supporters. These numbers build credibility and trust immediately, before asking for money.
 - The "Donate Now" button scrolls/links directly into the donation widget, reducing friction for someone ready to give right away.
 - "Learn More" is aimed at visitors who want context first — it would guide them toward the Mission section.
+<img width="2348" height="558" alt="Screenshot 2026-09-08 175534" src="https://github.com/user-attachments/assets/0f0cac94-2c8c-4ab9-8a16-673d397ff340" />
 
 ---
 
 ## 3. Donation Widget (Right side of homepage)
 This is a compact, self-contained donation form that sits alongside the hero section, so it's visible without scrolling.
+<img width="742" height="1074" alt="Screenshot 2026-09-08 175639" src="https://github.com/user-attachments/assets/ae993a02-f953-42c8-9c09-84dddaabc4a8" />
 
 **Features:**
 - **One-Time vs. Monthly toggle** — lets the donor choose whether this is a single donation or a recurring monthly one.
