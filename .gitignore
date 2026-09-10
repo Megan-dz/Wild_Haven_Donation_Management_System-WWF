@@ -82,3 +82,7 @@ dist-ssr
 *.sln
 *.sw?
 >>>>>>> lovable/main
+
+# Local backup files
+*_backup
+*_backup.*
