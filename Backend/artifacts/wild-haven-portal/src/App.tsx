@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import { MutationCache, QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { ClerkProvider, SignIn, SignUp, useClerk, useUser, useAuth } from "@clerk/react";
 import * as clerkInternal from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
@@ -25,7 +25,16 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const queryClient = new QueryClient();
+function invalidatePortalSummaries(qc: QueryClient) {
+  qc.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+  qc.invalidateQueries({ queryKey: getListActivityQueryKey() });
+  qc.invalidateQueries({ queryKey: getGetImpactSummaryQueryKey() });
+}
+const queryClient = new QueryClient({
+  mutationCache: new MutationCache({
+    onSuccess: () => invalidatePortalSummaries(queryClient),
+  }),
+});
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const publishableKeyFromHost = (clerkInternal as unknown as { publishableKeyFromHost?: (host: string, fallback?: string) => string }).publishableKeyFromHost ?? ((_: string, fallback?: string) => fallback || "");
 const clerkPubKey = publishableKeyFromHost(window.location.hostname, import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
