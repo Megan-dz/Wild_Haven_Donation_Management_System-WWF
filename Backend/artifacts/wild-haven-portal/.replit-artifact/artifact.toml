@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Wild Haven Employee Portal"
+description = "A secure internal donation operations portal for Wild Haven Wildlife Conservation staff to manage donors, donations, conservation campaigns, and impact reporting with role-aware access and a clear, mission-led workspace."
+version = "1.0.0"
+id = "artifacts/wild-haven-portal"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23478
+
+[services.development]
+run = "pnpm --filter @workspace/wild-haven-portal run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/wild-haven-portal", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/wild-haven-portal/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23478"
+BASE_PATH = "/"
