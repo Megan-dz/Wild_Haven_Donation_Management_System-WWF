@@ -2,10 +2,12 @@
 
 # Wild Haven Website – Demo Walkthrough (Detailed)
 
-FRONT-END: https://preview--wild-haven-india.lovable.app/
-BACK-END: https://wild-haven-employee-portal--megandz07.replit.app/
-DATABASE: https://91000165-6a67-46be-9e1d-ea59c6248bde-00-3ql7zcuza5n44.sisko.replit.dev/
+## Project Links
 
+- **Front-end:** https://preview--wild-haven-india.lovable.app/
+- **Back-end:** https://wild-haven-employee-portal--megandz07.replit.app/
+- **Database:** https://91000165-6a67-46be-9e1d-ea59c6248bde-00-3ql7zcuza5n44.sisko.replit.dev/
+- 
 ## What it is
 Wild Haven is a donation and awareness website for a wildlife conservation NGO (a demo brand created for this project), built using **Lovable AI** — a tool that generates functional websites from prompts. The site's purpose is twofold: educate visitors about India's endangered wildlife and the threats they face, and convert that awareness into actual donations through a smooth, guided flow. Below is a walkthrough of every component, with its features explained directly underneath it.
 
