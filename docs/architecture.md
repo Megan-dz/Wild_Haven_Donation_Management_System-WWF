@@ -1,6 +1,8 @@
 <div align="center">
 
-#  Wild Haven India
+#  W
+i
+ld Haven India
 ### Website System Architecture & Functional Overview
 
 *Documentation draft • Version 1.0*
