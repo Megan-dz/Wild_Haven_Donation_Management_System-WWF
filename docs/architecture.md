@@ -220,7 +220,9 @@ Wild Haven India is a donation-oriented conservation website designed around a s
 Its visible architecture can be documented as a presentation layer backed by application and donation services, with data storage and external payment/communication services forming the transactional foundation. The exact implementation architecture should be updated after reviewing the project's source code and deployment configuration.
 
 ---
+## 15. Additional Insights
 
+Beyond the visible interface, three observations stand out. First, the donation module's dual-mode design (one-time vs. monthly) suggests state-management complexity not obvious from screenshots alone — toggling frequency likely re-renders amount presets and summary text dynamically, meaning the donation form probably holds shared state across frequency, amount, and custom-input fields. Second, the site's content sequencing (Mission → Impact → FAQ → Donate) mirrors a standard nonprofit conversion funnel: build awareness, establish credibility, demonstrate measurable outcomes, then prompt action — this ordering is a deliberate UX choice, not incidental layout. Third, the absence of visible donor accounts implies donations are likely processed as guest checkouts, simplifying UX but limiting repeat-donor personalization and requiring email-based receipts instead of account history. A future iteration could add a lightweight donor dashboard and campaign-specific landing pages to improve retention and enable targeted impact reporting, without requiring major architectural changes to the existing layered structure.
 ##  Source
 
 Wild Haven India website preview: **[preview--wild-haven-india.lovable.app](https://preview--wild-haven-india.lovable.app/)**
