@@ -9,13 +9,20 @@
 - **Database:** https://91000165-6a67-46be-9e1d-ea59c6248bde-00-3ql7zcuza5n44.sisko.replit.dev/
   
 ## What it is
-Wild Haven is a donation and awareness website for a wildlife conservation NGO (a demo brand created for this project), built using **Lovable AI** — a tool that generates functional websites from prompts. The site's purpose is twofold: educate visitors about India's endangered wildlife and the threats they face, and convert that awareness into actual donations through a smooth, guided flow. Below is a walkthrough of every component, with its features explained directly underneath it.
+Wild Haven is a donation and awareness website for a wildlife conservation NGO 
+(a demo brand created for this project), built using **Lovable AI** — a tool that 
+generates functional websites from prompts. The site's purpose is twofold: educate
+visitors about India's endangered wildlife and the threats they face, and convert that
+awareness into actual donations through a smooth, guided flow. Below is a walkthrough
+of every component, with its features explained directly underneath it.
 
 ## 1. Navbar (Our Mission / Impact / FAQ / Donate)
-The navigation bar sits fixed at the top of every page and contains the Wild Haven logo/name on the left and four links/buttons on the right: **Our Mission, Impact, FAQ,** and a highlighted **Donate** button.
+The navigation bar sits fixed at the top of every page and contains the Wild Haven logo/name 
+on the left and four links/buttons on the right: **Our Mission, Impact, FAQ,** and a highlighted **Donate** button.
 
 **Features:**
-- Clicking "Our Mission," "Impact," or "FAQ" does **not load a new page** — instead, the browser **smoothly scrolls down** to that specific section on the same homepage. This is called anchor navigation (visible in the URL as `#mission`, `#impact`, `#faq`).
+- Clicking "Our Mission," "Impact," or "FAQ" does **not load a new page** — instead,
+ the browser **smoothly scrolls down** to that specific section on the same homepage. This is called anchor navigation (visible in the URL as `#mission`, `#impact`, `#faq`).
 - Because there's no full page reload, the transition feels instant and keeps the user in context.
 - The "Donate" button in the navbar is always visible, so no matter where the user scrolls, they can jump straight to donating.
 - The navbar stays consistent across every sub-page (campaign pages, payment page), giving the site a unified feel, though sub-pages replace the nav links with a simple "← Back home" button for easier return navigation.
