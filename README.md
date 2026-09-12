@@ -30,11 +30,15 @@ on the left and four links/buttons on the right: **Our Mission, Impact, FAQ,** a
 ---
 
 ## 2. Homepage Hero Section
-This is the first thing a visitor sees. It has a large emotional headline ("Give a home to India's wild"), a soft background photo of wildlife, a short paragraph about the threats animals face (poaching, habitat loss, climate change), and two call-to-action buttons: "Donate Now" and "Learn More."
+This is the first thing a visitor sees. It has a large emotional headline 
+("Give a home to India's wild"), a soft background photo of wildlife, a short paragraph about the threats animals face 
+(poaching, habitat loss, climate change), and two call-to-action buttons: "Donate Now" and "Learn More."
 
 
 **Features:**
-- Below the headline, three **impact statistics** are displayed prominently: 1.2M+ acres protected, 48 rescue missions, 12k supporters. These numbers build credibility and trust immediately, before asking for money.
+- Below the headline, three **impact statistics** are displayed prominently:
+- 1.2M+ acres protected, 48 rescue missions, 12k supporters.
+- These numbers build credibility and trust immediately, before asking for money.
 - The "Donate Now" button scrolls/links directly into the donation widget, reducing friction for someone ready to give right away.
 - "Learn More" is aimed at visitors who want context first — it would guide them toward the Mission section.
 <img width="1070" height="968" alt="Screenshot 2026-09-08 175314" src="https://github.com/user-attachments/assets/6364502d-44c2-4dd0-b78f-321e1b77ab74" />
@@ -47,10 +51,13 @@ This is a compact, self-contained donation form that sits alongside the hero sec
 
 **Features:**
 - **One-Time vs. Monthly toggle** — lets the donor choose whether this is a single donation or a recurring monthly one.
-- **Preset amount buttons** (₹500, ₹1,000, ₹2,500, ₹5,000, ₹10,000, ₹25,000) — one click selects an amount, and it's visually highlighted (outlined in red) to confirm the selection.
+- **Preset amount buttons** (₹500, ₹1,000, ₹2,500, ₹5,000, ₹10,000, ₹25,000)
+- — one click selects an amount, and it's visually highlighted (outlined in red) to confirm the selection.
 - **Custom amount field** — for donors who want to give an amount not listed.
-- **Live "Your gift" summary box** — updates instantly as soon as an amount is picked, showing the exact figure (e.g., "₹2,500") along with a note that it's eligible for 50% tax exemption under Section 80G of the Income Tax Act. This reassures Indian donors about the legal/tax benefit of giving.
-- **"Continue to Donate" button** at the bottom — this is what actually moves the user forward into the payment process (explained in section 7).
+- **Live "Your gift" summary box** — updates instantly as soon as an amount is picked,
+  showing the exact figure (e.g., "₹2,500") along with a note that it's eligible for 50% tax exemption under Section 80G of the Income Tax Act. This reassures Indian donors about the legal/tax benefit of giving.
+- **"Continue to Donate" button** at the bottom 
+- this is what actually moves the user forward into the payment process (explained in section 7).
 <img width="742" height="1074" alt="Screenshot 2026-09-08 175639" src="https://github.com/user-attachments/assets/ae993a02-f953-42c8-9c09-84dddaabc4a8" />
 ---
 
@@ -58,9 +65,12 @@ This is a compact, self-contained donation form that sits alongside the hero sec
 This section (reached either by scrolling or clicking "Our Mission" in the navbar) explains the organization's purpose in more depth.
 
 **Features:**
-- Headline: "A living haven for the wild things worth saving," followed by a paragraph explaining Wild Haven's geographic scope — from the Sundarbans mangroves to the Himalayan foothills.
-- A **transparency statement**: "92 paise of every rupee you give goes directly to conservation work on the ground" — this is a trust-building feature, showing donors exactly how their money is used.
-- Two highlighted sub-categories are shown as cards: **Species Protection** (tigers, elephants, snow leopards, etc.) and **Habitat Restoration** (reviving forests, rivers, wetlands) — each is clickable and leads to more detail (see section 6 for Habitat Restoration's dedicated page).
+- Headline: "A living haven for the wild things worth saving," followed by a paragraph
+  explaining Wild Haven's geographic scope — from the Sundarbans mangroves to the Himalayan foothills.
+- A **transparency statement**: "92 paise of every rupee you give goes directly to
+  conservation work on the ground" — this is a trust-building feature, showing donors exactly how their money is used.
+- Two highlighted sub-categories are shown as cards:
+  **Species Protection** (tigers, elephants, snow leopards, etc.) and **Habitat Restoration** (reviving forests, rivers, wetlands) — each is clickable and leads to more detail (see section 6 for Habitat Restoration's dedicated page).
 - A large accompanying photo (sunlight through forest canopy) reinforces the emotional, nature-focused branding.
 <img width="942" height="1026" alt="Screenshot 2026-09-08 175916" src="https://github.com/user-attachments/assets/b830dc73-fb68-49fb-91bc-4ea6d94cbb61" />
 ---
@@ -96,11 +106,13 @@ Similar to the snow leopard page, this is a separate dedicated page (`/programs/
 
 **Features:**
 - Headline: "Habitat Restoration – Reviving forests, rivers and wetlands"
-- Explains the reasoning: "A tiger without a forest is a tiger without a future," covering restoration work from Sundarbans mangroves to Western Ghats rainforests
+- Explains the reasoning: "A tiger without a forest is a tiger without a future,"
+  covering restoration work from Sundarbans mangroves to Western Ghats rainforests
 - Three stat cards: **1.2M acres under restoration, 4.8M native trees planted, 31 wetlands revived**
 - A "← Back home" button to easily return to the main site
 
-This confirms the site supports **multiple structured program pages**, not just one generic "donate" button — each cause/program has its own content, stats, and framing.
+This confirms the site supports **multiple structured program pages**, 
+not just one generic "donate" button — each cause/program has its own content, stats, and framing.
 <img width="1282" height="778" alt="Screenshot 2026-09-08 180442" src="https://github.com/user-attachments/assets/05ad6ba2-1464-4b0f-9249-169e01da3fc4" />
 ---
 
@@ -108,7 +120,8 @@ This confirms the site supports **multiple structured program pages**, not just 
 Positioned near the bottom of the homepage, this addresses common donor hesitations before they commit to giving.
 
 **Features:**
-- Questions include: "Is my donation tax-deductible?", "How is my money used?", "Can I cancel my monthly donation?", "Do you accept international donations?"
+- Questions include: "Is my donation tax-deductible?
+- ", "How is my money used?", "Can I cancel my monthly donation?", "Do you accept international donations?"
 - Each question uses an **accordion/expandable format** — clicking the "+" icon expands the answer inline, keeping the page uncluttered until the user wants more information.
 - This is a common UX pattern for trust-building on donation sites, since it answers objections right before the "ask."
 <img width="1538" height="836" alt="Screenshot 2026-09-08 180107" src="https://github.com/user-attachments/assets/96e695dd-daab-4d97-88ea-9d16b56da6a0" />
@@ -119,7 +132,8 @@ Positioned near the bottom of the homepage, this addresses common donor hesitati
 This is the final step, reached after clicking "Continue to Donate" from the homepage donation widget.
 
 **Features:**
-- The selected amount and frequency are **carried over automatically** via the URL (e.g., `/payment?amount=2500&frequency=one-time`), so the user doesn't have to re-enter anything — it shows "One-time gift of ₹2,500" pre-filled at the top.
+- The selected amount and frequency are **carried over automatically**
+- via the URL (e.g., `/payment?amount=2500&frequency=one-time`), so the user doesn't have to re-enter anything — it shows "One-time gift of ₹2,500" pre-filled at the top.
 - Two payment method tabs:
   - **Card** — fields for Name on Card, Card Number, Expiry (MM/YY), and CVV
   - **UPI/QR** — switching to this tab **dynamically generates a QR code** on the right side of the screen, along with a unique **Transaction ID** (e.g., WH-RULEMZCW) and a **UPI handle** (wildhaven@upi), so the donor could scan it with a banking app to pay
@@ -144,10 +158,20 @@ This is the final step, reached after clicking "Continue to Donate" from the hom
 
 ## Database (Operations Dashboard)
 
-A behind-the-scenes look at the internal Operations Dashboard — the tool built to sit closest to Wild Haven's actual data, and the piece that gives the clearest window into how the backend is shaping up.
+A behind-the-scenes look at the internal Operations Dashboard.
+This is the tool built to sit closest to Wild Haven's actual data.
+It's also the piece that gives the clearest window into how the backend is shaping up.
 
 **1. Dashboard (Home View)**
-The landing screen is titled "Operations Dashboard," subtitled "Overview of current conservation funding and activities." It presents two panels side by side: a **Funding Trajectory** card, intended to chart monthly donation totals across the past year, and a **Recent Activity** feed, meant to surface the latest donations and campaign updates across the organization. At this stage of the build both panels are still empty shells — the chart area is blank and Recent Activity simply reads "No recent activity" — but the framing makes the intent obvious: this is designed to be the first thing a staff member checks each morning, a single glance at how funding is trending and what just happened across the org. A persistent left sidebar — Dashboard, Donations, Campaigns, Donors — with an "Operations Control" label pinned at the bottom, anchors every screen and never disappears as you navigate.
+The landing screen is titled "Operations Dashboard," subtitled 
+"Overview of current conservation funding and activities."
+It presents two panels side by side: a **Funding Trajectory** card, 
+intended to chart monthly donation totals across the past year, and a **Recent Activity** feed,
+meant to surface the latest donations and campaign updates across the organization.
+At this stage of the build both panels are still empty shells — the chart area is
+blank and Recent Activity simply reads "No recent activity" — but the framing makes the intent obvious:
+this is designed to be the first thing a staff member checks each morning, a single glance at how funding is trending 
+and what just happened across the org. A persistent left sidebar — Dashboard, Donations, Campaigns, Donors — with an "Operations Control" label pinned at the bottom, anchors every screen and never disappears as you navigate.
 
 **2. Donations**
 Clicking "Donations" in the sidebar changes the URL from the root path to `/donations` and swaps the main panel to a **Donations Ledger**, described as a place to "manage and track incoming contributions." The screen includes a search bar ("Search by name or email…"), a status filter dropdown defaulting to "All Statuses," and a green "Add Record" button in the top right for manually logging a new contribution. Below that sits a table with columns for Donor, Amount, Campaign, Date, Status, and Actions. Right now every row is a grey shimmer placeholder rather than real data — which is actually useful information on its own, since it confirms the table is fully wired to expect and display live records the moment a backend data source is connected, rather than being a static mockup.
