@@ -3,10 +3,10 @@ import './DonorTestimonials.css';
 
 /**
  * DonorTestimonials Component
- * 
+ *
  * Displays stories and testimonials from donors explaining their motivations
  * for supporting wildlife conservation through Wild Haven.
- * 
+ *
  * @param {Object} props
  * @param {Array} props.testimonials - Array of testimonial objects
  * @param {string} props.testimonials[].name - Donor's name

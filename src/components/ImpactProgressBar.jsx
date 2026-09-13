@@ -3,10 +3,10 @@ import './ImpactProgressBar.css';
 
 /**
  * ImpactProgressBar Component
- * 
+ *
  * Displays real-time progress bars showing how donations contribute to specific conservation goals.
  * Shows the amount raised vs. the fundraising target for each conservation campaign.
- * 
+ *
  * @param {Object} props
  * @param {string} props.campaignName - Name of the conservation campaign
  * @param {number} props.amountRaised - Total amount raised in rupees
@@ -23,7 +23,7 @@ const ImpactProgressBar = ({
 }) => {
   const progressPercentage = Math.min((amountRaised / targetAmount) * 100, 100);
   const remainingAmount = Math.max(targetAmount - amountRaised, 0);
-  
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -51,8 +51,8 @@ const ImpactProgressBar = ({
 
       <div className="progress-bar-wrapper">
         <div className="progress-bar">
-          <div 
-            className="progress-fill" 
+          <div
+            className="progress-fill"
             style={{ width: `${progressPercentage}%` }}
             role="progressbar"
             aria-valuenow={progressPercentage}

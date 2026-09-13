@@ -1,6 +1,6 @@
 /**
  * Impact Transparency Data
- * 
+ *
  * Mock data for Donor Impact Transparency features
  * - Campaign Progress Data: Real-time funding goals and progress
  * - Donor Testimonials: Stories from supporters

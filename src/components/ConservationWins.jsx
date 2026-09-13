@@ -3,11 +3,11 @@ import './ConservationWins.css';
 
 /**
  * ConservationWins Component
- * 
+ *
  * Displays recent conservation wins and achievements directly funded by donations.
  * Shows impact metrics and success stories that demonstrate the effectiveness
  * of donor contributions.
- * 
+ *
  * @param {Object} props
  * @param {Array} props.wins - Array of conservation win objects
  * @param {string} props.wins[].title - Title of the achievement
