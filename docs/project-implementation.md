@@ -5,10 +5,14 @@
 
 ![Status](https://img.shields.io/badge/status-completed-brightgreen) ![Tasks](https://img.shields.io/badge/tasks-20%2F20-brightgreen) ![AI Assisted](https://img.shields.io/badge/AI%20assisted-yes-blue)
 
-This document records the significant implementation tasks completed for the **Wild Haven India** digital business system. The system provides:
+This document records the significant implementation tasks completed for the
+**Wild Haven India** digital business system. 
+The system provides:
 
-- 🌐 A **public donor-facing interface** for making donations
-- 🛠️ An **operations/admin interface** for managing donors, donations, and conservation campaigns
+- 🌐 A **public donor-facing interface**
+  for making donations
+- 🛠️ An **operations/admin interface**
+  for managing donors, donations, and conservation campaigns
 
 ---
 

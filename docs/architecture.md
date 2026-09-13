@@ -36,15 +36,35 @@
 
 ##  Scope and Source Basis
 
-This document explains the Wild Haven India wildlife-conservation donation website from a **functional and conceptual architecture** perspective. It is based on the supplied website screenshots and the visible user interface: the home/donation experience, Our Mission content, Impact cards, donation call-to-action, FAQ section, and footer contact information.
+This document explains the Wild Haven India wildlife-conservation donation website
+from a **functional and conceptual architecture** perspective. It is based on the 
+supplied website screenshots and the visible user interface:
+This includes the home/donation experience.
+It includes Our Mission content.
+It includes Impact cards.
+It includes the donation call-to-action.
+It includes the FAQ section.
+It includes footer contact information.
 
-> ** Important:** The screenshots do not expose the underlying source code, database schema, APIs, payment provider, hosting configuration, or authentication implementation. Where these implementation details are not visible, the architecture below is explicitly described as **conceptual or recommended** rather than confirmed.
+ ** Important:** The screenshots do not expose the underlying source code.
+> They do not expose the database schema.
+> They do not expose the APIs in use.
+> They do not expose the payment provider.
+> They do not expose the hosting configuration.
+> They do not expose the authentication implementation.
+> Where these implementation details are not visible, the architecture below is explicitly described as **conceptual or recommended** rather than confirmed.
+> This distinction matters because conceptual architecture describes what a system like this typically needs.
+> It does not claim to describe what has actually been built behind the scenes.
+> Readers should treat every "recommended" label in this document as a design suggestion, not a verified fact.
 
 ---
 
 ## 1. Website Overview
 
-Wild Haven is presented as a nonprofit wildlife-conservation website focused on encouraging donations and showing donors how their contributions support conservation activities in India. The site combines storytelling, impact information, FAQs, and a prominent donation experience.
+Wild Haven is presented as a nonprofit wildlife-conservation website focused
+on encouraging donations and showing donors how their contributions support 
+conservation activities in India. The site combines storytelling,
+impact information, FAQs, and a prominent donation experience.
 
 | Area | Description |
 |---|---|
@@ -53,13 +73,22 @@ Wild Haven is presented as a nonprofit wildlife-conservation website focused on 
 | **Supporting content** | Mission, conservation programs, measurable impact, donation-use examples, and FAQs. |
 | **Target geography** | India, with content referring to Indian wildlife and ecosystems. |
 | **Primary audience** | Individual donors and supporters interested in wildlife conservation. |
+| **Secondary audience** | Corporate sponsors or CSR partners who may want to fund specific campaigns. |
+| **Tertiary audience** | Volunteers or field partners who may land on the site looking for involvement opportunities. |
 | **Communication style** | Mission-led, trust-oriented, visual, and donation focused. |
+| **Brand tone** | Warm, urgent-but-hopeful, rooted in conservation storytelling rather than statistics alone. |
+| **Content cadence** | Appears to be a mostly static content structure rather than a frequently-updated blog or news feed. |
 
 ---
 
 ## 2. User Details
 
-The visible experience supports several user types. The following roles are **functional personas**, not necessarily authenticated roles in the current implementation.
+The visible experience supports several user types.
+The following roles are **functional personas**
+They are not necessarily authenticated roles in the current implementation.
+Personas are a useful way to reason about a site's design even when no login system exists yet.
+
+| User Type | Needs / Actions |
 
 | User Type | Needs / Actions |
 |---|---|
@@ -79,12 +108,34 @@ The visible experience supports several user types. The following roles are **fu
 -  **FAQ** — answers common donor questions about tax deductibility, use of funds, monthly-donation cancellation, and international donations.
 -  **Donation call-to-action** — provides repeated entry points into the donation experience.
 -  **Footer** — provides organizational description, navigation links, email, phone, and location information.
-
+Each of these sections is worth examining individually for its functional role.
+The Home section functions as both a landing page and a conversion funnel entry point.
+Our Mission functions as a trust-building layer, establishing legitimacy before asking for money.
+Impact functions as social proof, translating abstract donations into concrete outcomes.
+FAQ functions as an objection-handling layer, addressing hesitations that could otherwise stall a donation.
+The repeated donation call-to-action functions as a conversion safety net,
+catching visitors at multiple scroll depths.
+The footer functions as a credibility and contactability layer,
+ reassuring visitors the organization is reachable and real
 ---
 
 ## 4. System Architecture
 
-At a conceptual level, the website follows a **layered web-application architecture**. Visitors interact with a browser-based presentation layer. The application layer controls page navigation, donation-form behavior, validation, and content presentation. A data layer can persist donation and content information, while external services can handle payment processing and donor communications.
+At a conceptual level, the website follows a
+**layered web-application architecture**.
+Visitors interact with a browser-based presentation layer. 
+The application layer controls page navigation
+It also controls donation-form behavior.
+It also controls validation.
+A data layer can persist donation and content information, 
+while external services can handle payment processing and donor communications.
+
+This layered separation is a common pattern because it isolates concerns.
+Changes to the visual design should not require changes to how donations are processed.
+Changes to the payment provider should not require changes to how content is displayed.
+This separation also makes the system easier to secure, since sensitive operations (like payments) can be isolated from the more exposed presentation layer.
+
+<p align="center">
 
 <p align="center">
   <img src= "../images/figure1.png" alt="Conceptual system architecture diagram" width="700">
@@ -96,6 +147,11 @@ At a conceptual level, the website follows a **layered web-application architect
 
 ## 5. Architecture Components
 
+Each architectural layer maps to a specific
+responsibility within the system.
+The table below expands on each component 
+and what it is expected to handle.
+
 | Component | Responsibility |
 |---|---|
 | **Presentation layer** | Responsive web pages, navigation, donation controls, content sections, cards, FAQ accordions, buttons, and calls to action. |
@@ -106,17 +162,37 @@ At a conceptual level, the website follows a **layered web-application architect
 | **Communication layer** | Optional service for receipts, confirmations, donor notifications, or campaign communication. |
 | **Administration layer** | Recommended protected interface for maintaining FAQs, mission/impact content, donation campaigns, and reviewing donation records. |
 
+Each of these components could, in principle, be implemented as a separate service.
+Alternatively, several of them could be combined into a single monolithic application,
+especially at this stage of the project's maturity.
+The choice between a monolith and separate services usually depends on team size, 
+expected traffic, and how quickly new features need to ship.
+
+
 ---
 
 ## 6. Donation Workflow
 
-The donation interface is the central transactional component visible in the screenshots. It allows a visitor to switch between one-time and monthly giving, select a predefined amount, or enter a custom amount. The UI then displays the selected gift before the visitor proceeds with the transaction.
+The donation interface is the central transactional component visible in the screenshots.
+It allows a visitor to switch between one-time and monthly giving
+It allows a visitor to select a predefined amount, 
+It allows a visitor to enter a custom amount. 
+The UI then displays the selected gift before the visitor proceeds with the transaction.
+
+This workflow is deceptively simple on the surface but implies meaningful underlying state management.
+Switching between "one-time" and "monthly" likely changes which preset amounts are shown, 
+since suggested monthly amounts are typically smaller than one-time amounts.
+Selecting a custom amount likely overrides any preset selection, requiring the UI
+to track which input source is currently authoritative.
+The summary view before checkout implies a confirmation step exists prior to
+actual payment submission, which is good practice for reducing accidental donations.
 
 <p align="center">
    <img src="../images/figure2.png" alt="Conceptual donation workflow diagram" width="700">
 </p>
 
 <p align="center"><sub><b>Figure 2.</b> Conceptual donation workflow.</sub></p>
+
 
 ---
 
@@ -134,6 +210,11 @@ The donation interface is the central transactional component visible in the scr
 
 ## 8. Content Architecture
 
+Content on the site can be grouped into a small number of distinct types.
+Each content type likely has its own editing and storage needs if 
+an administration layer is built.
+
+
 | Content Type | Purpose |
 |---|---|
 | **Mission content** | Organization purpose, ecosystems, species protection, habitat restoration, anti-poaching, and community programs. |
@@ -142,11 +223,18 @@ The donation interface is the central transactional component visible in the scr
 | **Campaign content** | Donation headline, supporting message, suggested amounts, tax-related messaging, and calls to action. |
 | **Organization content** | Organization description and contact details displayed in the footer. |
 
+If an administration layer is eventually built, each content type above
+would likely correspond to its own editable content model.
+Mission and Organization content would probably change infrequently.
+Campaign content would likely change often, especially around 
+specific fundraising pushes or seasonal appeals.
+
 ---
 
 ## 9. Security and Privacy Considerations
 
-> The following are **recommended** architecture requirements for a production donation platform. They are not claims that each control is already implemented.
+> The following are **recommended** architecture requirements for a production donation platform.
+> They are not claims that each control is already implemented.
 
 -  Process card/payment information through a compliant payment provider rather than storing raw payment credentials in the website database.
 -  Use HTTPS for all pages and API communication.
@@ -156,6 +244,15 @@ The donation interface is the central transactional component visible in the scr
 -  Store only the donor information required for donation processing, receipts, compliance, and communication.
 -  Log transaction status and application errors without exposing sensitive payment data.
 -  Protect recurring-payment operations with provider-side controls and secure webhook verification.
+-  Rate-limit the donation endpoint to reduce the risk of automated abuse or card-testing fraud.
+-  Rotate any API keys or secrets used for payment or email integrations on a regular schedule.
+-  Ensure donor data is not exposed through public APIs or unauthenticated admin routes.
+-  Maintain an incident-response plan in case of a suspected data breach involving donor information.
+
+  Security for a donation platform is especially sensitive because
+  it touches both **financial data** and **personal data** simultaneously.
+A breach affecting either category could damage donor trust significantly,
+which is the organization's most valuable long-term asset.
 
 ---
 
@@ -178,17 +275,34 @@ The donation interface is the central transactional component visible in the scr
 ## 11. Accessibility and Usability
 
 -  Provide keyboard-accessible navigation and controls.
--  Use semantic headings and landmarks for the Mission, Impact, FAQ, and footer sections.
+-  Use semantic headings and landmarks for the:
+   Mission
+   Impact
+    FAQ
+   and footer sections.
 -  Ensure FAQ expand/collapse controls expose their state to assistive technologies.
 -  Provide accessible labels and error messages for donation amount fields.
 -  Maintain sufficient text contrast and visible focus states.
 -  Ensure donation controls and navigation remain usable on mobile and tablet screen sizes.
+-  Avoid relying on color alone to indicate selected donation frequency (one-time vs. monthly).
 
 ---
 
 ## 12. Deployment and Operational Considerations
 
-A production deployment should separate the public web experience from privileged administration and payment operations. Environment-specific configuration should be stored securely. Payment callbacks/webhooks should be validated server-side, and application monitoring should track errors and failed transactions.
+A production deployment should separate the public web experience from 
+privileged administration and payment operations. 
+Environment-specific configuration should be stored securely. 
+Payment callbacks/webhooks should be validated server-side, and 
+application monitoring should track errors and failed transactions.
+A staging environment should exist so that content and feature changes
+can be tested before reaching real donors.
+Backups of the donation and donor database should be taken on a regular,
+automated schedule.
+A rollback plan should exist in case a deployment introduces a critical 
+donation-flow bug.
+Deployment changes affecting the payment flow should ideally be reviewed more 
+carefully than changes to purely visual content.
 
 ---
 
@@ -217,10 +331,25 @@ Wild Haven India is a donation-oriented conservation website designed around a s
 
 </div>
 
-Its visible architecture can be documented as a presentation layer backed by application and donation services, with data storage and external payment/communication services forming the transactional foundation. The exact implementation architecture should be updated after reviewing the project's source code and deployment configuration.
+Its visible architecture can be documented as a presentation layer backed by
+application and donation services, with data storage and external payment/communication 
+services forming the transactional foundation. The exact implementation architecture should
+be updated after reviewing the project's source code and deployment configuration.
 
 ---
+## 15. Additional Insights
 
+Beyond the visible interface, three observations stand out. First, the donation module's dual-mode design 
+(one-time vs. monthly) suggests state-management complexity not obvious from screenshots alone — toggling
+frequency likely re-renders amount presets and summary text dynamically, meaning the donation form probably 
+holds shared state across frequency, amount, and custom-input fields. Second, the site's content sequencing 
+(Mission → Impact → FAQ → Donate) mirrors a standard nonprofit conversion funnel: build awareness, establish 
+credibility, demonstrate measurable outcomes, then prompt action — this ordering is a deliberate UX choice, not
+incidental layout. Third, the absence of visible donor accounts implies donations are likely processed as guest 
+checkouts, simplifying UX but limiting repeat-donor personalization and requiring email-based receipts instead of 
+account history. A future iteration could add a lightweight donor dashboard and campaign-specific landing pages
+to improve retention and enable targeted impact reporting, without requiring major architectural changes to the 
+existing layered structure.
 ##  Source
 
 Wild Haven India website preview: **[preview--wild-haven-india.lovable.app](https://preview--wild-haven-india.lovable.app/)**
