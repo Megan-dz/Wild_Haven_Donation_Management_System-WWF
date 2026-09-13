@@ -32,6 +32,12 @@ const IMPACT_CAMPAIGNS = [
   { name: "Snow leopard guardians", raised: 1690000, goal: 2500000, detail: "Keeps high-altitude patrol teams equipped across the Himalayas." },
 ];
 
+const IMPACT_SNAPSHOT = [
+  { value: "92%", label: "of each rupee reaches conservation programs", detail: "From frontline patrols to habitat restoration." },
+  { value: "2,500", label: "supporters donated this month", detail: "A growing community protecting wild places together." },
+  { value: "50 ha", label: "of habitat restored this year", detail: "Native trees reconnecting wildlife corridors." },
+];
+
 const DONOR_STORIES = [
   { name: "Priya Sharma", location: "Mumbai", quote: "After visiting the Sundarbans, I wanted my monthly gift to keep protecting the place that changed how I see conservation." },
   { name: "Rajesh Patel", location: "Bengaluru", quote: "I support the snow leopard team because their work turns a distant crisis into something I can help sustain every month." },
@@ -447,7 +453,7 @@ function DonatePage() {
           </a>
           <nav className="hidden md:flex items-center gap-8 text-sm">
             <a href="#mission" className="hover:text-primary transition">Our Mission</a>
-            <a href="#impact" className="hover:text-primary transition">Impact</a>
+            <a href="#impact-snapshot" className="hover:text-primary transition">Your Impact</a>
             <a href="#faq" className="hover:text-primary transition">FAQ</a>
           </nav>
           <div className="hidden md:flex items-center gap-3">
@@ -492,7 +498,7 @@ function DonatePage() {
               </div>
               <nav className="flex flex-col gap-3 mt-6 text-sm">
                 <a className="mobile-drawer-link" href="#mission" onClick={() => setMobileMenuOpen(false)}>Our Mission</a>
-                <a className="mobile-drawer-link" href="#impact" onClick={() => setMobileMenuOpen(false)}>Impact</a>
+                <a className="mobile-drawer-link" href="#impact-snapshot" onClick={() => setMobileMenuOpen(false)}>Your Impact</a>
                 <a className="mobile-drawer-link" href="#faq" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
                 <a className="mobile-drawer-link" href="#donate" onClick={() => setMobileMenuOpen(false)}>
                   <Button className="w-full rounded-full bg-primary text-primary-foreground hover:bg-primary/90">Donate</Button>
@@ -780,6 +786,28 @@ function DonatePage() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Impact snapshot */}
+      <section id="impact-snapshot" className="border-y border-border/60 bg-secondary/35 py-12">
+        <div className="container-page">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-xl">
+              <div className="text-xs uppercase tracking-[0.25em] text-primary">Your impact at a glance</div>
+              <h2 className="mt-3 font-display text-3xl md:text-4xl">A clear path from your gift to the field.</h2>
+            </div>
+            <a href="#impact" className="text-sm font-semibold text-primary hover:underline">Explore campaign progress →</a>
+          </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {IMPACT_SNAPSHOT.map((stat) => (
+              <article key={stat.label} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                <div className="font-display text-3xl text-primary">{stat.value}</div>
+                <h3 className="mt-2 text-sm font-semibold text-foreground">{stat.label}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{stat.detail}</p>
+              </article>
+            ))}
           </div>
         </div>
       </section>
