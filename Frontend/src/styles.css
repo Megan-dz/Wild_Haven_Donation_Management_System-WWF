@@ -311,6 +311,202 @@
     border-color: color-mix(in srgb, var(--primary) 58%, var(--border));
   }
 
+  .wildhaven-comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .wildhaven-comparison-card {
+    border-radius: 1.5rem;
+    border: 1px solid var(--border);
+    background: var(--card);
+    box-shadow: 0 16px 50px rgba(40, 54, 37, 0.07);
+    overflow: hidden;
+    transition: transform 360ms ease, box-shadow 360ms ease, border-color 360ms ease;
+  }
+
+  .wildhaven-comparison-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--primary);
+    box-shadow: 0 22px 72px rgba(40, 54, 37, 0.12);
+  }
+
+  .wildhaven-comparison-frame {
+    position: relative;
+    height: clamp(270px, 27vw, 340px);
+    border-bottom: 1px solid var(--border);
+    background: var(--secondary);
+    overflow: hidden;
+    cursor: ew-resize;
+    user-select: none;
+  }
+
+  .wildhaven-comparison-image-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .wildhaven-comparison-before {
+    background: var(--secondary);
+  }
+
+  .wildhaven-comparison-after {
+    background: var(--forest);
+    clip-path: inset(0 50% 0 0);
+  }
+
+  .wildhaven-comparison-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .wildhaven-comparison-after .wildhaven-comparison-image {
+    filter: saturate(1.12) contrast(1.04);
+  }
+
+  .wildhaven-comparison-label {
+    position: absolute;
+    top: 0.85rem;
+    left: 0.85rem;
+    z-index: 3;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.65);
+    background: rgba(0,0,0,0.55);
+    color: var(--primary-foreground);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .wildhaven-comparison-label.after {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  .wildhaven-comparison-caption {
+    position: absolute;
+    left: 0.85rem;
+    bottom: 0.85rem;
+    z-index: 3;
+    padding: 0.55rem 0.8rem;
+    border-radius: 0.8rem;
+    background: rgba(0,0,0,0.55);
+    color: var(--primary-foreground);
+    font-size: 0.72rem;
+    font-weight: 700;
+    width: max-content;
+    max-width: calc(100% - 1.7rem);
+    backdrop-filter: blur(6px);
+  }
+
+  .wildhaven-comparison-divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--primary-foreground);
+    z-index: 4;
+    transform: translateX(-50%);
+    box-shadow: 0 0 0 1px var(--border), 0 0 14px rgba(0,0,0,0.5);
+  }
+
+  .wildhaven-comparison-handle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: 2px solid var(--primary-foreground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 900;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+  }
+
+  .wildhaven-comparison-tint {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(255,255,255,0.6);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.5);
+    pointer-events: none;
+  }
+
+  .wildhaven-comparison-content {
+    padding: 1.1rem 1.1rem 1.3rem;
+  }
+
+  .wildhaven-comparison-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .wildhaven-comparison-location {
+    color: var(--muted-foreground);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.17em;
+    text-transform: uppercase;
+  }
+
+  .wildhaven-comparison-impact {
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    background: color-mix(in srgb, var(--forest) 9%, var(--card));
+    color: var(--primary);
+    font-size: 0.72rem;
+    font-weight: 800;
+    border: 1px solid var(--border);
+  }
+
+  .wildhaven-comparison-detail {
+    color: var(--muted-foreground);
+    font-size: 0.88rem;
+    line-height: 1.6;
+    margin: 0.85rem 0 1rem;
+  }
+
+  .wildhaven-comparison-metric {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.9rem;
+  }
+
+  .wildhaven-comparison-metric-label {
+    color: var(--muted-foreground);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .wildhaven-comparison-metric-value {
+    color: var(--primary);
+    font-weight: 900;
+    font-size: 0.82rem;
+    text-align: right;
+  }
+
   .wildhaven-gallery-image-wrap {
     position: relative;
     display: block;

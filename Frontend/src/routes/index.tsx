@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type PointerEvent } from "react";
 import logoAsset from "@/assets/wild-haven-logo.png.asset.json";
 import heroImage from "@/assets/hero-wildlife.jpg";
 import forestImage from "@/assets/impact-forest.jpg";
@@ -44,6 +44,51 @@ const CONSERVATION_WINS = [
   { title: "Elephant rescue completed", detail: "Veterinary teams relocated an injured elephant to a protected recovery habitat.", image: elephantImage, metric: "1 safe return home", date: "July 2026" },
 ];
 
+const CONSERVATION_COMPARISONS = [
+  {
+    id: "forest-corridor",
+    title: "Forest Corridor Recovery",
+    location: "Western Ghats",
+    beforeImage: heroImage,
+    afterImage: forestImage,
+    beforeLabel: "Before",
+    afterLabel: "After",
+    beforeCaption: "Fragmented forest edge",
+    afterCaption: "Native trees reconnect the habitat",
+    impact: "+42% habitat restored",
+    metric: "50 hectares restored",
+    detail: "Forest teams planted native species and repaired wildlife movement routes for elephants and big cats.",
+  },
+  {
+    id: "elephant-safe-passages",
+    title: "Elephant Passage Program",
+    location: "Karnataka Forest Belt",
+    beforeImage: elephantImage,
+    afterImage: forestImage,
+    beforeLabel: "Before",
+    afterLabel: "After",
+    beforeCaption: "High-risk crossing zone",
+    afterCaption: "Protected movement corridor",
+    impact: "+27% safer crossings",
+    metric: "18 conflict-free corridors",
+    detail: "Rescue teams, local rangers, and habitat monitoring reduced daily migration risk for elephants.",
+  },
+  {
+    id: "snow-leopard-protection",
+    title: "Snow Leopard Habitat Watch",
+    location: "Himalayan Highlands",
+    beforeImage: leopardImage,
+    afterImage: heroImage,
+    beforeLabel: "Before",
+    afterLabel: "After",
+    beforeCaption: "Unmonitored grazing routes",
+    afterCaption: "Community-led protection zone",
+    impact: "+31% field coverage",
+    metric: "24 patrol routes active",
+    detail: "Guardian partnerships help protect snow leopard territory with ranger support, local alerts, and community stewardship.",
+  },
+];
+
 function DonatePage() {
   const navigate = useNavigate();
   const [frequency, setFrequency] = useState<"one-time" | "monthly">("one-time");
@@ -62,6 +107,11 @@ function DonatePage() {
   const [quizScore, setQuizScore] = useState(0);
   const [showQuizResult, setShowQuizResult] = useState(false);
   const [quizAnswered, setQuizAnswered] = useState(false);
+  const [comparisonPositions, setComparisonPositions] = useState<Record<string, number>>({
+    "forest-corridor": 54,
+    "elephant-safe-passages": 44,
+    "snow-leopard-protection": 61,
+  });
 
   const galleryCategories = useMemo(() => {
     return ["All", ...Array.from(new Set(wildlifeGalleryData.map((item) => item.category)))];
@@ -88,6 +138,12 @@ function DonatePage() {
     "impact-forest.jpg": forestImage,
     "impact-elephant.jpg": elephantImage,
     "impact-leopard.jpg": leopardImage,
+  };
+
+  const updateComparisonPosition = (id: string, event: PointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const percent = Math.min(Math.max(((event.clientX - rect.left) / rect.width) * 100, 0), 100);
+    setComparisonPositions((current) => ({ ...current, [id]: percent }));
   };
 
   const currentQuestion = wildlifeQuizData[questionIndex];
@@ -565,6 +621,118 @@ function DonatePage() {
                 </div>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Before-and-after conservation sliders */}
+      <section id="transformations" className="py-24 bg-secondary/30">
+        <div className="container-page">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-3xl">
+              <div className="ornament-divider mb-6"><span className="text-xs uppercase tracking-[0.3em]">Conservation transformation</span></div>
+              <h2 className="font-display text-4xl md:text-5xl leading-tight">From pressure to protection.</h2>
+              <p className="mt-4 text-muted-foreground">These field comparisons show how donor-funded restoration, ranger support, and habitat care create visible changes over time.</p>
+            </div>
+            <a href="#donate" className="text-sm font-semibold text-primary hover:underline">Support a corridor →</a>
+          </div>
+
+          <div className="wildhaven-comparison-grid mt-10">
+            {CONSERVATION_COMPARISONS.map((item) => {
+              const position = comparisonPositions[item.id];
+              return (
+                <article className="wildhaven-comparison-card" key={item.id}>
+                  <div className="wildhaven-comparison-frame" onPointerDown={(event) => {
+                      const rect = event.currentTarget.getBoundingClientRect();
+                      const percent = Math.min(Math.max(((event.clientX - rect.left) / rect.width) * 100, 0), 100);
+                      setComparisonPositions((current) => ({ ...current, [item.id]: percent }));
+                    }}>
+                    <div className="wildhaven-comparison-image-layer wildhaven-comparison-before">
+                      <img src={item.beforeImage} alt="" className="wildhaven-comparison-image" />
+                      <span className="wildhaven-comparison-label before">{item.beforeLabel}</span>
+                      <span className="wildhaven-comparison-caption before">{item.beforeCaption}</span>
+                    </div>
+                    <div className="wildhaven-comparison-image-layer wildhaven-comparison-after" style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}>
+                      <img src={item.afterImage} alt="" className="wildhaven-comparison-image" />
+                      <span className="wildhaven-comparison-label after">{item.afterLabel}</span>
+                      <span className="wildhaven-comparison-caption after">{item.afterCaption}</span>
+                    </div>
+                    <div className="wildhaven-comparison-divider" style={{ left: `${position}%` }}>
+                      <span className="wildhaven-comparison-divider-line" />
+                      <span className="wildhaven-comparison-handle">↔</span>
+                    </div>
+                    <div className="wildhaven-comparison-tint" style={{ left: `${position}%` }} />
+                  </div>
+
+                  <div className="wildhaven-comparison-content">
+                    <div className="wildhaven-comparison-top">
+                      <span className="wildhaven-comparison-location">{item.location}</span>
+                      <span className="wildhaven-comparison-impact">{item.impact}</span>
+                    </div>
+                    <h3 className="font-display text-2xl text-primary mt-4">{item.title}</h3>
+                    <p className="wildhaven-comparison-detail">{item.detail}</p>
+                    <div className="wildhaven-comparison-metric">
+                      <span className="wildhaven-comparison-metric-label">Field progress</span>
+                      <span className="wildhaven-comparison-metric-value">{item.metric}</span>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Before-and-after conservation sliders */}
+      <section id="transformations" className="py-24 bg-secondary/30">
+        <div className="container-page">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-3xl">
+              <div className="ornament-divider mb-6"><span className="text-xs uppercase tracking-[0.3em]">Conservation transformation</span></div>
+              <h2 className="font-display text-4xl md:text-5xl leading-tight">From pressure to protection.</h2>
+              <p className="mt-4 text-muted-foreground">These field comparisons show how donor-funded restoration, ranger support, and habitat care create visible changes over time.</p>
+            </div>
+            <a href="#donate" className="text-sm font-semibold text-primary hover:underline">Support a corridor →</a>
+          </div>
+
+          <div className="wildhaven-comparison-grid mt-10">
+            {CONSERVATION_COMPARISONS.map((item) => {
+              const position = comparisonPositions[item.id];
+              return (
+                <article className="wildhaven-comparison-card" key={item.id}>
+                  <div className="wildhaven-comparison-frame" onPointerDown={(event) => updateComparisonPosition(item.id, event)}>
+                    <div className="wildhaven-comparison-image-layer wildhaven-comparison-before">
+                      <img src={item.beforeImage} alt="" className="wildhaven-comparison-image" />
+                      <span className="wildhaven-comparison-label before">{item.beforeLabel}</span>
+                      <span className="wildhaven-comparison-caption before">{item.beforeCaption}</span>
+                    </div>
+                    <div className="wildhaven-comparison-image-layer wildhaven-comparison-after" style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}>
+                      <img src={item.afterImage} alt="" className="wildhaven-comparison-image" />
+                      <span className="wildhaven-comparison-label after">{item.afterLabel}</span>
+                      <span className="wildhaven-comparison-caption after">{item.afterCaption}</span>
+                    </div>
+                    <div className="wildhaven-comparison-divider" style={{ left: `${position}%` }}>
+                      <span className="wildhaven-comparison-divider-line" />
+                      <span className="wildhaven-comparison-handle">↔</span>
+                    </div>
+                    <div className="wildhaven-comparison-tint" style={{ left: `${position}%` }} />
+                  </div>
+
+                  <div className="wildhaven-comparison-content">
+                    <div className="wildhaven-comparison-top">
+                      <span className="wildhaven-comparison-location">{item.location}</span>
+                      <span className="wildhaven-comparison-impact">{item.impact}</span>
+                    </div>
+                    <h3 className="font-display text-2xl text-primary mt-4">{item.title}</h3>
+                    <p className="wildhaven-comparison-detail">{item.detail}</p>
+                    <div className="wildhaven-comparison-metric">
+                      <span className="wildhaven-comparison-metric-label">Field progress</span>
+                      <span className="wildhaven-comparison-metric-value">{item.metric}</span>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
