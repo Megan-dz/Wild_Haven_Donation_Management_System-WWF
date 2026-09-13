@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useMemo, useState, type PointerEvent } from "react";
+import { useEffect, useMemo, useState, type PointerEvent } from "react";
 import logoAsset from "@/assets/wild-haven-logo.png.asset.json";
 import heroImage from "@/assets/hero-wildlife.jpg";
 import forestImage from "@/assets/impact-forest.jpg";
@@ -140,6 +140,54 @@ const CONSERVATION_COMPARISONS = [
   },
 ];
 
+const CONSERVATION_TIMELINE = [
+  {
+    id: "1960s-forest-laws",
+    year: "1960",
+    title: "Wildlife Protection Era Begins",
+    description: "India formalized laws and protected-area thinking that gave wildlife a stronger legal footing.",
+    detail: "Early conservation planning created the foundation for protected forests and wildlife corridors.",
+    image: forestImage,
+    category: "Policy",
+  },
+  {
+    id: "1970s-national-parks",
+    year: "1972",
+    title: "Project Tiger Launch",
+    description: "A national commitment to tiger protection expanded ranger programs and habitat monitoring.",
+    detail: "Tiger reserves became a major public model for national conservation planning.",
+    image: leopardImage,
+    category: "Species",
+  },
+  {
+    id: "1980s-rescue",
+    year: "1985",
+    title: "Rescue Networks Expand",
+    description: "Veterinary teams, field units, and local rescue pathways grew to handle injured wildlife more effectively.",
+    detail: "Rapid response and rehabilitation systems improved for elephants, depredation events, and injured species.",
+    image: elephantImage,
+    category: "Rescue",
+  },
+  {
+    id: "2000s-community",
+    year: "2008",
+    title: "Community Corridor Restoration",
+    description: "Field teams started linking forest patches through community-led habitat recovery and planting programs.",
+    detail: "The work connected conservation goals with local livelihoods and landscape management.",
+    image: forestImage,
+    category: "Habitat",
+  },
+  {
+    id: "today-technology",
+    year: "Today",
+    title: "Data, Patrol, and Habitat Watch",
+    description: "Modern conservation combines ranger reporting, forest science, and community stewardship for resilience.",
+    detail: "Protection and restoration efforts now track habitat health, species movement, and local field outcomes.",
+    image: heroImage,
+    category: "Monitoring",
+  },
+];
+
 function DonatePage() {
   const navigate = useNavigate();
   const [frequency, setFrequency] = useState<"one-time" | "monthly">("one-time");
@@ -159,6 +207,7 @@ function DonatePage() {
   const [showQuizResult, setShowQuizResult] = useState(false);
   const [quizAnswered, setQuizAnswered] = useState(false);
   const [selectedHabitat, setSelectedHabitat] = useState<string>("western-ghats");
+  const [selectedTimeline, setSelectedTimeline] = useState<string>(CONSERVATION_TIMELINE[0].id);
   const [comparisonPositions, setComparisonPositions] = useState<Record<string, number>>({
     "forest-corridor": 54,
     "elephant-safe-passages": 44,
@@ -166,6 +215,7 @@ function DonatePage() {
   });
 
   const selectedHabitatRegion = HABITAT_REGIONS.find((region) => region.id === selectedHabitat) ?? HABITAT_REGIONS[0];
+  const selectedTimelineEntry = CONSERVATION_TIMELINE.find((entry) => entry.id === selectedTimeline) ?? CONSERVATION_TIMELINE[0];
 
   const galleryCategories = useMemo(() => {
     return ["All", ...Array.from(new Set(wildlifeGalleryData.map((item) => item.category)))];
@@ -193,6 +243,22 @@ function DonatePage() {
     "impact-elephant.jpg": elephantImage,
     "impact-leopard.jpg": leopardImage,
   };
+
+  useEffect(() => {
+    const timelineItems = Array.from(document.querySelectorAll<HTMLElement>(".wildhaven-timeline-item"));
+    if (!timelineItems.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+        }
+      });
+    }, { threshold: 0.2 });
+
+    timelineItems.forEach((item) => observer.observe(item));
+    return () => observer.disconnect();
+  }, []);
 
   const updateComparisonPosition = (id: string, event: PointerEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -862,6 +928,62 @@ function DonatePage() {
                 </button>
               </div>
             </aside>
+          </div>
+        </div>
+      </section>
+
+      {/* Conservation Timeline */}
+      <section id="timeline" className="py-24 bg-secondary/30">
+        <div className="container-page">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-3xl">
+              <div className="ornament-divider mb-6"><span className="text-xs uppercase tracking-[0.3em]">Conservation timeline</span></div>
+              <h2 className="font-display text-4xl md:text-5xl leading-tight">A history of protecting wild futures.</h2>
+              <p className="mt-4 text-muted-foreground">From forest laws to modern habitat monitoring, every milestone reflects a collective effort to keep wildlife connected to the landscapes they need.</p>
+            </div>
+            <div className="wildhaven-timeline-kicker">
+              <span>{CONSERVATION_TIMELINE.length} milestones</span>
+            </div>
+          </div>
+
+          <div className="wildhaven-timeline-shell">
+            <div className="wildhaven-timeline-grid">
+              {CONSERVATION_TIMELINE.map((entry, index) => (
+                <article
+                  key={entry.id}
+                  className={`wildhaven-timeline-item ${selectedTimeline === entry.id ? "active" : ""}`}
+                  onMouseEnter={() => setSelectedTimeline(entry.id)}
+                  onFocus={() => setSelectedTimeline(entry.id)}
+                  tabIndex={0}
+                >
+                  <span className="wildhaven-timeline-year">{entry.year}</span>
+                  <span className="wildhaven-timeline-marker"><span /></span>
+                  <div className="wildhaven-timeline-card">
+                    <div className="wildhaven-timeline-card-image">
+                      <img src={entry.image} alt="" className="wildhaven-timeline-card-img" />
+                      <span className="wildhaven-timeline-category">{entry.category}</span>
+                    </div>
+                    <div className="wildhaven-timeline-card-content">
+                      <span className="wildhaven-timeline-index">{String(index + 1).padStart(2, "0")}</span>
+                      <h3 className="font-display text-2xl text-primary">{entry.title}</h3>
+                      <p className="wildhaven-timeline-description">{entry.description}</p>
+                      <p className="wildhaven-timeline-detail">{entry.detail}</p>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div className="wildhaven-timeline-focus">
+              <div className="wildhaven-timeline-focus-image">
+                <img src={selectedTimelineEntry.image} alt="" className="wildhaven-timeline-focus-img" />
+              </div>
+              <div className="wildhaven-timeline-focus-copy">
+                <span className="wildhaven-timeline-focus-year">{selectedTimelineEntry.year}</span>
+                <h3 className="font-display text-3xl text-primary">{selectedTimelineEntry.title}</h3>
+                <p>{selectedTimelineEntry.detail}</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

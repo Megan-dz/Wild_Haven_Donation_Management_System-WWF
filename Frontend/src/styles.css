@@ -311,6 +311,252 @@
     border-color: color-mix(in srgb, var(--primary) 58%, var(--border));
   }
 
+  .wildhaven-timeline-kicker {
+    border-radius: 999px;
+    padding: 0.72rem 1rem;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--primary);
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .wildhaven-timeline-shell {
+    margin-top: 1.4rem;
+    background: color-mix(in srgb, var(--card) 96%, transparent);
+    border-radius: 2rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 18px 60px rgba(40, 54, 37, 0.08);
+    padding: clamp(1rem, 2vw, 2rem);
+  }
+
+  .wildhaven-timeline-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(160px, 1fr));
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .wildhaven-timeline-grid::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 1.2rem;
+    height: 2px;
+    background: var(--border);
+  }
+
+  .wildhaven-timeline-item {
+    position: relative;
+    min-height: 230px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 700ms ease, transform 700ms ease;
+  }
+
+  .wildhaven-timeline-item.in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .wildhaven-timeline-item.active {
+    transform: translateY(-4px);
+  }
+
+  .wildhaven-timeline-year {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    width: fit-content;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    min-width: 4rem;
+    justify-content: center;
+  }
+
+  .wildhaven-timeline-marker {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--card);
+    border: 2px solid var(--primary);
+    margin: 0.4rem 0 0.8rem;
+  }
+
+  .wildhaven-timeline-marker span {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--primary);
+  }
+
+  .wildhaven-timeline-card {
+    width: 100%;
+    background: var(--card);
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 34px rgba(40, 54, 37, 0.08);
+    overflow: hidden;
+    transition: transform 280ms ease, border-color 280ms ease, box-shadow 280ms ease;
+    cursor: pointer;
+  }
+
+  .wildhaven-timeline-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: 0 20px 50px rgba(40, 54, 37, 0.12);
+  }
+
+  .wildhaven-timeline-card-image {
+    position: relative;
+    height: 120px;
+    background: var(--secondary);
+    overflow: hidden;
+  }
+
+  .wildhaven-timeline-card-img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .wildhaven-timeline-category {
+    position: absolute;
+    left: 0.7rem;
+    top: 0.7rem;
+    padding: 0.38rem 0.62rem;
+    border-radius: 999px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .wildhaven-timeline-card-content {
+    padding: 1rem;
+  }
+
+  .wildhaven-timeline-index {
+    color: var(--muted-foreground);
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    margin-bottom: 0.7rem;
+  }
+
+  .wildhaven-timeline-card-content h3 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+    margin: 0 0 0.7rem;
+  }
+
+  .wildhaven-timeline-description {
+    color: var(--foreground);
+    line-height: 1.6;
+    font-size: 0.86rem;
+    margin: 0 0 0.8rem;
+  }
+
+  .wildhaven-timeline-detail {
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    border-top: 1px solid var(--border);
+    padding-top: 0.8rem;
+    margin: 0;
+  }
+
+  .wildhaven-timeline-focus {
+    display: grid;
+    grid-template-columns: minmax(180px, 0.8fr) minmax(280px, 1.2fr);
+    gap: 1rem;
+    align-items: center;
+    margin-top: 1.4rem;
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .wildhaven-timeline-focus-image {
+    width: 100%;
+    height: 160px;
+    border-radius: 1rem;
+    overflow: hidden;
+    background: var(--secondary);
+  }
+
+  .wildhaven-timeline-focus-img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .wildhaven-timeline-focus-copy {
+    padding: 0.8rem 0;
+  }
+
+  .wildhaven-timeline-focus-year {
+    display: inline-block;
+    color: var(--primary);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .wildhaven-timeline-focus-copy h3 {
+    margin: 0.7rem 0 0.7rem;
+  }
+
+  .wildhaven-timeline-focus-copy p {
+    color: var(--muted-foreground);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 1300px) {
+    .wildhaven-timeline-grid {
+      grid-template-columns: repeat(2, minmax(150px, 1fr));
+    }
+
+    .wildhaven-timeline-grid::before {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .wildhaven-timeline-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .wildhaven-timeline-focus {
+      grid-template-columns: 1fr;
+    }
+  }
+
   .wildhaven-habitat-map-wrapper {
     display: grid;
     grid-template-columns: minmax(620px, 1.8fr) minmax(330px, 1fr);
