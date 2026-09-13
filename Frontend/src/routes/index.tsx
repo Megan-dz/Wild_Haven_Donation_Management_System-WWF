@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { wildlifeGalleryData } from "@/data/wildlifeGalleryData";
+import { wildlifeQuizData } from "@/data/wildlifeQuizData";
 
 export const Route = createFileRoute("/")({
   component: DonatePage,
@@ -56,6 +57,11 @@ function DonatePage() {
   const [galleryCategory, setGalleryCategory] = useState("All");
   const [gallerySort, setGallerySort] = useState("name");
   const [selectedGalleryItem, setSelectedGalleryItem] = useState<(typeof wildlifeGalleryData)[number] | null>(null);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [quizScore, setQuizScore] = useState(0);
+  const [showQuizResult, setShowQuizResult] = useState(false);
+  const [quizAnswered, setQuizAnswered] = useState(false);
 
   const galleryCategories = useMemo(() => {
     return ["All", ...Array.from(new Set(wildlifeGalleryData.map((item) => item.category)))];
@@ -82,6 +88,36 @@ function DonatePage() {
     "impact-forest.jpg": forestImage,
     "impact-elephant.jpg": elephantImage,
     "impact-leopard.jpg": leopardImage,
+  };
+
+  const currentQuestion = wildlifeQuizData[questionIndex];
+  const quizProgress = ((questionIndex + (showQuizResult ? 1 : 0)) / wildlifeQuizData.length) * 100;
+
+  const handleQuizSelect = (answer: string) => {
+    if (quizAnswered) return;
+    setSelectedAnswer(answer);
+    setQuizAnswered(true);
+    if (answer === currentQuestion.correctAnswer) {
+      setQuizScore((score) => score + 1);
+    }
+  };
+
+  const handleQuizNext = () => {
+    if (questionIndex < wildlifeQuizData.length - 1) {
+      setQuestionIndex(questionIndex + 1);
+      setSelectedAnswer(null);
+      setQuizAnswered(false);
+      return;
+    }
+    setShowQuizResult(true);
+  };
+
+  const restartQuiz = () => {
+    setQuestionIndex(0);
+    setSelectedAnswer(null);
+    setQuizScore(0);
+    setShowQuizResult(false);
+    setQuizAnswered(false);
   };
 
   const finalAmount = custom ? Number(custom) : amount;
@@ -627,6 +663,98 @@ function DonatePage() {
           </div>
         </div>
       )}
+
+      {/* Wildlife Quiz */}
+      <section id="quiz" className="py-24">
+        <div className="container-page">
+          <div className="wildhaven-quiz-shell">
+            <div className="wildhaven-quiz-header">
+              <div>
+                <div className="ornament-divider mb-4"><span className="text-xs uppercase tracking-[0.3em]">Conservation Quiz</span></div>
+                <h2 className="font-display text-4xl md:text-5xl">Wildlife Knowledge Check</h2>
+              </div>
+              <div className="wildhaven-quiz-badge">
+                <span>{wildlifeQuizData.length} questions</span>
+              </div>
+            </div>
+
+            {!showQuizResult ? (
+              <div className="wildhaven-quiz-card">
+                <div className="wildhaven-quiz-meta">
+                  <span className="wildhaven-quiz-category">{currentQuestion.category}</span>
+                  <span className="wildhaven-quiz-difficulty">{currentQuestion.difficulty}</span>
+                </div>
+
+                <div className="wildhaven-quiz-progress">
+                  <div className="wildhaven-quiz-progress-track">
+                    <div className="wildhaven-quiz-progress-bar" style={{ width: `${quizProgress}%` }} />
+                  </div>
+                  <span className="wildhaven-quiz-progress-text">{questionIndex + 1}/{wildlifeQuizData.length}</span>
+                </div>
+
+                <div className="wildhaven-quiz-question">
+                  <h3 className="font-display text-3xl md:text-4xl">{currentQuestion.question}</h3>
+                </div>
+
+                <div className="wildhaven-quiz-options">
+                  {currentQuestion.choices.map((choice) => {
+                    const isCorrect = choice === currentQuestion.correctAnswer;
+                    const isSelected = choice === selectedAnswer;
+                    const optionClass = quizAnswered
+                      ? isCorrect
+                        ? "wildhaven-quiz-option correct"
+                        : isSelected
+                          ? "wildhaven-quiz-option incorrect"
+                          : "wildhaven-quiz-option"
+                      : "wildhaven-quiz-option";
+
+                    return (
+                      <button key={choice} type="button" className={optionClass} onClick={() => handleQuizSelect(choice)}>
+                        <span className="wildhaven-quiz-option-index">{String.fromCharCode(65 + currentQuestion.choices.indexOf(choice))}</span>
+                        <span>{choice}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {quizAnswered && (
+                  <div className="wildhaven-quiz-feedback">
+                    <div className={selectedAnswer === currentQuestion.correctAnswer ? "wildhaven-quiz-feedback-success" : "wildhaven-quiz-feedback-error"}>
+                      {selectedAnswer === currentQuestion.correctAnswer ? "Correct — " : "Not quite — "}
+                      {currentQuestion.explanation}
+                    </div>
+                  </div>
+                )}
+
+                <div className="wildhaven-quiz-actions">
+                  <Button type="button" variant="outline" className="rounded-full" onClick={restartQuiz}>Restart</Button>
+                  <Button type="button" className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={handleQuizNext} disabled={!quizAnswered}>
+                    {questionIndex === wildlifeQuizData.length - 1 ? "Finish" : "Next Question"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="wildhaven-quiz-result">
+                <div className="wildhaven-quiz-result-inner">
+                  <div className="wildhaven-quiz-result-score">
+                    <span className="font-display text-6xl text-primary">{Math.round((quizScore / wildlifeQuizData.length) * 100)}%</span>
+                    <span className="wildhaven-quiz-result-label">Score</span>
+                  </div>
+                  <div className="wildhaven-quiz-result-copy">
+                    <h3 className="font-display text-4xl">You scored {quizScore}/{wildlifeQuizData.length}</h3>
+                    <p className="text-muted-foreground">
+                      {quizScore >= 7 ? "Excellent work — your conservation instincts are strong." : quizScore >= 4 ? "Good effort — keep learning about habitat and species protection." : "Every journey starts with curiosity — explore more conservation stories."}
+                    </p>
+                  </div>
+                  <div className="wildhaven-quiz-actions center">
+                    <Button type="button" className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={restartQuiz}>Restart Quiz</Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* CTA */}
       <section className="py-20">

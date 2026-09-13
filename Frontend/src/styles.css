@@ -504,6 +504,239 @@
     z-index: 100;
   }
 
+  .wildhaven-quiz-shell {
+    border-radius: 2rem;
+    background: color-mix(in srgb, var(--card) 98%, transparent);
+    border: 1px solid var(--border);
+    box-shadow: 0 26px 80px rgba(40, 54, 37, 0.08);
+    padding: clamp(1.4rem, 3vw, 2.5rem);
+  }
+
+  .wildhaven-quiz-header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .wildhaven-quiz-badge {
+    border-radius: 999px;
+    border: 1px solid var(--primary);
+    background: color-mix(in srgb, var(--primary) 8%, transparent);
+    padding: 0.7rem 1rem;
+    color: var(--primary);
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .wildhaven-quiz-card {
+    margin-top: 1rem;
+    border-radius: 1.5rem;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--card) 98%, transparent);
+    padding: clamp(1rem, 2vw, 2rem);
+  }
+
+  .wildhaven-quiz-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .wildhaven-quiz-category {
+    font-weight: 800;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: var(--primary);
+    text-transform: uppercase;
+  }
+
+  .wildhaven-quiz-difficulty {
+    font-weight: 700;
+    font-size: 0.74rem;
+    letter-spacing: 0.12em;
+    color: var(--muted-foreground);
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    padding: 0.35rem 0.8rem;
+  }
+
+  .wildhaven-quiz-progress {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .wildhaven-quiz-progress-track {
+    height: 0.7rem;
+    flex: 1;
+    background: var(--secondary);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .wildhaven-quiz-progress-bar {
+    height: 100%;
+    background: var(--primary);
+    border-radius: inherit;
+  }
+
+  .wildhaven-quiz-progress-text {
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  .wildhaven-quiz-question {
+    margin-top: 1rem;
+  }
+
+  .wildhaven-quiz-question h3 {
+    margin: 0;
+  }
+
+  .wildhaven-quiz-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin-top: 1.4rem;
+  }
+
+  .wildhaven-quiz-option {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.9rem 1rem;
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--foreground);
+    font-weight: 700;
+    text-align: left;
+    transition: background 300ms ease, border-color 300ms ease, transform 300ms ease;
+  }
+
+  .wildhaven-quiz-option:hover {
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 8%, var(--card));
+  }
+
+  .wildhaven-quiz-option.correct {
+    background: color-mix(in srgb, var(--forest) 14%, var(--card));
+    border-color: var(--forest);
+    color: var(--foreground);
+  }
+
+  .wildhaven-quiz-option.incorrect {
+    background: color-mix(in srgb, var(--destructive) 12%, var(--card));
+    border-color: var(--destructive);
+    color: var(--foreground);
+  }
+
+  .wildhaven-quiz-option-index {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: var(--secondary);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 0.82rem;
+    border: 1px solid var(--border);
+  }
+
+  .wildhaven-quiz-feedback {
+    margin-top: 1rem;
+  }
+
+  .wildhaven-quiz-feedback-success,
+  .wildhaven-quiz-feedback-error {
+    border-radius: 1rem;
+    padding: 1rem;
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .wildhaven-quiz-feedback-success {
+    background: color-mix(in srgb, var(--forest) 10%, var(--card));
+    border: 1px solid color-mix(in srgb, var(--forest) 45%, var(--border));
+    color: var(--foreground);
+  }
+
+  .wildhaven-quiz-feedback-error {
+    background: color-mix(in srgb, var(--destructive) 10%, var(--card));
+    border: 1px solid color-mix(in srgb, var(--destructive) 45%, var(--border));
+    color: var(--foreground);
+  }
+
+  .wildhaven-quiz-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    margin-top: 1.2rem;
+    flex-wrap: wrap;
+  }
+
+  .wildhaven-quiz-actions.center {
+    justify-content: center;
+  }
+
+  .wildhaven-quiz-result {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+  }
+
+  .wildhaven-quiz-result-inner {
+    max-width: 620px;
+    width: 100%;
+    background: color-mix(in srgb, var(--card) 96%, transparent);
+    border-radius: 1.4rem;
+    border: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .wildhaven-quiz-result-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+  }
+
+  .wildhaven-quiz-result-label {
+    color: var(--muted-foreground);
+    font-weight: 800;
+    font-size: 0.74rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .wildhaven-quiz-result-copy {
+    margin-top: 1rem;
+  }
+
+  .wildhaven-quiz-result-copy h3 {
+    margin: 0 0 0.8rem 0;
+  }
+
+  .wildhaven-quiz-result-copy p {
+    margin: 0;
+  }
+
   .wildhaven-button-primary {
     display: inline-flex;
     align-items: center;
