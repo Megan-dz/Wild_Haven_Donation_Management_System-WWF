@@ -246,6 +246,20 @@ const HOW_YOU_CAN_HELP = [
   },
 ];
 
+function highlightMatch(text: string, query: string) {
+  const trimmed = query.trim();
+  if (!trimmed) return text;
+
+  const parts = text.split(new RegExp(`(${escapeRegExp(trimmed)})`, "ig"));
+  return parts.map((part, index) =>
+    part.toLowerCase() === trimmed.toLowerCase() ? <mark key={`${part}-${index}`}>{part}</mark> : <span key={`${part}-${index}`}>{part}</span>,
+  );
+}
+
+function escapeRegExp(text: string) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function DonatePage() {
   const navigate = useNavigate();
   const [frequency, setFrequency] = useState<"one-time" | "monthly">("one-time");
@@ -267,6 +281,7 @@ function DonatePage() {
   const [selectedHabitat, setSelectedHabitat] = useState<string>("western-ghats");
   const [selectedTimeline, setSelectedTimeline] = useState<string>(CONSERVATION_TIMELINE[0].id);
   const [expandedHelpCard, setExpandedHelpCard] = useState<string>("donate");
+  const [globalSearchQuery, setGlobalSearchQuery] = useState("");
   const [comparisonPositions, setComparisonPositions] = useState<Record<string, number>>({
     "forest-corridor": 54,
     "elephant-safe-passages": 44,
@@ -275,6 +290,57 @@ function DonatePage() {
 
   const selectedHabitatRegion = HABITAT_REGIONS.find((region) => region.id === selectedHabitat) ?? HABITAT_REGIONS[0];
   const selectedTimelineEntry = CONSERVATION_TIMELINE.find((entry) => entry.id === selectedTimeline) ?? CONSERVATION_TIMELINE[0];
+
+  const searchIndex = useMemo(() => {
+    const recordSection = (section: string, title: string, body: string, url: string, type = "content") => ({ section, title, body, url, type });
+
+    const fromImpact = IMPACT_CAMPAIGNS.map((item) => recordSection("Impact", item.name, `${item.detail} ${item.name} campaign raised ${formatINR(item.raised)} of ${formatINR(item.goal)}.`, "#impact", "campaign"));
+    const fromStories = DONOR_STORIES.map((item) => recordSection("Donor Stories", `${item.name} • ${item.location}`, item.quote, "#stories", "story"));
+    const fromWins = CONSERVATION_WINS.map((item) => recordSection("Impact", item.title, `${item.detail} ${item.metric} ${item.date}.`, "#impact", "win"));
+    const fromHabitat = HABITAT_REGIONS.map((item) => recordSection("Habitat Map", item.name, `${item.detail} ${item.impact}`.trim(), "#habitat-map", "habitat"));
+    const fromTimeline = CONSERVATION_TIMELINE.map((item) => recordSection("Timeline", item.title, `${item.description} ${item.detail}`, "#timeline", "timeline"));
+    const fromHelp = HOW_YOU_CAN_HELP.map((item) => recordSection("How You Can Help", item.title, `${item.summary} ${item.detail}`, "#help", "action"));
+    const fromGallery = wildlifeGalleryData.map((item) => recordSection("Gallery", item.name, `${item.description} ${item.habitat} ${item.status} ${item.category}.`, "#gallery", "gallery"));
+    const fromQuiz = wildlifeQuizData.map((item) => recordSection("Quiz", item.question, `${item.category} ${item.difficulty} ${item.explanation}`, "#quiz", "quiz"));
+
+    return [
+      recordSection("Mission", "Our Mission", "A living haven for the wild things worth saving. We protect forests, wildlife corridors, species and communities.", "#mission", "section"),
+      recordSection("Impact", "Where Your Gift Goes", "See how donations fund forest patrols, elephant rescue and restoration work on the ground.", "#impact", "section"),
+      recordSection("Donor Stories", "Donor Stories", "Community stories from supporters across India sharing why conservation gives them hope.", "#stories", "section"),
+      recordSection("Gallery", "Wildlife Gallery", "A gallery of tiger, forest and elephant conservation stories captured by field photographers.", "#gallery", "section"),
+      recordSection("Quiz", "Wildlife Conservation Quiz", "A short quiz that teaches how conservation, corridors and habitats connect.", "#quiz", "section"),
+      recordSection("Timeline", "Conservation Timeline", "The history of wildlife protection, habitat restoration, rescue programs and community-led action.", "#timeline", "section"),
+      recordSection("How You Can Help", "How You Can Help", "Ways to help through donations, volunteering, awareness, impact reduction and wildlife-friendly choices.", "#help", "section"),
+      ...fromImpact,
+      ...fromStories,
+      ...fromWins,
+      ...fromHabitat,
+      ...fromTimeline,
+      ...fromHelp,
+      ...fromGallery,
+      ...fromQuiz,
+    ];
+  }, []);
+
+  const searchSuggestions = useMemo(() => {
+    const suggestions = ["donate", "impact", "forest", "tiger", "elephant", "volunteer", "gallery", "habitat", "timeline", "wildlife"];
+    const query = globalSearchQuery.trim().toLowerCase();
+    if (!query) return suggestions.slice(0, 7);
+
+    return suggestions.filter((word) => word.includes(query)).slice(0, 7);
+  }, [globalSearchQuery]);
+
+  const visibleSearchResults = useMemo(() => {
+    const query = globalSearchQuery.trim().toLowerCase();
+    if (!query) return [];
+
+    return searchIndex.filter((result) => {
+      const haystack = `${result.section} ${result.title} ${result.body} ${result.type} ${result.url}`.toLowerCase();
+      return haystack.includes(query);
+    }).slice(0, 8);
+  }, [globalSearchQuery, searchIndex]);
+
+  const clearSearch = () => setGlobalSearchQuery("");
 
   const galleryCategories = useMemo(() => {
     return ["All", ...Array.from(new Set(wildlifeGalleryData.map((item) => item.category)))];
@@ -384,7 +450,23 @@ function DonatePage() {
             <a href="#impact" className="hover:text-primary transition">Impact</a>
             <a href="#faq" className="hover:text-primary transition">FAQ</a>
           </nav>
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-3">
+            <div className="wildhaven-global-search-wrap">
+              <span className="wildhaven-global-search-icon" aria-hidden="true">⌕</span>
+              <input
+                type="search"
+                size={26}
+                value={globalSearchQuery}
+                aria-label="Search Wild Haven content"
+                placeholder="Search Wild Haven"
+                className="wildhaven-global-search-input"
+                onFocus={() => {}}
+                onChange={(event) => setGlobalSearchQuery(event.target.value)}
+              />
+              {globalSearchQuery && (
+                <button type="button" className="wildhaven-global-search-clear" aria-label="Clear search" onClick={clearSearch}>×</button>
+              )}
+            </div>
             <a href="#donate">
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-5">Donate</Button>
             </a>
@@ -420,6 +502,77 @@ function DonatePage() {
           </div>
         )}
       </header>
+
+      {/* Global Search Panel */}
+      <section className="wildhaven-global-search-section">
+        <div className="container-page">
+          <div className="wildhaven-global-search-panel">
+            <div className="wildhaven-global-search-top">
+              <div>
+                <span className="wildhaven-global-search-kicker">Explore Wild Haven</span>
+                <h2 className="wildhaven-global-search-title">Find conservation stories, programs and impact.</h2>
+              </div>
+              <button type="button" className="wildhaven-global-search-clear-panel" onClick={clearSearch}>Clear search</button>
+            </div>
+
+            <div className="wildhaven-global-search-input-bar">
+              <span className="wildhaven-global-search-input-icon" aria-hidden="true">⌕</span>
+              <input
+                type="search"
+                className="wildhaven-global-search-text-input"
+                placeholder="Search mission, habitat, gallery, volunteer, elephant, tiger..."
+                value={globalSearchQuery}
+                onChange={(event) => setGlobalSearchQuery(event.target.value)}
+              />
+              {globalSearchQuery && (
+                <button type="button" className="wildhaven-global-search-chip-button" onClick={clearSearch}>Clear</button>
+              )}
+            </div>
+
+            <div className="wildhaven-search-suggestions">
+              {searchSuggestions.map((suggestion) => (
+                <button type="button" key={suggestion} className="wildhaven-search-suggestion" onClick={() => setGlobalSearchQuery(suggestion)}>
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+
+            {globalSearchQuery.trim() ? (
+              visibleSearchResults.length > 0 ? (
+                <div className="wildhaven-search-results-grid">
+                  {visibleSearchResults.map((result, idx) => (
+                    <a key={`${result.title}-${idx}`} className="wildhaven-search-result" href={result.url}>
+                      <span className="wildhaven-search-result-type">{result.type}</span>
+                      <span className="wildhaven-search-result-section">{result.section}</span>
+                      <span className="wildhaven-search-result-title">{highlightMatch(result.title, globalSearchQuery)}</span>
+                      <span className="wildhaven-search-result-body">{highlightMatch(result.body, globalSearchQuery)}</span>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div className="wildhaven-search-empty">
+                  <span className="wildhaven-search-empty-icon">✧</span>
+                  <div>
+                    <div className="wildhaven-search-empty-title">No matching content found</div>
+                    <div className="wildhaven-search-empty-copy">Try searching for habitat, forest, tiger, volunteer, or impact.</div>
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="wildhaven-search-results-grid">
+                {searchIndex.slice(0, 6).map((result, idx) => (
+                  <a key={`${result.title}-${idx}`} className="wildhaven-search-result" href={result.url}>
+                    <span className="wildhaven-search-result-type">{result.type}</span>
+                    <span className="wildhaven-search-result-section">{result.section}</span>
+                    <span className="wildhaven-search-result-title">{result.title}</span>
+                    <span className="wildhaven-search-result-body">{result.body}</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* Hero */}
       <section className="relative overflow-hidden">
