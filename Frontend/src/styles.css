@@ -99,6 +99,108 @@
 }
 
 @layer components {
+  .mobile-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: color-mix(in srgb, var(--foreground) 45%, transparent);
+    z-index: 50;
+  }
+
+  .mobile-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(380px, 88vw);
+    height: 100vh;
+    background: var(--background);
+    border-left: 1px solid var(--border);
+    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.3);
+    z-index: 60;
+    padding: 1rem;
+    overflow-y: auto;
+  }
+
+  .mobile-drawer .mobile-drawer-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--foreground);
+  }
+
+  .mobile-drawer a,
+  .mobile-drawer button {
+    width: 100%;
+  }
+
+  .mobile-drawer .mobile-drawer-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border-radius: 0.85rem;
+    color: var(--foreground);
+    border: 1px solid transparent;
+    transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+  }
+
+  .mobile-drawer .mobile-drawer-link:hover {
+    background: color-mix(in srgb, var(--primary) 8%, transparent);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+}
+
+@media (max-width: 767px) {
+  .container-page {
+    width: min(100%, 1200px);
+    padding-inline: 1rem;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  .wildhaven-page-card {
+    border-radius: 1rem;
+  }
+
+  .wildhaven-surface {
+    border-radius: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-navigation-drawer {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .grid-mobile-stack {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-grid-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .response-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tablet-grid-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@layer components {
   .wildhaven-surface {
     background: color-mix(in srgb, var(--card) 94%, transparent);
     border: 1px solid color-mix(in srgb, var(--border) 92%, transparent);

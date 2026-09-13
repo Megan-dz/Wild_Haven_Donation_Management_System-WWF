@@ -136,11 +136,17 @@ function ImpactDetail() {
           </button>
         </div>
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border/60 bg-background">
-            <nav className="container-page flex flex-col gap-4 py-4 text-sm">
-              <Link to="/" className="hover:text-primary transition" onClick={() => setMobileMenuOpen(false)}>Back home</Link>
-              <Link to="/" hash="donate" className="hover:text-primary transition" onClick={() => setMobileMenuOpen(false)}>Donate</Link>
-            </nav>
+          <div className="mobile-drawer-overlay md:hidden" onClick={() => setMobileMenuOpen(false)}>
+            <aside className="mobile-drawer md:hidden">
+              <div className="flex items-center justify-between">
+                <div className="font-display text-xl text-primary">Wild Haven</div>
+                <button className="mobile-drawer-close" type="button" aria-label="Close menu" onClick={() => setMobileMenuOpen(false)}>×</button>
+              </div>
+              <nav className="flex flex-col gap-3 mt-6 text-sm">
+                <Link to="/" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>Back home</Link>
+                <Link to="/" hash="donate" className="mobile-drawer-link" onClick={() => setMobileMenuOpen(false)}>Donate</Link>
+              </nav>
+            </aside>
           </div>
         )}
       </header>

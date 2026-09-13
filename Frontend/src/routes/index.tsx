@@ -99,15 +99,21 @@ function DonatePage() {
           </button>
         </div>
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border/60 bg-background">
-            <nav className="container-page flex flex-col gap-4 py-4 text-sm">
-              <a href="#mission" className="hover:text-primary transition" onClick={() => setMobileMenuOpen(false)}>Our Mission</a>
-              <a href="#impact" className="hover:text-primary transition" onClick={() => setMobileMenuOpen(false)}>Impact</a>
-              <a href="#faq" className="hover:text-primary transition" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
-              <a href="#donate" onClick={() => setMobileMenuOpen(false)}>
-                <Button className="w-full rounded-full bg-primary text-primary-foreground hover:bg-primary/90">Donate</Button>
-              </a>
-            </nav>
+          <div className="mobile-drawer-overlay md:hidden" onClick={() => setMobileMenuOpen(false)}>
+            <aside className="mobile-drawer md:hidden">
+              <div className="flex items-center justify-between">
+                <div className="font-display text-xl text-primary">Wild Haven</div>
+                <button className="mobile-drawer-close" type="button" aria-label="Close menu" onClick={() => setMobileMenuOpen(false)}>×</button>
+              </div>
+              <nav className="flex flex-col gap-3 mt-6 text-sm">
+                <a className="mobile-drawer-link" href="#mission" onClick={() => setMobileMenuOpen(false)}>Our Mission</a>
+                <a className="mobile-drawer-link" href="#impact" onClick={() => setMobileMenuOpen(false)}>Impact</a>
+                <a className="mobile-drawer-link" href="#faq" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
+                <a className="mobile-drawer-link" href="#donate" onClick={() => setMobileMenuOpen(false)}>
+                  <Button className="w-full rounded-full bg-primary text-primary-foreground hover:bg-primary/90">Donate</Button>
+                </a>
+              </nav>
+            </aside>
           </div>
         )}
       </header>
@@ -144,7 +150,7 @@ function DonatePage() {
                 </Button>
               </a>
             </div>
-            <div className="mt-10 grid grid-cols-3 gap-6 max-w-md">
+            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6 max-w-md">
               {[
                 { n: "1.2M+", l: "Acres protected" },
                 { n: "48", l: "Rescue missions" },
