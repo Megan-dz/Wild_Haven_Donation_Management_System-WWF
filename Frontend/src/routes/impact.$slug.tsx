@@ -123,16 +123,16 @@ function ImpactDetail() {
       </header>
 
       <section className="py-16">
-        <div className="container-page grid lg:grid-cols-2 gap-14 items-start">
+        <div className="container-page grid lg:grid-cols-[minmax(520px,0.95fr)_minmax(420px,0.8fr)] gap-14 items-start">
           <div>
             <div className="ornament-divider mb-6"><span className="text-xs uppercase tracking-[0.3em]">Where Your Gift Goes</span></div>
             <div className="text-primary font-display text-4xl">{impact.amt}</div>
             <h1 className="font-display text-5xl md:text-6xl mt-2 leading-tight">{impact.title}</h1>
-            <p className="mt-6 text-lg text-muted-foreground">{impact.intro}</p>
+            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">{impact.intro}</p>
 
             <div className="mt-8 grid grid-cols-3 gap-4">
               {impact.highlights.map((h) => (
-                <div key={h.label} className="rounded-xl border border-border bg-card p-4">
+                <div key={h.label} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                   <div className="font-display text-xl text-primary">{h.value}</div>
                   <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1">{h.label}</div>
                 </div>
@@ -141,7 +141,7 @@ function ImpactDetail() {
 
             <div className="mt-10 space-y-4 text-muted-foreground leading-relaxed">
               {impact.story.map((p, i) => (
-                <p key={i}>{p}</p>
+                <p key={i} className="border-l-2 border-primary/30 pl-4">{p}</p>
               ))}
             </div>
 
@@ -158,7 +158,7 @@ function ImpactDetail() {
 
           {/* Gauge */}
           <div className="lg:sticky lg:top-24">
-            <div className="rounded-2xl border border-primary/20 bg-card p-8 shadow-xl shadow-primary/5">
+            <div className="wildhaven-page-card rounded-[2rem] p-8 shadow-xl shadow-primary/5">
               <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground text-center">Campaign Progress</div>
 
               <div className="relative mx-auto mt-4" style={{ width: 320, maxWidth: "100%" }}>
@@ -215,7 +215,7 @@ function ImpactDetail() {
                     key={i.slug}
                     to="/impact/$slug"
                     params={{ slug: i.slug }}
-                    className="rounded-xl border border-border p-3 hover:border-primary/40 transition text-left"
+                    className="rounded-xl border border-border p-3 hover:border-primary/40 transition text-left hover:bg-primary/5"
                   >
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{i.amt}</div>
                     <div className="text-sm font-medium mt-1 leading-tight">{i.title}</div>

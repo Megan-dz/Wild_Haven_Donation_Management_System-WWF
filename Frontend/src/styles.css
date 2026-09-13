@@ -83,11 +83,37 @@
     background-image:
       radial-gradient(1200px 600px at 90% -10%, oklch(0.78 0.14 75 / 0.15), transparent 60%),
       radial-gradient(900px 500px at -10% 110%, oklch(0.42 0.15 25 / 0.08), transparent 60%);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
   h1, h2, h3, h4, .font-display {
     font-family: var(--font-serif);
     font-weight: 500;
     letter-spacing: -0.01em;
+  }
+  a { color: inherit; text-decoration: none; }
+  button, input, textarea { font: inherit; }
+  ::selection { background: var(--primary); color: var(--primary-foreground); }
+}
+
+@layer components {
+  .wildhaven-surface {
+    background: color-mix(in srgb, var(--card) 94%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border) 92%, transparent);
+    box-shadow: 0 18px 50px rgba(40, 54, 37, 0.08);
+  }
+
+  .wildhaven-page-card {
+    border-radius: 1.5rem;
+    background: color-mix(in srgb, var(--card) 96%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border) 94%, transparent);
+    box-shadow: 0 20px 40px rgba(40, 54, 37, 0.08);
+  }
+
+  .wildhaven-section-heading {
+    font-family: var(--font-serif);
+    letter-spacing: -0.02em;
+    color: var(--foreground);
   }
 }
 
