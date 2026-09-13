@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import logoAsset from "@/assets/wild-haven-logo.png.asset.json";
 import heroImage from "@/assets/hero-wildlife.jpg";
 import forestImage from "@/assets/impact-forest.jpg";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { wildlifeGalleryData } from "@/data/wildlifeGalleryData";
 
 export const Route = createFileRoute("/")({
   component: DonatePage,
@@ -51,6 +52,37 @@ function DonatePage() {
   const [lifetimeTotal] = useState(48500);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [confirmed, setConfirmed] = useState<null | { amount: number; frequency: "one-time" | "monthly" }>(null);
+  const [gallerySearch, setGallerySearch] = useState("");
+  const [galleryCategory, setGalleryCategory] = useState("All");
+  const [gallerySort, setGallerySort] = useState("name");
+  const [selectedGalleryItem, setSelectedGalleryItem] = useState<(typeof wildlifeGalleryData)[number] | null>(null);
+
+  const galleryCategories = useMemo(() => {
+    return ["All", ...Array.from(new Set(wildlifeGalleryData.map((item) => item.category)))];
+  }, []);
+
+  const visibleGalleryData = useMemo(() => {
+    const search = gallerySearch.trim().toLowerCase();
+    const filtered = wildlifeGalleryData.filter((item) => {
+      const matchesCategory = galleryCategory === "All" || item.category === galleryCategory;
+      const haystack = `${item.name} ${item.description} ${item.habitat} ${item.status} ${item.category}`.toLowerCase();
+      const matchesSearch = !search || haystack.includes(search);
+      return matchesCategory && matchesSearch;
+    });
+
+    return [...filtered].sort((a, b) => {
+      if (gallerySort === "name-desc") return b.name.localeCompare(a.name);
+      if (gallerySort === "status") return a.status.localeCompare(b.status) || a.name.localeCompare(b.name);
+      return a.name.localeCompare(b.name);
+    });
+  }, [galleryCategory, gallerySearch, gallerySort]);
+
+  const galleryImageMap: Record<string, string> = {
+    "hero-wildlife.jpg": heroImage,
+    "impact-forest.jpg": forestImage,
+    "impact-elephant.jpg": elephantImage,
+    "impact-leopard.jpg": leopardImage,
+  };
 
   const finalAmount = custom ? Number(custom) : amount;
   const canDonate = Number.isFinite(finalAmount) && finalAmount >= 100;
@@ -500,6 +532,101 @@ function DonatePage() {
           </div>
         </div>
       </section>
+
+      {/* Wildlife Gallery */}
+      <section id="gallery" className="py-24 bg-secondary/30">
+        <div className="container-page">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <div className="ornament-divider mb-6"><span className="text-xs uppercase tracking-[0.3em]">Wildlife Gallery</span></div>
+              <h2 className="font-display text-4xl md:text-5xl leading-tight">Stories from the field.</h2>
+              <p className="mt-4 text-muted-foreground">Meet the forests, species, and guardians that conservation work protects every day.</p>
+            </div>
+            <div className="wildhaven-gallery-toolbar">
+              <div className="wildhaven-gallery-search-wrap">
+                <input
+                  className="wildhaven-gallery-search"
+                  value={gallerySearch}
+                  onChange={(e) => setGallerySearch(e.target.value)}
+                  placeholder="Search species, habitat..."
+                  aria-label="Search wildlife gallery"
+                />
+              </div>
+              <select className="wildhaven-gallery-sort" value={gallerySort} onChange={(e) => setGallerySort(e.target.value)} aria-label="Sort wildlife gallery">
+                <option value="name">Sort: A–Z</option>
+                <option value="name-desc">Sort: Z–A</option>
+                <option value="status">Sort: Status</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="wildhaven-gallery-category-strip">
+            {galleryCategories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                className={`wildhaven-gallery-filter ${galleryCategory === category ? "active" : ""}`}
+                onClick={() => setGalleryCategory(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
+          {visibleGalleryData.length > 0 ? (
+            <div className="wildhaven-gallery-grid mt-8">
+              {visibleGalleryData.map((item) => (
+                <article className="wildhaven-gallery-card" key={item.id}>
+                  <button type="button" className="wildhaven-gallery-image-wrap" onClick={() => setSelectedGalleryItem(item)} aria-label={`Open ${item.name} image`}>
+                    <img src={galleryImageMap[item.image]} alt={item.name} className="wildhaven-gallery-image" />
+                    <span className="wildhaven-gallery-image-shade">
+                      <span className="wildhaven-gallery-image-icon">+</span>
+                    </span>
+                  </button>
+                  <div className="wildhaven-gallery-content">
+                    <div className="wildhaven-gallery-topline">
+                      <span className="wildhaven-gallery-category">{item.category}</span>
+                      <span className="wildhaven-gallery-status">{item.status}</span>
+                    </div>
+                    <div className="wildhaven-gallery-name">{item.name}</div>
+                    <div className="wildhaven-gallery-description">{item.description}</div>
+                    <div className="wildhaven-gallery-habitat">
+                      <span className="wildhaven-gallery-habitat-label">Habitat</span>
+                      <span className="wildhaven-gallery-habitat-value">{item.habitat}</span>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="wildhaven-gallery-empty">
+              <p>No wildlife stories found. Try a broader search or filter.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {selectedGalleryItem && (
+        <div className="wildhaven-gallery-lightbox-backdrop" onClick={() => setSelectedGalleryItem(null)}>
+          <div className="wildhaven-gallery-lightbox" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="wildhaven-gallery-lightbox-close" aria-label="Close gallery image" onClick={() => setSelectedGalleryItem(null)}>×</button>
+            <div className="wildhaven-gallery-lightbox-image-wrap">
+              <img src={galleryImageMap[selectedGalleryItem.image]} alt={selectedGalleryItem.name} className="wildhaven-gallery-lightbox-image" />
+            </div>
+            <div className="wildhaven-gallery-lightbox-copy">
+              <div className="wildhaven-gallery-lightbox-top">
+                <span className="wildhaven-gallery-category">{selectedGalleryItem.category}</span>
+                <span className="wildhaven-gallery-status">{selectedGalleryItem.status}</span>
+              </div>
+              <h3 className="font-display text-3xl text-primary mt-3">{selectedGalleryItem.name}</h3>
+              <p className="text-muted-foreground mt-3">{selectedGalleryItem.description}</p>
+              <div className="wildhaven-gallery-lightbox-meta">
+                <span>{selectedGalleryItem.habitat}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CTA */}
       <section className="py-20">

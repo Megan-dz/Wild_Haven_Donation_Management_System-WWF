@@ -81,8 +81,9 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     background-image:
-      radial-gradient(1200px 600px at 90% -10%, oklch(0.78 0.14 75 / 0.15), transparent 60%),
-      radial-gradient(900px 500px at -10% 110%, oklch(0.42 0.15 25 / 0.08), transparent 60%);
+      radial-gradient(1200px 600px at 90% -10%, oklch(0.78 0.14 75 / 0.18), transparent 60%),
+      radial-gradient(1000px 520px at 0% 110%, oklch(0.42 0.08 145 / 0.10), transparent 58%),
+      linear-gradient(135deg, color-mix(in srgb, var(--background) 92%, transparent), color-mix(in srgb, var(--secondary) 82%, transparent));
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
@@ -92,8 +93,12 @@
     font-weight: 500;
     letter-spacing: -0.01em;
   }
-  a { color: inherit; text-decoration: none; }
-  button, input, textarea { font: inherit; }
+  h1, h2, h3, h4 { line-height: 1.1; }
+  p { line-height: 1.65; }
+  a { color: inherit; text-decoration: none; transition: color 280ms ease, opacity 280ms ease, border-color 280ms ease; }
+  button, input, textarea, select { font: inherit; }
+  button { transition: transform 260ms ease, box-shadow 260ms ease, background-color 260ms ease, color 260ms ease, border-color 260ms ease; }
+  button:hover { transform: translateY(-1px); }
   img { max-width: 100%; display: block; }
   ::selection { background: var(--primary); color: var(--primary-foreground); }
 }
@@ -212,12 +217,332 @@
     background: color-mix(in srgb, var(--card) 96%, transparent);
     border: 1px solid color-mix(in srgb, var(--border) 94%, transparent);
     box-shadow: 0 20px 40px rgba(40, 54, 37, 0.08);
+    transition: box-shadow 300ms ease, border-color 300ms ease, transform 300ms ease;
+  }
+
+  .wildhaven-page-card:hover {
+    box-shadow: 0 24px 70px rgba(40, 54, 37, 0.12);
+    border-color: color-mix(in srgb, var(--primary) 48%, var(--border));
   }
 
   .wildhaven-section-heading {
     font-family: var(--font-serif);
     letter-spacing: -0.02em;
     color: var(--foreground);
+  }
+
+  .wildhaven-gallery-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .wildhaven-gallery-search-wrap {
+    position: relative;
+  }
+
+  .wildhaven-gallery-search {
+    min-width: min(280px, calc(100vw - 4rem));
+    height: 2.9rem;
+    padding: 0 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--foreground);
+    box-shadow: 0 14px 30px rgba(40, 54, 37, 0.04);
+  }
+
+  .wildhaven-gallery-sort {
+    height: 2.9rem;
+    padding: 0 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--foreground);
+  }
+
+  .wildhaven-gallery-category-strip {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+
+  .wildhaven-gallery-filter {
+    min-height: 2.4rem;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--foreground);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .wildhaven-gallery-filter.active,
+  .wildhaven-gallery-filter:hover {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-color: var(--primary);
+  }
+
+  .wildhaven-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.1rem;
+  }
+
+  .wildhaven-gallery-card {
+    background: color-mix(in srgb, var(--card) 96%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 1.4rem;
+    overflow: hidden;
+    box-shadow: 0 14px 34px rgba(40, 54, 37, 0.08);
+    transition: transform 280ms ease, box-shadow 280ms ease, border-color 280ms ease;
+  }
+
+  .wildhaven-gallery-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 50px rgba(40, 54, 37, 0.14);
+    border-color: color-mix(in srgb, var(--primary) 58%, var(--border));
+  }
+
+  .wildhaven-gallery-image-wrap {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 230px;
+    padding: 0;
+    border: 0;
+    background: var(--secondary);
+    cursor: pointer;
+  }
+
+  .wildhaven-gallery-image {
+    width: 100%;
+    height: 230px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .wildhaven-gallery-image-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--foreground) 50%, transparent));
+    opacity: 0;
+    transition: opacity 300ms ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wildhaven-gallery-image-icon {
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 999px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .wildhaven-gallery-image-wrap:hover .wildhaven-gallery-image-shade {
+    opacity: 1;
+  }
+
+  .wildhaven-gallery-content {
+    padding: 1rem;
+  }
+
+  .wildhaven-gallery-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .wildhaven-gallery-category {
+    display: inline-block;
+    color: var(--primary);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .wildhaven-gallery-status {
+    color: var(--forest);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .wildhaven-gallery-name {
+    font-family: var(--font-serif);
+    color: var(--foreground);
+    font-size: 1.6rem;
+    margin-top: 0.8rem;
+    line-height: 1.2;
+  }
+
+  .wildhaven-gallery-description {
+    color: var(--muted-foreground);
+    font-size: 0.86rem;
+    line-height: 1.6;
+    margin-top: 0.7rem;
+  }
+
+  .wildhaven-gallery-habitat {
+    margin-top: 0.9rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .wildhaven-gallery-habitat-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  .wildhaven-gallery-habitat-value {
+    font-size: 0.84rem;
+    color: var(--foreground);
+  }
+
+  .wildhaven-gallery-empty {
+    margin-top: 1.2rem;
+    border-radius: 1rem;
+    border: 1px dashed var(--border);
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted-foreground);
+  }
+
+  .wildhaven-gallery-lightbox-backdrop {
+    position: fixed;
+    inset: 0;
+    background: color-mix(in srgb, var(--foreground) 70%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 90;
+    padding: 1rem;
+  }
+
+  .wildhaven-gallery-lightbox {
+    width: min(960px, calc(100vw - 2rem));
+    background: var(--card);
+    border-radius: 1.4rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 30px 120px rgba(0, 0, 0, 0.4);
+    display: grid;
+    grid-template-columns: minmax(430px, 1fr) minmax(260px, 0.7fr);
+    overflow: hidden;
+  }
+
+  .wildhaven-gallery-lightbox-image-wrap {
+    background: var(--secondary);
+    min-height: 420px;
+  }
+
+  .wildhaven-gallery-lightbox-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .wildhaven-gallery-lightbox-copy {
+    padding: 1.8rem;
+    background: var(--card);
+  }
+
+  .wildhaven-gallery-lightbox-top {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .wildhaven-gallery-lightbox-copy .font-display {
+    font-size: 2.3rem;
+  }
+
+  .wildhaven-gallery-lightbox-meta {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    margin-top: 1rem;
+    font-weight: 800;
+    color: var(--primary);
+  }
+
+  .wildhaven-gallery-lightbox-close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    width: 2.7rem;
+    height: 2.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--foreground);
+    font-size: 2rem;
+    line-height: 1;
+    z-index: 100;
+  }
+
+  .wildhaven-button-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.8rem;
+    padding: 0.85rem 1.4rem;
+    border-radius: 999px;
+    border: 1px solid var(--primary);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    box-shadow: 0 12px 24px color-mix(in srgb, var(--primary) 16%, transparent);
+  }
+
+  .wildhaven-button-primary:hover {
+    background: color-mix(in srgb, var(--primary) 88%, var(--foreground));
+    color: var(--primary-foreground);
+  }
+
+  .wildhaven-button-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.8rem;
+    padding: 0.85rem 1.4rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--card) 95%, transparent);
+    color: var(--foreground);
+    font-weight: 700;
+  }
+
+  .wildhaven-button-secondary:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 8%, var(--card));
   }
 }
 
