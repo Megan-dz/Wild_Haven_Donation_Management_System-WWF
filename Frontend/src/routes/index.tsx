@@ -188,6 +188,64 @@ const CONSERVATION_TIMELINE = [
   },
 ];
 
+const HOW_YOU_CAN_HELP = [
+  {
+    id: "donate",
+    icon: "✦",
+    title: "Donate",
+    theme: "Direct field support",
+    summary: "Fund patrols, habitat restoration, rescue kits, and community conservation programs.",
+    detail: "A monthly or one-time contribution helps Wild Haven respond quickly to field needs across forests, grasslands, and river systems.",
+    impact: "Supports urgent field action",
+    steps: ["Choose a campaign", "Fund a protected area", "Track impact updates"],
+    cta: "Make a gift",
+  },
+  {
+    id: "volunteer",
+    icon: "♞",
+    title: "Volunteer",
+    theme: "Field and community action",
+    summary: "Join habitat restoration days, education events, and outreach efforts in your community.",
+    detail: "Volunteer teams help with event planning, field drives, public awareness, and conservation education sessions.",
+    impact: "Builds local conservation capacity",
+    steps: ["Join a field day", "Help with events", "Attend a training"],
+    cta: "Become a volunteer",
+  },
+  {
+    id: "awareness",
+    icon: "☄",
+    title: "Spread Awareness",
+    theme: "Public learning",
+    summary: "Share stories, educate your network, and help people understand local conservation challenges.",
+    detail: "Wildlife protection grows when communities understand the species, habitats, and people connected to conservation work.",
+    impact: "Expands public understanding",
+    steps: ["Share a field story", "Host a talk", "Join a campaign"],
+    cta: "Start a conversation",
+  },
+  {
+    id: "reduce-impact",
+    icon: "♻",
+    title: "Reduce Environmental Impact",
+    theme: "Lower your footprint",
+    summary: "Reduce waste, conserve water, avoid damaging products, and make gentler daily choices.",
+    detail: "Lower-impact habits protect forest systems and reduce pressure on habitats across the landscape.",
+    impact: "Lowers pressure on habitats",
+    steps: ["Reduce single-use plastics", "Choose low-waste options", "Save water and energy"],
+    cta: "Lower your footprint",
+  },
+  {
+    id: "wildlife-friendly",
+    icon: "✎",
+    title: "Support Wildlife-Friendly Practices",
+    theme: "Responsible everyday choices",
+    summary: "Choose products and spaces that protect local biodiversity and support responsible land stewardship.",
+    detail: "From responsible tourism to habitat-friendly products and community-led stewardship, your choices can help wildlife thrive.",
+    impact: "Protects shared landscapes",
+    steps: ["Choose ethical products", "Avoid wildlife trade", "Protect local habitats"],
+    cta: "Make a wildlife-friendly choice",
+  },
+];
+
 function DonatePage() {
   const navigate = useNavigate();
   const [frequency, setFrequency] = useState<"one-time" | "monthly">("one-time");
@@ -208,6 +266,7 @@ function DonatePage() {
   const [quizAnswered, setQuizAnswered] = useState(false);
   const [selectedHabitat, setSelectedHabitat] = useState<string>("western-ghats");
   const [selectedTimeline, setSelectedTimeline] = useState<string>(CONSERVATION_TIMELINE[0].id);
+  const [expandedHelpCard, setExpandedHelpCard] = useState<string>("donate");
   const [comparisonPositions, setComparisonPositions] = useState<Record<string, number>>({
     "forest-corridor": 54,
     "elephant-safe-passages": 44,
@@ -984,6 +1043,59 @@ function DonatePage() {
                 <p>{selectedTimelineEntry.detail}</p>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How You Can Help */}
+      <section id="help" className="py-24">
+        <div className="container-page">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-3xl">
+              <div className="ornament-divider mb-6"><span className="text-xs uppercase tracking-[0.3em]">How you can help</span></div>
+              <h2 className="font-display text-4xl md:text-5xl leading-tight">Every action can protect a wild place.</h2>
+              <p className="mt-4 text-muted-foreground">Conservation grows when families, communities, educators, and supporters create healthier relationships with the natural world.</p>
+            </div>
+            <a href="#donate" className="text-sm font-semibold text-primary hover:underline">Choose a way to give →</a>
+          </div>
+
+          <div className="wildhaven-help-grid mt-10">
+            {HOW_YOU_CAN_HELP.map((item) => {
+              const isExpanded = expandedHelpCard === item.id;
+              return (
+                <article key={item.id} className={`wildhaven-help-card ${isExpanded ? "active" : ""}`}> 
+                  <button type="button" className="wildhaven-help-card-top" onClick={() => setExpandedHelpCard(isExpanded ? "" : item.id)} aria-expanded={isExpanded}>
+                    <span className="wildhaven-help-icon" aria-hidden="true">{item.icon}</span>
+                    <span className="wildhaven-help-copy">
+                      <span className="wildhaven-help-theme">{item.theme}</span>
+                      <span className="wildhaven-help-title">{item.title}</span>
+                    </span>
+                    <span className="wildhaven-help-toggle">
+                      <span className="wildhaven-help-toggle-icon">{isExpanded ? "−" : "+"}</span>
+                    </span>
+                  </button>
+
+                  <div className={`wildhaven-help-body ${isExpanded ? "open" : ""}`}> 
+                    <p className="wildhaven-help-summary">{item.summary}</p>
+                    <div className="wildhaven-help-detail">
+                      <p>{item.detail}</p>
+                      <div className="wildhaven-help-impact">
+                        <span className="wildhaven-help-impact-label">Impact</span>
+                        <span className="wildhaven-help-impact-text">{item.impact}</span>
+                      </div>
+                      <div className="wildhaven-help-steps">
+                        {item.steps.map((step) => (
+                          <span className="wildhaven-help-step" key={step}>{step}</span>
+                        ))}
+                      </div>
+                      <button type="button" className="wildhaven-help-cta">
+                        {item.cta}
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
