@@ -16,6 +16,13 @@ export const Route = createFileRoute("/")({
 
 const AMOUNTS = [500, 1000, 2500, 5000, 10000, 25000];
 const formatINR = (value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+const MATCH_LIMIT = 5000;
+const SUPPORTERS_THIS_MONTH = 2500;
+const CONSERVATION_AREAS = [
+  { id: "habitat", name: "Habitat restoration", detail: "Forests, wetlands, and wildlife corridors" },
+  { id: "species", name: "Species protection", detail: "Patrols and protection for endangered animals" },
+  { id: "communities", name: "Community programs", detail: "Livelihoods that help people and wildlife coexist" },
+] as const;
 
 const IMPACT_CAMPAIGNS = [
   { name: "Forest protection", raised: 750000, goal: 1000000, detail: "Funds forest patrols, habitat monitoring, and safer wildlife corridors." },
@@ -40,15 +47,20 @@ function DonatePage() {
   const [frequency, setFrequency] = useState<"one-time" | "monthly">("one-time");
   const [amount, setAmount] = useState<number>(2500);
   const [custom, setCustom] = useState("");
+  const [conservationArea, setConservationArea] = useState<(typeof CONSERVATION_AREAS)[number]["id"]>("habitat");
+  const [lifetimeTotal] = useState(48500);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [confirmed, setConfirmed] = useState<null | { amount: number; frequency: "one-time" | "monthly" }>(null);
 
   const finalAmount = custom ? Number(custom) : amount;
   const canDonate = Number.isFinite(finalAmount) && finalAmount >= 100;
+  const matchedAmount = canDonate ? Math.min(finalAmount, MATCH_LIMIT) : 0;
+  const totalImpact = finalAmount + matchedAmount;
+  const selectedArea = CONSERVATION_AREAS.find((area) => area.id === conservationArea) ?? CONSERVATION_AREAS[0];
 
   const handleDonate = () => {
     if (!canDonate) return;
-    navigate({ to: "/payment", search: { amount: finalAmount, frequency } });
+    navigate({ to: "/payment", search: { amount: finalAmount, frequency, conservationArea, matchedAmount } });
   };
 
 
@@ -209,6 +221,42 @@ function DonatePage() {
                   </div>
                 </div>
 
+                <div>
+                  <div className="mb-3 text-xs uppercase tracking-wider text-muted-foreground">Choose where your gift helps</div>
+                  <div className="space-y-2">
+                    {CONSERVATION_AREAS.map((area) => (
+                      <label key={area.id} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${conservationArea === area.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}>
+                        <input
+                          type="radio"
+                          name="conservation-area"
+                          value={area.id}
+                          checked={conservationArea === area.id}
+                          onChange={() => setConservationArea(area.id)}
+                          className="mt-1 accent-primary"
+                        />
+                        <span>
+                          <span className="block text-sm font-semibold text-foreground">{area.name}</span>
+                          <span className="block text-xs text-muted-foreground">{area.detail}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-accent/40 bg-accent/10 p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-xs uppercase tracking-wider text-primary">Matching challenge</div>
+                      <p className="mt-1 text-sm text-muted-foreground">A field partner matches every gift up to {formatINR(MATCH_LIMIT)} this month.</p>
+                    </div>
+                    <span className="whitespace-nowrap font-display text-xl text-primary">+{formatINR(matchedAmount)}</span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between border-t border-accent/20 pt-3 text-sm">
+                    <span className="text-muted-foreground">Total field impact</span>
+                    <span className="font-semibold text-primary">{formatINR(totalImpact)}</span>
+                  </div>
+                </div>
+
                 <div className="rounded-lg bg-muted/70 p-4 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Your gift</span>
@@ -220,6 +268,24 @@ function DonatePage() {
                   <div className="mt-2 text-xs text-muted-foreground">
                     Eligible for 50% tax exemption under Section 80G of the Income Tax Act.
                   </div>
+                  <div className="mt-3 border-t border-border/60 pt-3 text-xs text-muted-foreground">
+                    <span className="font-semibold text-foreground">{SUPPORTERS_THIS_MONTH.toLocaleString("en-IN")} supporters</span> donated this month.
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-border p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-xs uppercase tracking-wider text-muted-foreground">Your giving journey</div>
+                      <p className="mt-1 text-sm text-muted-foreground">Lifetime contributions tracked for this supporter account.</p>
+                    </div>
+                    <span className="font-display text-xl text-primary">{formatINR(lifetimeTotal)}</span>
+                  </div>
+                  {frequency === "monthly" && (
+                    <p className="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">
+                      With this monthly gift, your projected total after one year is <span className="font-semibold text-foreground">{formatINR(lifetimeTotal + finalAmount * 12)}</span>.
+                    </p>
+                  )}
                 </div>
 
                 {confirmed ? (

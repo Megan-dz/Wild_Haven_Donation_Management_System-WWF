@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-type Search = { amount?: number; frequency?: "one-time" | "monthly" };
+type Search = { amount?: number; frequency?: "one-time" | "monthly"; conservationArea?: string; matchedAmount?: number };
 
 export const Route = createFileRoute("/payment")({
   validateSearch: (s: Record<string, unknown>): Search => ({
     amount: s.amount ? Number(s.amount) : undefined,
     frequency: s.frequency === "monthly" ? "monthly" : "one-time",
+    conservationArea: typeof s.conservationArea === "string" ? s.conservationArea : undefined,
+    matchedAmount: s.matchedAmount ? Number(s.matchedAmount) : 0,
   }),
   head: () => ({
     meta: [
@@ -22,7 +24,7 @@ export const Route = createFileRoute("/payment")({
 });
 
 function PaymentPage() {
-  const { amount = 0, frequency = "one-time" } = Route.useSearch();
+  const { amount = 0, frequency = "one-time", conservationArea = "habitat", matchedAmount = 0 } = Route.useSearch();
   const [method, setMethod] = useState<"card" | "upi">("card");
   const [name, setName] = useState("");
   const [card, setCard] = useState("");
@@ -45,6 +47,11 @@ function PaymentPage() {
     method === "card"
       ? name.trim() && card.replace(/\s/g, "").length >= 12 && expiry && cvv.length >= 3
       : upi.includes("@");
+  const areaLabels: Record<string, string> = {
+    habitat: "Habitat restoration",
+    species: "Species protection",
+    communities: "Community programs",
+  };
 
   const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +90,16 @@ function PaymentPage() {
                   {frequency === "monthly" ? "Monthly" : "One-time"} gift of{" "}
                   <span className="font-semibold text-foreground">₹{amount.toLocaleString("en-IN")}</span>
                 </p>
+                <div className="mt-4 grid gap-2 rounded-xl bg-muted/70 p-4 text-sm sm:grid-cols-2">
+                  <div>
+                    <span className="block text-xs uppercase tracking-wider text-muted-foreground">Supporting</span>
+                    <span className="font-semibold text-foreground">{areaLabels[conservationArea] || areaLabels.habitat}</span>
+                  </div>
+                  <div>
+                    <span className="block text-xs uppercase tracking-wider text-muted-foreground">Challenge match</span>
+                    <span className="font-semibold text-primary">+₹{matchedAmount.toLocaleString("en-IN")}</span>
+                  </div>
+                </div>
               </div>
 
               <div className="flex gap-2">
