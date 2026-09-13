@@ -1,0 +1,175 @@
+.impact-progress-container {
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+  border: 1px solid #e1e4e8;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.impact-progress-container:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border-color: #27ae60;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.campaign-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.campaign-icon {
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(39, 174, 96, 0.1);
+  border-radius: 8px;
+}
+
+.campaign-title h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.progress-stats {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.percentage {
+  background-color: #27ae60;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.campaign-description {
+  color: #7f8c8d;
+  font-size: 14px;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.progress-bar-wrapper {
+  margin-bottom: 16px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background-color: #ecf0f1;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
+  border-radius: 6px;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 8px rgba(39, 174, 96, 0.3);
+}
+
+.progress-details {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  text-align: center;
+}
+
+.progress-details > div {
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.progress-details .label {
+  color: #7f8c8d;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 4px 0;
+}
+
+.progress-details .amount {
+  color: #2c3e50;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.amount-raised .amount {
+  color: #27ae60;
+}
+
+.target-amount .amount {
+  color: #3498db;
+}
+
+.remaining-amount .amount {
+  color: #e74c3c;
+}
+
+.goal-achieved {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: #d5f4e6;
+  color: #27ae60;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.goal-achieved .checkmark {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .impact-progress-container {
+    padding: 16px;
+  }
+
+  .progress-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .progress-details {
+    grid-template-columns: 1fr;
+  }
+
+  .campaign-title h3 {
+    font-size: 16px;
+  }
+
+  .progress-stats {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

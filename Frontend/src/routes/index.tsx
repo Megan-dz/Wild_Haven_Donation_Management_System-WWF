@@ -3,6 +3,8 @@ import { useState } from "react";
 import logoAsset from "@/assets/wild-haven-logo.png.asset.json";
 import heroImage from "@/assets/hero-wildlife.jpg";
 import forestImage from "@/assets/impact-forest.jpg";
+import elephantImage from "@/assets/impact-elephant.jpg";
+import leopardImage from "@/assets/impact-leopard.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +15,25 @@ export const Route = createFileRoute("/")({
 });
 
 const AMOUNTS = [500, 1000, 2500, 5000, 10000, 25000];
+const formatINR = (value: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
+
+const IMPACT_CAMPAIGNS = [
+  { name: "Forest protection", raised: 750000, goal: 1000000, detail: "Funds forest patrols, habitat monitoring, and safer wildlife corridors." },
+  { name: "Elephant rescue", raised: 425000, goal: 600000, detail: "Supports emergency veterinary care and safe journeys home." },
+  { name: "Snow leopard guardians", raised: 1690000, goal: 2500000, detail: "Keeps high-altitude patrol teams equipped across the Himalayas." },
+];
+
+const DONOR_STORIES = [
+  { name: "Priya Sharma", location: "Mumbai", quote: "After visiting the Sundarbans, I wanted my monthly gift to keep protecting the place that changed how I see conservation." },
+  { name: "Rajesh Patel", location: "Bengaluru", quote: "I support the snow leopard team because their work turns a distant crisis into something I can help sustain every month." },
+  { name: "Anaya Verma", location: "Delhi", quote: "Wild Haven shows where the money goes. Seeing the work behind each campaign makes giving feel personal and accountable." },
+];
+
+const CONSERVATION_WINS = [
+  { title: "10,000 native trees planted", detail: "A restored corridor now connects two forest patches in the Western Ghats.", image: forestImage, metric: "50 hectares restored", date: "August 2026" },
+  { title: "47 tigers monitored safely", detail: "Community patrols recorded a full quarter without a poaching incident in a monitored reserve.", image: leopardImage, metric: "12 patrol teams equipped", date: "August 2026" },
+  { title: "Elephant rescue completed", detail: "Veterinary teams relocated an injured elephant to a protected recovery habitat.", image: elephantImage, metric: "1 safe return home", date: "July 2026" },
+];
 
 function DonatePage() {
   const navigate = useNavigate();
@@ -294,6 +315,89 @@ function DonatePage() {
                   See progress & give →
                 </span>
               </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Donation transparency */}
+      <section className="py-24">
+        <div className="container-page">
+          <div className="max-w-2xl">
+            <div className="ornament-divider mb-6"><span className="text-xs uppercase tracking-[0.3em]">Your gift in motion</span></div>
+            <h2 className="font-display text-4xl md:text-5xl leading-tight">See what supporters are moving forward.</h2>
+            <p className="mt-4 text-muted-foreground">Campaign totals are updated as gifts are confirmed, so you can follow each conservation goal from first rupee to field result.</p>
+          </div>
+          <div className="mt-12 grid gap-5 lg:grid-cols-3">
+            {IMPACT_CAMPAIGNS.map((campaign) => {
+              const percentage = Math.min(100, Math.round((campaign.raised / campaign.goal) * 100));
+              return (
+                <article key={campaign.name} className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <div className="flex items-start justify-between gap-4">
+                    <h3 className="font-display text-2xl text-primary">{campaign.name}</h3>
+                    <span className="font-display text-2xl text-primary">{percentage}%</span>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{campaign.detail}</p>
+                  <div className="mt-6" role="progressbar" aria-label={`${campaign.name} funding progress`} aria-valuenow={percentage} aria-valuemin={0} aria-valuemax={100}>
+                    <div className="h-3 overflow-hidden rounded-full bg-secondary">
+                      <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${percentage}%` }} />
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-sm">
+                    <span className="font-semibold text-primary">{formatINR(campaign.raised)} raised</span>
+                    <span className="text-muted-foreground">of {formatINR(campaign.goal)}</span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+          <p className="mt-5 text-xs text-muted-foreground">Last updated September 13, 2026 · Figures reflect confirmed gifts.</p>
+        </div>
+      </section>
+
+      {/* Donor stories */}
+      <section className="border-y border-border/60 bg-secondary/30 py-24">
+        <div className="container-page">
+          <div className="text-center max-w-2xl mx-auto">
+            <div className="ornament-divider mb-6"><span className="text-xs uppercase tracking-[0.3em]">From the community</span></div>
+            <h2 className="font-display text-4xl md:text-5xl">Why people choose to give.</h2>
+          </div>
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
+            {DONOR_STORIES.map((story) => (
+              <figure key={story.name} className="rounded-2xl border border-border bg-card p-7 shadow-sm">
+                <blockquote className="font-display text-xl leading-relaxed text-primary">“{story.quote}”</blockquote>
+                <figcaption className="mt-7 border-t border-border pt-4 text-sm">
+                  <span className="block font-semibold text-primary">{story.name}</span>
+                  <span className="text-muted-foreground">{story.location} · Wild Haven supporter</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Conservation wins */}
+      <section className="py-24">
+        <div className="container-page">
+          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+            <div className="max-w-2xl">
+              <div className="ornament-divider mb-6"><span className="text-xs uppercase tracking-[0.3em]">Recent field notes</span></div>
+              <h2 className="font-display text-4xl md:text-5xl">Good news made possible together.</h2>
+              <p className="mt-4 text-muted-foreground">Every result below began with supporters choosing to fund practical conservation work.</p>
+            </div>
+            <a href="#donate" className="text-sm font-semibold text-primary hover:underline">Fund the next win →</a>
+          </div>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {CONSERVATION_WINS.map((win) => (
+              <article key={win.title} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                <img src={win.image} alt="" width={1000} height={700} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <div className="p-6">
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{win.date}</p>
+                  <h3 className="mt-3 font-display text-2xl text-primary">{win.title}</h3>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{win.detail}</p>
+                  <p className="mt-5 border-t border-border pt-4 text-sm font-semibold text-primary">{win.metric}</p>
+                </div>
+              </article>
             ))}
           </div>
         </div>

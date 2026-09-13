@@ -1,0 +1,334 @@
+.donor-testimonials-container {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 12px;
+  padding: 40px 24px;
+  margin: 32px 0;
+}
+
+.testimonials-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.testimonials-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.testimonials-header .subtitle {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.testimonials-content {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.testimonial-card {
+  background: white;
+  border: 2px solid #e1e4e8;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.testimonial-card:hover {
+  border-color: #27ae60;
+  box-shadow: 0 8px 24px rgba(39, 174, 96, 0.12);
+}
+
+/* Avatar Section */
+.avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-initials {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+}
+
+.donor-info {
+  flex: 1;
+}
+
+.donor-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.donor-info .location {
+  margin: 0 0 8px 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.cause-badge {
+  display: inline-block;
+  background-color: #d5f4e6;
+  color: #27ae60;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* Story Section */
+.story-section {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.quote-icon {
+  width: 32px;
+  height: 32px;
+  color: #27ae60;
+  opacity: 0.2;
+  margin-bottom: 8px;
+}
+
+.testimonial-text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #2c3e50;
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* Donation Info */
+.donation-info {
+  background-color: #f0f8f5;
+  border-left: 4px solid #27ae60;
+  padding: 16px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.donation-info .label {
+  color: #7f8c8d;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.donation-info .amount {
+  font-size: 20px;
+  font-weight: 700;
+  color: #27ae60;
+}
+
+/* Navigation */
+.testimonials-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.nav-button {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #e1e4e8;
+  background-color: white;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+.nav-button:hover {
+  border-color: #27ae60;
+  color: #27ae60;
+  background-color: #f0f8f5;
+}
+
+.nav-button:active {
+  transform: scale(0.95);
+}
+
+.testimonial-indicators {
+  display: flex;
+  gap: 8px;
+}
+
+.indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background-color: #e1e4e8;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.indicator.active {
+  background-color: #27ae60;
+  width: 24px;
+  border-radius: 4px;
+}
+
+.indicator:hover {
+  background-color: #bdc3c7;
+}
+
+/* Summary */
+.testimonials-summary {
+  text-align: center;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #ecf0f1;
+}
+
+.summary-text {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #7f8c8d;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .donor-testimonials-container {
+    padding: 24px 16px;
+    margin: 24px 0;
+  }
+
+  .testimonials-header h2 {
+    font-size: 24px;
+  }
+
+  .testimonial-card {
+    padding: 20px;
+  }
+
+  .avatar-section {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .avatar {
+    width: 56px;
+    height: 56px;
+  }
+
+  .testimonial-text {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .nav-button {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+
+  .donation-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .donor-testimonials-container {
+    padding: 20px 12px;
+  }
+
+  .testimonials-header h2 {
+    font-size: 22px;
+  }
+
+  .testimonials-header .subtitle {
+    font-size: 14px;
+  }
+
+  .testimonial-card {
+    padding: 16px;
+  }
+
+  .avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .avatar-initials {
+    font-size: 20px;
+  }
+
+  .donor-info h3 {
+    font-size: 16px;
+  }
+
+  .testimonials-navigation {
+    gap: 12px;
+  }
+
+  .nav-button {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+
+  .indicator.active {
+    width: 20px;
+  }
+}
