@@ -81,8 +81,8 @@ function DonatePage() {
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/30" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
         </div>
-        <div className="container-page relative grid lg:grid-cols-2 gap-12 py-20 lg:py-28">
-          <div className="max-w-xl">
+        <div className="container-page relative grid lg:grid-cols-[minmax(540px,1.05fr)_minmax(420px,0.95fr)] gap-10 lg:gap-14 py-20 lg:py-28">
+          <div className="max-w-xl self-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background/70 px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-primary">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Every gift matters
             </div>
@@ -121,8 +121,8 @@ function DonatePage() {
           </div>
 
           {/* Donation card */}
-          <div id="donate" className="lg:justify-self-end w-full max-w-md">
-            <div className="rounded-2xl border border-primary/20 bg-card shadow-2xl shadow-primary/10 overflow-hidden">
+          <div id="donate" className="lg:justify-self-end w-full max-w-[470px]">
+            <div className="wildhaven-page-card overflow-hidden rounded-[2rem] border-primary/20 shadow-2xl shadow-primary/10">
               <div className="bg-primary text-primary-foreground px-6 py-5">
                 <div className="text-xs uppercase tracking-[0.25em] opacity-80">Wild Haven Fund</div>
                 <div className="font-display text-2xl mt-1">Make a Donation</div>

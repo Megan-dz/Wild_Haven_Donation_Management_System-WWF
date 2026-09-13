@@ -131,23 +131,38 @@ function ProgramPage() {
             </div>
           </Link>
           <Link to="/">
-            <Button variant="outline" className="rounded-full border-primary/30">← Back home</Button>
+            <Button variant="outline" className="rounded-full border-primary/30 hover:bg-primary hover:text-primary-foreground transition-colors">← Back home</Button>
           </Link>
         </div>
       </header>
 
       <section className="py-20 border-b border-border/60">
-        <div className="container-page max-w-3xl">
-          <div className="ornament-divider mb-6"><span className="text-xs uppercase tracking-[0.3em]">Our Mission</span></div>
-          <h1 className="font-display text-5xl md:text-6xl leading-[1.05]">{program.title}</h1>
-          <p className="mt-4 text-lg text-primary">{program.tagline}</p>
-          <p className="mt-8 text-muted-foreground text-lg leading-relaxed">{program.intro}</p>
+        <div className="container-page max-w-5xl">
+          <div className="ornament-divider mb-8"><span className="text-xs uppercase tracking-[0.3em]">Our Mission</span></div>
+          <div className="grid lg:grid-cols-[minmax(560px,0.9fr)_minmax(280px,0.7fr)] gap-10 items-end">
+            <div>
+              <h1 className="font-display text-5xl md:text-6xl leading-[1.05]">{program.title}</h1>
+              <p className="mt-4 text-lg text-primary font-medium tracking-wide">{program.tagline}</p>
+              <p className="mt-8 text-muted-foreground text-lg leading-relaxed">{program.intro}</p>
+            </div>
+            <div className="wildhaven-page-card p-6">
+              <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Program focus</div>
+              <div className="font-display text-4xl text-primary mt-4">{program.stats[0].n}</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground mt-2">{program.stats[0].l}</div>
+              <div className="mt-8 border-t border-border pt-4">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Ground plan</div>
+                <div className="mt-2 text-sm leading-relaxed text-foreground">
+                  Frontline partnerships, species recovery and community stewardship.
+                </div>
+              </div>
+            </div>
+          </div>
 
-          <div className="mt-12 grid grid-cols-3 gap-6">
+          <div className="mt-12 grid md:grid-cols-3 gap-4">
             {program.stats.map((s: { n: string; l: string }) => (
-              <div key={s.l} className="rounded-xl border border-border bg-card p-5">
+              <div key={s.l} className="wildhaven-page-card rounded-2xl p-5">
                 <div className="font-display text-3xl text-primary">{s.n}</div>
-                <div className="text-xs text-muted-foreground mt-1">{s.l}</div>
+                <div className="text-xs text-muted-foreground mt-1 uppercase tracking-[0.12em]">{s.l}</div>
               </div>
             ))}
           </div>
@@ -155,9 +170,9 @@ function ProgramPage() {
       </section>
 
       <section className="py-20">
-        <div className="container-page max-w-3xl space-y-10">
+        <div className="container-page max-w-4xl space-y-10">
           {program.sections.map((s: { h: string; p: string }) => (
-            <div key={s.h}>
+            <div key={s.h} className="rounded-2xl border border-border/60 bg-card/70 p-7 hover:border-primary/30 hover:shadow-lg transition-all">
               <h2 className="font-display text-2xl text-primary">{s.h}</h2>
               <p className="mt-3 text-muted-foreground leading-relaxed">{s.p}</p>
             </div>
@@ -182,7 +197,7 @@ function ProgramPage() {
                 key={p.slug}
                 to="/programs/$slug"
                 params={{ slug: p.slug }}
-                className="rounded-xl border border-border bg-card p-5 hover:border-primary/40 hover:shadow-md transition"
+                className="rounded-xl border border-border bg-card p-5 hover:border-primary/40 hover:shadow-md transition transform hover:-translate-y-1 block"
               >
                 <div className="font-display text-lg text-primary">{p.title}</div>
                 <div className="text-sm text-muted-foreground mt-1">{p.tagline}</div>
