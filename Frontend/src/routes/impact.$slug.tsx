@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useState } from "react";
 import logoAsset from "@/assets/wild-haven-logo.png.asset.json";
 import { Button } from "@/components/ui/button";
 
@@ -95,6 +96,7 @@ function formatINR(n: number) {
 function ImpactDetail() {
   const { slug } = Route.useParams();
   const impact = IMPACTS[slug];
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   if (!impact) throw notFound();
 
   const pct = Math.min(100, Math.round((impact.raised / impact.goal) * 100));
@@ -118,8 +120,29 @@ function ImpactDetail() {
               <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Wildlife Conservation</div>
             </div>
           </Link>
-          <Link to="/" className="text-sm text-muted-foreground hover:text-primary">← Back home</Link>
+          <div className="hidden md:block">
+            <Link to="/" className="text-sm text-muted-foreground hover:text-primary">← Back home</Link>
+          </div>
+          <button
+            type="button"
+            aria-label="Toggle navigation"
+            aria-expanded={mobileMenuOpen}
+            className="md:hidden inline-flex flex-col items-center justify-center gap-1.5 rounded-full border border-border p-2"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <span className="block h-0.5 w-5 bg-foreground" />
+            <span className="block h-0.5 w-5 bg-foreground" />
+            <span className="block h-0.5 w-5 bg-foreground" />
+          </button>
         </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-border/60 bg-background">
+            <nav className="container-page flex flex-col gap-4 py-4 text-sm">
+              <Link to="/" className="hover:text-primary transition" onClick={() => setMobileMenuOpen(false)}>Back home</Link>
+              <Link to="/" hash="donate" className="hover:text-primary transition" onClick={() => setMobileMenuOpen(false)}>Donate</Link>
+            </nav>
+          </div>
+        )}
       </header>
 
       <section className="py-16">
@@ -130,7 +153,7 @@ function ImpactDetail() {
             <h1 className="font-display text-5xl md:text-6xl mt-2 leading-tight">{impact.title}</h1>
             <p className="mt-6 text-lg text-muted-foreground leading-relaxed">{impact.intro}</p>
 
-            <div className="mt-8 grid grid-cols-3 gap-4">
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
               {impact.highlights.map((h) => (
                 <div key={h.label} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                   <div className="font-display text-xl text-primary">{h.value}</div>
@@ -207,7 +230,7 @@ function ImpactDetail() {
               </p>
             </div>
 
-            <div className="mt-6 grid grid-cols-3 gap-3">
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
               {Object.values(IMPACTS)
                 .filter((i) => i.slug !== impact.slug)
                 .map((i) => (

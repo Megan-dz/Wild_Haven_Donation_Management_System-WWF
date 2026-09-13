@@ -19,6 +19,7 @@ function DonatePage() {
   const [frequency, setFrequency] = useState<"one-time" | "monthly">("one-time");
   const [amount, setAmount] = useState<number>(2500);
   const [custom, setCustom] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [confirmed, setConfirmed] = useState<null | { amount: number; frequency: "one-time" | "monthly" }>(null);
 
   const finalAmount = custom ? Number(custom) : amount;
@@ -47,10 +48,35 @@ function DonatePage() {
             <a href="#impact" className="hover:text-primary transition">Impact</a>
             <a href="#faq" className="hover:text-primary transition">FAQ</a>
           </nav>
-          <a href="#donate">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-5">Donate</Button>
-          </a>
+          <div className="hidden md:block">
+            <a href="#donate">
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-5">Donate</Button>
+            </a>
+          </div>
+          <button
+            type="button"
+            aria-label="Toggle navigation"
+            aria-expanded={mobileMenuOpen}
+            className="md:hidden inline-flex flex-col items-center justify-center gap-1.5 rounded-full border border-border p-2"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <span className="block h-0.5 w-5 bg-foreground" />
+            <span className="block h-0.5 w-5 bg-foreground" />
+            <span className="block h-0.5 w-5 bg-foreground" />
+          </button>
         </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-border/60 bg-background">
+            <nav className="container-page flex flex-col gap-4 py-4 text-sm">
+              <a href="#mission" className="hover:text-primary transition" onClick={() => setMobileMenuOpen(false)}>Our Mission</a>
+              <a href="#impact" className="hover:text-primary transition" onClick={() => setMobileMenuOpen(false)}>Impact</a>
+              <a href="#faq" className="hover:text-primary transition" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
+              <a href="#donate" onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full rounded-full bg-primary text-primary-foreground hover:bg-primary/90">Donate</Button>
+              </a>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Hero */}

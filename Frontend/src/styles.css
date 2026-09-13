@@ -74,8 +74,8 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html { scroll-behavior: smooth; }
+  * { box-sizing: border-box; border-color: var(--color-border); }
+  html { scroll-behavior: smooth; overflow-x: hidden; }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -85,6 +85,7 @@
       radial-gradient(900px 500px at -10% 110%, oklch(0.42 0.15 25 / 0.08), transparent 60%);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
   h1, h2, h3, h4, .font-display {
     font-family: var(--font-serif);
@@ -93,6 +94,7 @@
   }
   a { color: inherit; text-decoration: none; }
   button, input, textarea { font: inherit; }
+  img { max-width: 100%; display: block; }
   ::selection { background: var(--primary); color: var(--primary-foreground); }
 }
 

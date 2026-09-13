@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useState } from "react";
 import logoAsset from "@/assets/wild-haven-logo.png.asset.json";
 import { Button } from "@/components/ui/button";
 
@@ -118,6 +119,7 @@ export const Route = createFileRoute("/programs/$slug")({
 
 function ProgramPage() {
   const { program } = Route.useLoaderData();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen">
@@ -130,10 +132,31 @@ function ProgramPage() {
               <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Wildlife Conservation</div>
             </div>
           </Link>
-          <Link to="/">
-            <Button variant="outline" className="rounded-full border-primary/30 hover:bg-primary hover:text-primary-foreground transition-colors">← Back home</Button>
-          </Link>
+          <div className="hidden md:block">
+            <Link to="/">
+              <Button variant="outline" className="rounded-full border-primary/30 hover:bg-primary hover:text-primary-foreground transition-colors">← Back home</Button>
+            </Link>
+          </div>
+          <button
+            type="button"
+            aria-label="Toggle navigation"
+            aria-expanded={mobileMenuOpen}
+            className="md:hidden inline-flex flex-col items-center justify-center gap-1.5 rounded-full border border-border p-2"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <span className="block h-0.5 w-5 bg-foreground" />
+            <span className="block h-0.5 w-5 bg-foreground" />
+            <span className="block h-0.5 w-5 bg-foreground" />
+          </button>
         </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-border/60 bg-background">
+            <nav className="container-page flex flex-col gap-4 py-4 text-sm">
+              <Link to="/" className="hover:text-primary transition" onClick={() => setMobileMenuOpen(false)}>Back home</Link>
+              <Link to="/" hash="donate" className="hover:text-primary transition" onClick={() => setMobileMenuOpen(false)}>Donate</Link>
+            </nav>
+          </div>
+        )}
       </header>
 
       <section className="py-20 border-b border-border/60">
