@@ -311,6 +311,346 @@
     border-color: color-mix(in srgb, var(--primary) 58%, var(--border));
   }
 
+  .wildhaven-habitat-map-wrapper {
+    display: grid;
+    grid-template-columns: minmax(620px, 1.8fr) minmax(330px, 1fr);
+    gap: 1.2rem;
+    align-items: stretch;
+    margin-top: 1.5rem;
+  }
+
+  .wildhaven-habitat-map-panel {
+    min-height: 420px;
+    border-radius: 1.8rem;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--forest) 10%, var(--card)), var(--card));
+    box-shadow: 0 16px 70px rgba(40, 54, 37, 0.1);
+    overflow: hidden;
+    position: relative;
+    padding: 1rem;
+  }
+
+  .wildhaven-habitat-map {
+    position: relative;
+    min-height: 420px;
+    border-radius: 1.2rem;
+    background-image:
+      radial-gradient(circle at 22% 78%, color-mix(in srgb, var(--forest) 18%, transparent) 0 10%, transparent 11%),
+      radial-gradient(circle at 78% 76%, color-mix(in srgb, var(--forest) 20%, transparent) 0 10%, transparent 11%),
+      radial-gradient(circle at 64% 22%, color-mix(in srgb, var(--gold) 30%, transparent) 0 13%, transparent 14%),
+      radial-gradient(circle at 38% 44%, color-mix(in srgb, var(--forest) 22%, transparent) 0 16%, transparent 17%);
+    background-color: color-mix(in srgb, var(--secondary) 46%, var(--card));
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .wildhaven-habitat-map::before {
+    content: "";
+    position: absolute;
+    inset: -1.5rem;
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 26px 26px;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,1), transparent 100%);
+    opacity: 0.45;
+  }
+
+  .wildhaven-map-river {
+    position: absolute;
+    width: 150px;
+    height: 3px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--primary) 35%, var(--secondary));
+    transform: rotate(22deg);
+    box-shadow: 0 0 0 1px var(--border);
+  }
+
+  .river-one {
+    left: 18%;
+    top: 58%;
+    width: 180px;
+    transform: rotate(24deg);
+  }
+
+  .river-two {
+    right: 12%;
+    top: 30%;
+    width: 150px;
+    transform: rotate(-39deg);
+  }
+
+  .wildhaven-map-scrub {
+    position: absolute;
+    width: 120px;
+    height: 80px;
+    border-radius: 50% 50% 30% 40%;
+    border: 1px dashed var(--forest);
+    opacity: 0.8;
+  }
+
+  .scrub-one {
+    left: 12%;
+    top: 26%;
+  }
+
+  .scrub-two {
+    right: 10%;
+    bottom: 12%;
+  }
+
+  .wildhaven-map-gridline {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px dashed var(--border);
+    pointer-events: none;
+  }
+
+  .grid-one {
+    inset: 10%;
+  }
+
+  .grid-two {
+    inset: 20%;
+  }
+
+  .grid-three {
+    inset: 3%;
+  }
+
+  .wildhaven-map-region {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: var(--foreground);
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  .wildhaven-map-region-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    border: 2px solid var(--primary-foreground);
+    background: var(--primary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 16%, transparent), 0 16px 30px rgba(0,0,0,0.2);
+    transition: transform 260ms ease, box-shadow 260ms ease, background 260ms ease;
+  }
+
+  .wildhaven-map-region-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: var(--primary-foreground);
+  }
+
+  .wildhaven-map-region-label {
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 0.3rem);
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: var(--foreground);
+    background: color-mix(in srgb, var(--card) 90%, transparent);
+    border-radius: 999px;
+    padding: 0.33rem 0.68rem;
+    border: 1px solid var(--border);
+    opacity: 0;
+    transition: opacity 260ms ease;
+  }
+
+  .wildhaven-map-region:hover .wildhaven-map-region-pin,
+  .wildhaven-map-region.active .wildhaven-map-region-pin {
+    background: var(--forest);
+    transform: scale(1.12);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold) 40%, transparent), 0 14px 24px rgba(0,0,0,0.25);
+  }
+
+  .wildhaven-map-region:hover .wildhaven-map-region-label,
+  .wildhaven-map-region.active .wildhaven-map-region-label {
+    opacity: 1;
+  }
+
+  .wildhaven-habitat-info-card {
+    border-radius: 1.6rem;
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 1.4rem;
+    box-shadow: 0 16px 44px rgba(40, 54, 37, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .wildhaven-habitat-info-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .wildhaven-habitat-kicker {
+    color: var(--primary);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+  }
+
+  .wildhaven-habitat-status {
+    color: var(--forest);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+  }
+
+  .wildhaven-habitat-name-wrap {
+    margin-top: 1.4rem;
+  }
+
+  .wildhaven-habitat-name-wrap h3 {
+    margin: 0 0 0.8rem;
+  }
+
+  .wildhaven-habitat-impact {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    background: color-mix(in srgb, var(--gold) 14%, var(--card));
+    color: var(--primary);
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+  }
+
+  .wildhaven-habitat-detail {
+    color: var(--muted-foreground);
+    line-height: 1.7;
+    font-size: 0.9rem;
+    margin: 1rem 0 1.2rem;
+  }
+
+  .wildhaven-habitat-meta-row {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0;
+  }
+
+  .wildhaven-habitat-meta-label {
+    display: block;
+    color: var(--muted-foreground);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 0.45rem;
+  }
+
+  .wildhaven-habitat-meta-value {
+    color: var(--foreground);
+    font-weight: 700;
+    font-size: 0.88rem;
+  }
+
+  .wildhaven-habitat-animals {
+    padding-top: 1rem;
+  }
+
+  .wildhaven-habitat-animal-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 0.8rem;
+  }
+
+  .wildhaven-habitat-animal-tag {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    padding: 0.36rem 0.78rem;
+    color: var(--primary);
+    background: var(--secondary);
+    font-size: 0.76rem;
+    font-weight: 800;
+  }
+
+  .wildhaven-habitat-actions {
+    margin-top: 1.4rem;
+  }
+
+  .wildhaven-map-cta {
+    width: 100%;
+    border-radius: 999px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: 1px solid var(--primary);
+    padding: 0.8rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 250ms ease, color 250ms ease, transform 250ms ease;
+  }
+
+  .wildhaven-map-cta:hover {
+    background: color-mix(in srgb, var(--primary) 86%, var(--card));
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 1000px) {
+    .wildhaven-habitat-map-wrapper {
+      grid-template-columns: 1fr;
+    }
+
+    .wildhaven-habitat-map-panel {
+      min-height: 360px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .wildhaven-habitat-map {
+      min-height: 340px;
+    }
+
+    .wildhaven-habitat-map-wrapper {
+      grid-template-columns: 1fr;
+    }
+
+    .wildhaven-comparison-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .wildhaven-gallery-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .wildhaven-quiz-options {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 900px) {
+    .wildhaven-comparison-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (min-width: 901px) and (max-width: 1200px) {
+    .wildhaven-comparison-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   .wildhaven-comparison-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

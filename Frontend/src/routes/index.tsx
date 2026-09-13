@@ -44,6 +44,57 @@ const CONSERVATION_WINS = [
   { title: "Elephant rescue completed", detail: "Veterinary teams relocated an injured elephant to a protected recovery habitat.", image: elephantImage, metric: "1 safe return home", date: "July 2026" },
 ];
 
+const HABITAT_REGIONS = [
+  {
+    id: "western-ghats",
+    name: "Western Ghats",
+    x: "12%",
+    y: "66%",
+    climate: "Rain-fed forest belt",
+    animals: ["Indian Elephant", "Malabar Giant Squirrel", "Hornbill"],
+    habitat: "Dense forest corridors and river basins",
+    status: "Habitat mosaic restored",
+    impact: "+42% connected forest cover",
+    detail: "Restoration teams are reconnecting forest corridors and reducing pressure on wild elephant routes.",
+  },
+  {
+    id: "sundarbans",
+    name: "Sundarbans Delta",
+    x: "76%",
+    y: "80%",
+    climate: "Mangrove estuary",
+    animals: ["Royal Bengal Tiger", "Saltwater Crocodile", "Fishing Cat"],
+    habitat: "Tidal mangrove channels and marshlands",
+    status: "Protection patrol active",
+    impact: "+18% monitored estuary zone",
+    detail: "Mangrove teams protect floodplain routes where tigers, crocodiles, and local communities depend on the same landscape.",
+  },
+  {
+    id: "himalayas",
+    name: "Himalayan Highlands",
+    x: "61%",
+    y: "20%",
+    climate: "Alpine grassland",
+    animals: ["Snow Leopard", "Blue Sheep", "Himalayan Tahr"],
+    habitat: "High-altitude pasture and mountain ridge systems",
+    status: "Pasture watch network",
+    impact: "+31% field coverage",
+    detail: "High-country guardians monitor fragile grazing routes and protect snow leopard territories.",
+  },
+  {
+    id: "grassland",
+    name: "Grassland Plains",
+    x: "39%",
+    y: "56%",
+    climate: "Dry woodland and grassland",
+    animals: ["Indian Bison", "Indian Wolf", "Grassland Bird Species"],
+    habitat: "Open grassland and dry forest edge",
+    status: "Fire prevention monitoring",
+    impact: "+26% habitat recovery",
+    detail: "Community wardens and restoration teams are restoring balance across grassland and scrub habitat.",
+  },
+];
+
 const CONSERVATION_COMPARISONS = [
   {
     id: "forest-corridor",
@@ -107,11 +158,14 @@ function DonatePage() {
   const [quizScore, setQuizScore] = useState(0);
   const [showQuizResult, setShowQuizResult] = useState(false);
   const [quizAnswered, setQuizAnswered] = useState(false);
+  const [selectedHabitat, setSelectedHabitat] = useState<string>("western-ghats");
   const [comparisonPositions, setComparisonPositions] = useState<Record<string, number>>({
     "forest-corridor": 54,
     "elephant-safe-passages": 44,
     "snow-leopard-protection": 61,
   });
+
+  const selectedHabitatRegion = HABITAT_REGIONS.find((region) => region.id === selectedHabitat) ?? HABITAT_REGIONS[0];
 
   const galleryCategories = useMemo(() => {
     return ["All", ...Array.from(new Set(wildlifeGalleryData.map((item) => item.category)))];
@@ -733,6 +787,81 @@ function DonatePage() {
                 </article>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Wildlife Habitat Map */}
+      <section id="habitat-map" className="py-24">
+        <div className="container-page">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-3xl">
+              <div className="ornament-divider mb-6"><span className="text-xs uppercase tracking-[0.3em]">Habitat map</span></div>
+              <h2 className="font-display text-4xl md:text-5xl leading-tight">Across every living landscape.</h2>
+              <p className="mt-4 text-muted-foreground">Wild Haven supports species and ecosystems across India’s most threatened habitats.</p>
+            </div>
+            <div className="text-sm font-semibold text-primary uppercase tracking-[0.12em]">Field regions 04</div>
+          </div>
+
+          <div className="wildhaven-habitat-map-wrapper">
+            <div className="wildhaven-habitat-map-panel">
+              <div className="wildhaven-habitat-map">
+                <div className="wildhaven-map-river river-one" />
+                <div className="wildhaven-map-river river-two" />
+                <div className="wildhaven-map-scrub scrub-one" />
+                <div className="wildhaven-map-scrub scrub-two" />
+
+                {HABITAT_REGIONS.map((region) => (
+                  <button
+                    key={region.id}
+                    type="button"
+                    className={`wildhaven-map-region ${region.id === selectedHabitat ? "active" : ""}`}
+                    style={{ left: region.x, top: region.y }}
+                    aria-label={`Show ${region.name}`}
+                    aria-pressed={region.id === selectedHabitat}
+                    onClick={() => setSelectedHabitat(region.id)}
+                  >
+                    <span className="wildhaven-map-region-pin">
+                      <span className="wildhaven-map-region-dot" />
+                    </span>
+                    <span className="wildhaven-map-region-label">{region.name}</span>
+                  </button>
+                ))}
+
+                <div className="wildhaven-map-gridline grid-one" />
+                <div className="wildhaven-map-gridline grid-two" />
+                <div className="wildhaven-map-gridline grid-three" />
+              </div>
+            </div>
+
+            <aside className="wildhaven-habitat-info-card">
+              <div className="wildhaven-habitat-info-top">
+                <span className="wildhaven-habitat-kicker">{selectedHabitatRegion.climate}</span>
+                <span className="wildhaven-habitat-status">{selectedHabitatRegion.status}</span>
+              </div>
+              <div className="wildhaven-habitat-name-wrap">
+                <h3 className="font-display text-3xl text-primary">{selectedHabitatRegion.name}</h3>
+                <span className="wildhaven-habitat-impact">{selectedHabitatRegion.impact}</span>
+              </div>
+              <p className="wildhaven-habitat-detail">{selectedHabitatRegion.detail}</p>
+              <div className="wildhaven-habitat-meta-row">
+                <span className="wildhaven-habitat-meta-label">Habitat</span>
+                <span className="wildhaven-habitat-meta-value">{selectedHabitatRegion.habitat}</span>
+              </div>
+              <div className="wildhaven-habitat-animals">
+                <span className="wildhaven-habitat-meta-label">Species watched</span>
+                <div className="wildhaven-habitat-animal-list">
+                  {selectedHabitatRegion.animals.map((animal) => (
+                    <span className="wildhaven-habitat-animal-tag" key={animal}>{animal}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="wildhaven-habitat-actions">
+                <button type="button" className="wildhaven-map-cta">
+                  Support this habitat
+                </button>
+              </div>
+            </aside>
           </div>
         </div>
       </section>
