@@ -16,6 +16,7 @@ import { Volunteers } from '@/pages/volunteers';
 import { MedicalRecovery } from '@/pages/medical-recovery';
 import { Adoptions } from '@/pages/adoptions';
 import { Inventory } from '@/pages/inventory';
+import { CommandCenter } from '@/pages/command-center';
 import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ function Router() {
     <AppLayout>
       <Switch>
         <Route path="/" component={Dashboard} />
+        <Route path="/command-center" component={CommandCenter} />
         <Route path="/analytics" component={Analytics} />
         <Route path="/donations" component={Donations} />
         <Route path="/campaigns" component={Campaigns} />
