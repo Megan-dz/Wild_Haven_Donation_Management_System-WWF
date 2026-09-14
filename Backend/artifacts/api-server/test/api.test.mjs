@@ -9,6 +9,8 @@ const portalData = vi.hoisted(() => ({
   addActivity: vi.fn(),
   getDonorRecord: vi.fn(),
   listDonorRecords: vi.fn(),
+  getCampaignRecord: vi.fn(),
+  listCampaignRecords: vi.fn(),
 }));
 
 const dbMock = vi.hoisted(() => ({
@@ -52,8 +54,8 @@ vi.mock("../src/lib/portal-data.ts", () => ({
   getDonorRecord: portalData.getDonorRecord,
   listDonorRecords: portalData.listDonorRecords,
   currency: vi.fn((value) => Math.round(Number(value ?? 0)) / 100),
-  getCampaignRecord: vi.fn(),
-  listCampaignRecords: vi.fn(),
+  getCampaignRecord: portalData.getCampaignRecord,
+  listCampaignRecords: portalData.listCampaignRecords,
   getDonationRecord: vi.fn(),
   listDonationRecords: vi.fn(),
 }));
@@ -69,10 +71,13 @@ describe("API routes", () => {
     portalData.addActivity.mockReset();
     portalData.getDonorRecord.mockReset();
     portalData.listDonorRecords.mockReset();
+    portalData.getCampaignRecord.mockReset();
+    portalData.listCampaignRecords.mockReset();
     dbMock.insert.mockReset();
     dbMock.update.mockReset();
     dbMock.delete.mockReset();
     portalData.listDonorRecords.mockResolvedValue([]);
+    portalData.listCampaignRecords.mockResolvedValue([]);
   });
 
   it("returns a public health response", async () => {
@@ -179,6 +184,198 @@ describe("API routes", () => {
       "New donor added",
       "Nisha Kumar was added to the donor directory.",
     );
+  });
+
+  it("rejects unauthenticated access to campaigns", async () => {
+    clerk.getAuth.mockReturnValue(null);
+
+    const response = await request(app).get("/api/campaigns");
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: "Authentication required" });
+  });
+
+  it("lists campaigns for authenticated requests", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const campaigns = [
+      {
+        id: 1,
+        name: "Snow Leopard Patrol",
+        species: "Snow leopard",
+        location: "Himachal Pradesh",
+        description: "Protecting high-altitude habitat zones.",
+        goal: 2500,
+        raised: 1800,
+        status: "active",
+        supporters: 28,
+        createdAt: "2026-08-01T00:00:00.000Z",
+      },
+    ];
+
+    portalData.listCampaignRecords.mockResolvedValue(campaigns);
+
+    const response = await request(app).get("/api/campaigns");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(campaigns);
+    expect(portalData.listCampaignRecords).toHaveBeenCalledWith(undefined, undefined, 50);
+  });
+
+  it("gets a campaign by id for authenticated requests", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const campaign = {
+      id: 9,
+      name: "Elephant Corridor",
+      species: "Elephant",
+      location: "Odisha",
+      description: "Safeguarding migration routes.",
+      goal: 3000,
+      raised: 2100,
+      status: "paused",
+      supporters: 14,
+      createdAt: "2026-08-05T00:00:00.000Z",
+    };
+
+    portalData.getCampaignRecord.mockResolvedValue(campaign);
+
+    const response = await request(app).get("/api/campaigns/9");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(campaign);
+    expect(portalData.getCampaignRecord).toHaveBeenCalledWith(9);
+  });
+
+  it("returns 404 when a campaign id does not exist", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    portalData.getCampaignRecord.mockResolvedValue(undefined);
+
+    const response = await request(app).get("/api/campaigns/999");
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: "Campaign not found" });
+  });
+
+  it("creates a valid campaign", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const payload = {
+      name: "Forest Guard",
+      species: "Leopard",
+      location: "Karnataka",
+      description: "Support local wildlife volunteers.",
+      goal: 1800,
+      status: "active",
+    };
+
+    dbMock.insert.mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 12 }]),
+      }),
+    });
+
+    const createdCampaign = {
+      id: 12,
+      ...payload,
+      raised: 0,
+      supporters: 0,
+      createdAt: "2026-09-12T00:00:00.000Z",
+    };
+
+    portalData.getCampaignRecord.mockResolvedValue(createdCampaign);
+
+    const response = await request(app)
+      .post("/api/campaigns")
+      .send(payload);
+
+    expect(response.status).toBe(201);
+    expect(response.body).toEqual(createdCampaign);
+    expect(portalData.addActivity).toHaveBeenCalledWith(
+      "campaign",
+      "Campaign created",
+      "Forest Guard was added to the campaign portfolio.",
+    );
+  });
+
+  it("rejects invalid campaign data before accessing the database", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const response = await request(app)
+      .post("/api/campaigns")
+      .send({
+        name: "A",
+        species: "Leopard",
+        location: "Karnataka",
+        description: "Support local wildlife volunteers.",
+        goal: 0,
+        status: "active",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toEqual(expect.any(String));
+  });
+
+  it("updates a campaign", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const updatedCampaign = {
+      id: 9,
+      name: "Elephant Corridor",
+      species: "Elephant",
+      location: "Odisha",
+      description: "Safeguarding migration routes.",
+      goal: 3400,
+      raised: 2100,
+      status: "completed",
+      supporters: 14,
+      createdAt: "2026-08-05T00:00:00.000Z",
+    };
+
+    dbMock.update.mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([{ id: 9 }]),
+        }),
+      }),
+    });
+
+    portalData.getCampaignRecord.mockResolvedValue(updatedCampaign);
+
+    const response = await request(app)
+      .patch("/api/campaigns/9")
+      .send({ goal: 34, status: "completed" });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(updatedCampaign);
+    expect(portalData.getCampaignRecord).toHaveBeenCalledWith(9);
+  });
+
+  it("rejects invalid campaign updates when goal is non-positive", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const response = await request(app)
+      .patch("/api/campaigns/9")
+      .send({ goal: 0 });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toEqual(expect.any(String));
+  });
+
+  it("deletes a campaign", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    dbMock.delete.mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 9 }]),
+      }),
+    });
+
+    const response = await request(app).delete("/api/campaigns/9");
+
+    expect(response.status).toBe(204);
+    expect(response.text).toBe("");
   });
 
   it("creates a valid donation", async () => {
