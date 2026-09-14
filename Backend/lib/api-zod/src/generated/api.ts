@@ -30,6 +30,55 @@ export const GetCurrentStaffResponse = zod.object({
 
 
 /**
+ * @summary List staff tasks
+ */
+export const listTasksQueryEmployeeIdMax = 100;
+
+export const listTasksQueryLimitDefault = 50;
+export const listTasksQueryLimitMax = 100;
+
+
+
+export const ListTasksQueryParams = zod.object({
+  "employeeId": zod.coerce.string().max(listTasksQueryEmployeeIdMax).optional(),
+  "limit": zod.coerce.number().int().min(1).max(listTasksQueryLimitMax).default(listTasksQueryLimitDefault)
+})
+
+export const TaskPriority = zod.enum(['low', 'medium', 'high'])
+export const TaskStatus = zod.enum(['todo', 'in_progress', 'done'])
+export const TaskSchema = zod.object({
+  "id": zod.int(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "employeeId": zod.string(),
+  "priority": TaskPriority,
+  "status": TaskStatus,
+  "dueDate": zod.coerce.date(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListTasksResponse = zod.array(TaskSchema)
+
+export const createTaskBodyTitleMin = 1;
+export const createTaskBodyDescriptionMin = 1;
+export const createTaskBodyEmployeeIdMin = 1;
+
+
+export const CreateTaskBody = zod.object({
+  "title": zod.string().min(createTaskBodyTitleMin),
+  "description": zod.string().min(createTaskBodyDescriptionMin),
+  "employeeId": zod.string().min(createTaskBodyEmployeeIdMin),
+  "priority": TaskPriority,
+  "status": TaskStatus.optional(),
+  "dueDate": zod.coerce.date()
+})
+
+export const GetTaskParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+
+/**
  * @summary Get the operations dashboard summary
  */
 export const GetDashboardSummaryResponse = zod.object({

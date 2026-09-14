@@ -10,6 +10,11 @@ import {
   DeleteDonationParams,
   GetCampaignParams,
   GetCurrentStaffResponse,
+  CreateTaskBody,
+  GetTaskParams,
+  ListTasksQueryParams,
+  ListTasksResponse,
+  TaskSchema,
   GetDashboardSummaryResponse,
   GetDonorParams,
   GetDonationParams,
@@ -40,6 +45,7 @@ import {
   listDonationRecords,
   listDonorRecords,
 } from "../lib/portal-data";
+import { tasksTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 
 const isDuplicateRecordError = (error: unknown): boolean =>
@@ -75,6 +81,69 @@ router.get("/auth/me", (req, res): void => {
       .toUpperCase(),
   };
   res.json(GetCurrentStaffResponse.parse(profile));
+});
+
+router.get("/tasks", async (req, res): Promise<void> => {
+  const parsed = ListTasksQueryParams.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const tasks = await db
+      .select()
+      .from(tasksTable)
+      .where(parsed.data.employeeId ? eq(tasksTable.employeeId, parsed.data.employeeId) : undefined)
+      .orderBy(desc(tasksTable.createdAt))
+      .limit(parsed.data.limit ?? 50);
+
+    res.json(ListTasksResponse.parse(tasks));
+  } catch (error) {
+    handleCrudError(error, res, "Task");
+  }
+});
+
+router.get("/tasks/:id", async (req, res): Promise<void> => {
+  const parsed = GetTaskParams.safeParse(req.params);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [task] = await db.select().from(tasksTable).where(eq(tasksTable.id, parsed.data.id));
+    if (!task) {
+      res.status(404).json({ error: "Task not found" });
+      return;
+    }
+
+    res.json(TaskSchema.parse(task));
+  } catch (error) {
+    handleCrudError(error, res, "Task");
+  }
+});
+
+router.post("/tasks", async (req, res): Promise<void> => {
+  const parsed = CreateTaskBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [task] = await db
+      .insert(tasksTable)
+      .values({
+        ...parsed.data,
+        dueDate: parsed.data.dueDate,
+      })
+      .returning();
+
+    res.status(201).json(TaskSchema.parse(task));
+  } catch (error) {
+    handleCrudError(error, res, "Task");
+  }
 });
 
 router.get("/dashboard", async (req, res): Promise<void> => {

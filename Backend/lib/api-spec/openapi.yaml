@@ -20,6 +20,8 @@ tags:
     description: Donation records
   - name: campaigns
     description: Conservation campaigns
+  - name: tasks
+    description: Staff task management
   - name: impact
     description: Impact reporting
 paths:
@@ -82,6 +84,68 @@ paths:
                   $ref: "#/components/schemas/ActivityItem"
         "401":
           $ref: "#/components/responses/Unauthorized"
+  /tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      summary: List staff tasks
+      parameters:
+        - name: employeeId
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Staff tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createTask
+      tags: [tasks]
+      summary: Create a task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskInput"
+      responses:
+        "201":
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /tasks/{id}:
+    get:
+      operationId: getTask
+      tags: [tasks]
+      summary: Get a task
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Task record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /donors:
     get:
       operationId: listDonors
@@ -551,6 +615,57 @@ components:
           type: string
           format: date-time
       required: [id, type, title, detail, createdAt]
+    TaskPriority:
+      type: string
+      enum: [low, medium, high]
+    TaskStatus:
+      type: string
+      enum: [todo, in_progress, done]
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        employeeId:
+          type: string
+        priority:
+          $ref: "#/components/schemas/TaskPriority"
+        status:
+          $ref: "#/components/schemas/TaskStatus"
+        dueDate:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, title, description, employeeId, priority, status, dueDate, createdAt, updatedAt]
+    TaskInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        employeeId:
+          type: string
+          minLength: 1
+        priority:
+          $ref: "#/components/schemas/TaskPriority"
+        status:
+          $ref: "#/components/schemas/TaskStatus"
+        dueDate:
+          type: string
+          format: date-time
+      required: [title, description, employeeId, priority, dueDate]
     Donor:
       type: object
       properties:
