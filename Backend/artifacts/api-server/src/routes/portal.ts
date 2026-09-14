@@ -3,15 +3,24 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import {
   db,
   activityTable,
+  animalMedicalRecordsTable,
   campaignsTable,
   conservationAreasTable,
   donationsTable,
   donorsTable,
   donationChallengesTable,
+  insertAnimalMedicalRecordSchema,
   insertConservationAreaSchema,
   insertDonationChallengeSchema,
   insertRecurringDonationSchema,
+  insertRescueCaseNoteSchema,
+  insertRescueCaseSchema,
+  insertRescueExpenseSchema,
   recurringDonationsTable,
+  rescueCaseNotesTable,
+  rescueCaseStatusHistoryTable,
+  rescueCasesTable,
+  rescueExpensesTable,
   tasksTable,
 } from "@workspace/db";
 import {
@@ -64,6 +73,15 @@ import {
   listDonationRecords,
   listDonorRecords,
 } from "../lib/portal-data";
+import {
+  getRescueDashboard,
+  getRescueCaseRecord,
+  listAnimalMedicalRecords,
+  listRescueCaseNotes,
+  listRescueCaseStatusHistory,
+  listRescueCases,
+  listRescueExpenses,
+} from "../lib/rescue-case-data";
 import { logger } from "../lib/logger";
 
 const isDuplicateRecordError = (error: unknown): boolean =>
@@ -122,6 +140,93 @@ const parseRecurringDonationsQuery = (query: Record<string, unknown>) => {
   }
 
   return { success: true as const, data: { donorId, limit: limitResult.data.limit } };
+};
+
+const RESCUE_CASE_STATUSES = [
+  "reported",
+  "assigned",
+  "rescuing",
+  "rescued",
+  "rehabilitation",
+  "released",
+  "closed",
+  "cancelled",
+] as const;
+const RESCUE_CASE_PRIORITIES = ["low", "medium", "high", "critical"] as const;
+const RESCUE_CASE_SEVERITIES = ["low", "medium", "high", "critical"] as const;
+const RESCUE_CASE_TYPES = ["injury", "orphaned", "entanglement", "poaching", "habitat", "other"] as const;
+
+const parseOptionalString = (value: unknown) => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return undefined;
+};
+
+const parseOptionalDate = (value: unknown) => {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return undefined;
+  }
+
+  const dateValue = new Date(value);
+  return Number.isNaN(dateValue.getTime()) ? undefined : dateValue;
+};
+
+const parseRescueCaseListQuery = (query: Record<string, unknown>) => {
+  const limitResult = parseLimitQuery(query);
+  if (!limitResult.success) {
+    return limitResult;
+  }
+
+  const offsetValue = typeof query.offset === "string" ? Number(query.offset) : typeof query.offset === "number" ? query.offset : 0;
+  const offset = Number.isInteger(offsetValue) && offsetValue >= 0 ? offsetValue : 0;
+
+  return {
+    success: true as const,
+    data: {
+      search: parseOptionalString(query.search),
+      status: parseOptionalString(query.status),
+      priority: parseOptionalString(query.priority),
+      severity: parseOptionalString(query.severity),
+      rescueType: parseOptionalString(query.rescueType),
+      location: parseOptionalString(query.location),
+      assignedEmployeeId: parseOptionalString(query.assignedEmployeeId),
+      fromDate: parseOptionalDate(query.fromDate),
+      toDate: parseOptionalDate(query.toDate),
+      limit: limitResult.data.limit,
+      offset,
+      sort: parseOptionalString(query.sort),
+    },
+  };
+};
+
+const validateRescueCaseBody = (payload: Record<string, unknown>) => {
+  if (payload.status && !RESCUE_CASE_STATUSES.includes(payload.status as (typeof RESCUE_CASE_STATUSES)[number])) {
+    return "Invalid status";
+  }
+
+  if (payload.priority && !RESCUE_CASE_PRIORITIES.includes(payload.priority as (typeof RESCUE_CASE_PRIORITIES)[number])) {
+    return "Invalid priority";
+  }
+
+  if (payload.severity && !RESCUE_CASE_SEVERITIES.includes(payload.severity as (typeof RESCUE_CASE_SEVERITIES)[number])) {
+    return "Invalid severity";
+  }
+
+  if (payload.rescueType && !RESCUE_CASE_TYPES.includes(payload.rescueType as (typeof RESCUE_CASE_TYPES)[number])) {
+    return "Invalid rescueType";
+  }
+
+  if (payload.estimatedCost !== undefined && typeof payload.estimatedCost === "number" && payload.estimatedCost < 0) {
+    return "estimatedCost must be >= 0";
+  }
+
+  if (payload.actualCost !== undefined && typeof payload.actualCost === "number" && payload.actualCost < 0) {
+    return "actualCost must be >= 0";
+  }
+
+  return null;
 };
 
 router.get("/auth/me", (req, res): void => {
@@ -940,6 +1045,560 @@ router.get("/impact", async (_req, res): Promise<void> => {
     ],
   };
   res.json(GetImpactSummaryResponse.parse(response));
+});
+
+router.get("/rescue-cases", async (req, res): Promise<void> => {
+  const parsed = parseRescueCaseListQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    const records = await listRescueCases(parsed.data);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Rescue case");
+  }
+});
+
+router.post("/rescue-cases", async (req, res): Promise<void> => {
+  const body = insertRescueCaseSchema.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const validationError = validateRescueCaseBody(body.data as Record<string, unknown>);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+
+  try {
+    const [caseRecord] = await db.insert(rescueCasesTable).values(body.data).returning();
+    if (!caseRecord) {
+      res.status(500).json({ error: "Failed to create rescue case" });
+      return;
+    }
+
+    await db
+      .insert(rescueCaseStatusHistoryTable)
+      .values({
+        rescueCaseId: caseRecord.id,
+        previousStatus: null,
+        newStatus: caseRecord.status,
+        changedBy: caseRecord.assignedEmployeeId ?? caseRecord.reportedBy,
+        reason: "Case created",
+      });
+
+    res.status(201).json(caseRecord);
+  } catch (error) {
+    handleCrudError(error, res, "Rescue case");
+  }
+});
+
+router.get("/rescue-cases/:id", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const caseRecord = await getRescueCaseRecord(params.data.id);
+  if (!caseRecord) {
+    res.status(404).json({ error: "Rescue case not found" });
+    return;
+  }
+
+  res.json(caseRecord);
+});
+
+router.patch("/rescue-cases/:id", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  const body = insertRescueCaseSchema.partial().safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const validationError = validateRescueCaseBody(body.data as Record<string, unknown>);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+
+  try {
+    const existingCase = await getRescueCaseRecord(params.data.id);
+    if (!existingCase) {
+      res.status(404).json({ error: "Rescue case not found" });
+      return;
+    }
+
+    const update = { ...body.data };
+    const [caseRecord] = await db
+      .update(rescueCasesTable)
+      .set({
+        ...update,
+        updatedAt: new Date(),
+      })
+      .where(eq(rescueCasesTable.id, params.data.id))
+      .returning();
+
+    if (!caseRecord) {
+      res.status(404).json({ error: "Rescue case not found" });
+      return;
+    }
+
+    if (body.data.status && body.data.status !== existingCase.status) {
+      await db.insert(rescueCaseStatusHistoryTable).values({
+        rescueCaseId: caseRecord.id,
+        previousStatus: existingCase.status,
+        newStatus: caseRecord.status,
+        changedBy: body.data.assignedEmployeeId ?? existingCase.assignedEmployeeId ?? existingCase.reportedBy,
+        reason: "Status updated",
+      });
+    }
+
+    res.json(caseRecord);
+  } catch (error) {
+    handleCrudError(error, res, "Rescue case");
+  }
+});
+
+router.delete("/rescue-cases/:id", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  try {
+    const [caseRecord] = await db.delete(rescueCasesTable).where(eq(rescueCasesTable.id, params.data.id)).returning();
+    if (!caseRecord) {
+      res.status(404).json({ error: "Rescue case not found" });
+      return;
+    }
+
+    res.sendStatus(204);
+  } catch (error) {
+    handleCrudError(error, res, "Rescue case");
+  }
+});
+
+router.get("/rescue-cases/:id/notes", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const caseRecord = await getRescueCaseRecord(params.data.id);
+  if (!caseRecord) {
+    res.status(404).json({ error: "Rescue case not found" });
+    return;
+  }
+
+  const notes = await listRescueCaseNotes(params.data.id);
+  res.json(notes);
+});
+
+router.post("/rescue-cases/:id/notes", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  const body = insertRescueCaseNoteSchema.safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const caseRecord = await getRescueCaseRecord(params.data.id);
+  if (!caseRecord) {
+    res.status(404).json({ error: "Rescue case not found" });
+    return;
+  }
+
+  try {
+    const [note] = await db
+      .insert(rescueCaseNotesTable)
+      .values({
+        ...body.data,
+        rescueCaseId: params.data.id,
+      })
+      .returning();
+    res.status(201).json(note);
+  } catch (error) {
+    handleCrudError(error, res, "Rescue case note");
+  }
+});
+
+router.patch("/rescue-cases/:id/notes/:noteId", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  const body = insertRescueCaseNoteSchema.partial().safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  try {
+    const [note] = await db
+      .update(rescueCaseNotesTable)
+      .set({
+        ...body.data,
+        updatedAt: new Date(),
+      })
+      .where(eq(rescueCaseNotesTable.id, params.data.id))
+      .returning();
+
+    if (!note) {
+      res.status(404).json({ error: "Rescue case note not found" });
+      return;
+    }
+
+    res.json(note);
+  } catch (error) {
+    handleCrudError(error, res, "Rescue case note");
+  }
+});
+
+router.delete("/rescue-cases/:id/notes/:noteId", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  try {
+    const [note] = await db.delete(rescueCaseNotesTable).where(eq(rescueCaseNotesTable.id, params.data.id)).returning();
+    if (!note) {
+      res.status(404).json({ error: "Rescue case note not found" });
+      return;
+    }
+
+    res.sendStatus(204);
+  } catch (error) {
+    handleCrudError(error, res, "Rescue case note");
+  }
+});
+
+router.get("/rescue-cases/:id/history", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const caseRecord = await getRescueCaseRecord(params.data.id);
+  if (!caseRecord) {
+    res.status(404).json({ error: "Rescue case not found" });
+    return;
+  }
+
+  const history = await listRescueCaseStatusHistory(params.data.id);
+  res.json(history);
+});
+
+router.get("/rescue-cases/:id/medical-records", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const caseRecord = await getRescueCaseRecord(params.data.id);
+  if (!caseRecord) {
+    res.status(404).json({ error: "Rescue case not found" });
+    return;
+  }
+
+  const records = await listAnimalMedicalRecords(params.data.id);
+  res.json(records);
+});
+
+router.post("/rescue-cases/:id/medical-records", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  const body = insertAnimalMedicalRecordSchema.safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const caseRecord = await getRescueCaseRecord(params.data.id);
+  if (!caseRecord) {
+    res.status(404).json({ error: "Rescue case not found" });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .insert(animalMedicalRecordsTable)
+      .values({
+        ...body.data,
+        rescueCaseId: params.data.id,
+      })
+      .returning();
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Medical record");
+  }
+});
+
+router.patch("/rescue-cases/:id/medical-records/:recordId", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  const body = insertAnimalMedicalRecordSchema.partial().safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(animalMedicalRecordsTable)
+      .set({
+        ...body.data,
+        updatedAt: new Date(),
+      })
+      .where(eq(animalMedicalRecordsTable.id, params.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Medical record not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Medical record");
+  }
+});
+
+router.delete("/rescue-cases/:id/medical-records/:recordId", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db.delete(animalMedicalRecordsTable).where(eq(animalMedicalRecordsTable.id, params.data.id)).returning();
+    if (!record) {
+      res.status(404).json({ error: "Medical record not found" });
+      return;
+    }
+
+    res.sendStatus(204);
+  } catch (error) {
+    handleCrudError(error, res, "Medical record");
+  }
+});
+
+router.get("/rescue-cases/:id/expenses", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const caseRecord = await getRescueCaseRecord(params.data.id);
+  if (!caseRecord) {
+    res.status(404).json({ error: "Rescue case not found" });
+    return;
+  }
+
+  const expenses = await listRescueExpenses(params.data.id);
+  res.json(expenses);
+});
+
+router.post("/rescue-cases/:id/expenses", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  const body = insertRescueExpenseSchema.safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const caseRecord = await getRescueCaseRecord(params.data.id);
+  if (!caseRecord) {
+    res.status(404).json({ error: "Rescue case not found" });
+    return;
+  }
+
+  try {
+    const [expense] = await db
+      .insert(rescueExpensesTable)
+      .values({
+        ...body.data,
+        rescueCaseId: params.data.id,
+      })
+      .returning();
+    res.status(201).json(expense);
+  } catch (error) {
+    handleCrudError(error, res, "Rescue expense");
+  }
+});
+
+router.patch("/rescue-cases/:id/expenses/:expenseId", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  const body = insertRescueExpenseSchema.partial().safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  try {
+    const [expense] = await db
+      .update(rescueExpensesTable)
+      .set(body.data)
+      .where(eq(rescueExpensesTable.id, params.data.id))
+      .returning();
+
+    if (!expense) {
+      res.status(404).json({ error: "Rescue expense not found" });
+      return;
+    }
+
+    res.json(expense);
+  } catch (error) {
+    handleCrudError(error, res, "Rescue expense");
+  }
+});
+
+router.delete("/rescue-cases/:id/expenses/:expenseId", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  try {
+    const [expense] = await db.delete(rescueExpensesTable).where(eq(rescueExpensesTable.id, params.data.id)).returning();
+    if (!expense) {
+      res.status(404).json({ error: "Rescue expense not found" });
+      return;
+    }
+
+    res.sendStatus(204);
+  } catch (error) {
+    handleCrudError(error, res, "Rescue expense");
+  }
+});
+
+router.post("/rescue-cases/:id/assign", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  const body = insertRescueCaseSchema.pick({ assignedEmployeeId: true }).safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  const caseRecord = await getRescueCaseRecord(params.data.id);
+  if (!caseRecord) {
+    res.status(404).json({ error: "Rescue case not found" });
+    return;
+  }
+
+  if (!body.data.assignedEmployeeId) {
+    res.status(400).json({ error: "assignedEmployeeId is required" });
+    return;
+  }
+
+  try {
+    const [updated] = await db
+      .update(rescueCasesTable)
+      .set({
+        assignedEmployeeId: body.data.assignedEmployeeId,
+        status: "assigned",
+        updatedAt: new Date(),
+      })
+      .where(eq(rescueCasesTable.id, params.data.id))
+      .returning();
+
+    if (!updated) {
+      res.status(404).json({ error: "Rescue case not found" });
+      return;
+    }
+
+    res.json(updated);
+  } catch (error) {
+    handleCrudError(error, res, "Rescue case assignment");
+  }
+});
+
+router.delete("/rescue-cases/:id/assign", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  try {
+    const [caseRecord] = await db
+      .update(rescueCasesTable)
+      .set({ assignedEmployeeId: null, status: "reported", updatedAt: new Date() })
+      .where(eq(rescueCasesTable.id, params.data.id))
+      .returning();
+
+    if (!caseRecord) {
+      res.status(404).json({ error: "Rescue case not found" });
+      return;
+    }
+
+    res.json(caseRecord);
+  } catch (error) {
+    handleCrudError(error, res, "Rescue case assignment");
+  }
+});
+
+router.get("/rescue-cases/assigned/:employeeId", async (req, res): Promise<void> => {
+  const employeeId = typeof req.params.employeeId === "string" ? req.params.employeeId.trim() : "";
+  if (!employeeId) {
+    res.status(400).json({ error: "Employee ID is required" });
+    return;
+  }
+
+  const cases = await db
+    .select()
+    .from(rescueCasesTable)
+    .where(eq(rescueCasesTable.assignedEmployeeId, employeeId))
+    .orderBy(desc(rescueCasesTable.updatedAt));
+
+  res.json(cases);
+});
+
+router.get("/rescue-dashboard", async (_req, res): Promise<void> => {
+  const dashboard = await getRescueDashboard();
+  res.json(dashboard);
 });
 
 export default router;

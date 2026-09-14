@@ -24,6 +24,8 @@ tags:
     description: Staff task management
   - name: impact
     description: Impact reporting
+  - name: rescue
+    description: Wildlife rescue case management
 paths:
   /healthz:
     get:
