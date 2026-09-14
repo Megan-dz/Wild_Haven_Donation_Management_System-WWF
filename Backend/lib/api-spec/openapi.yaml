@@ -26,6 +26,8 @@ tags:
     description: Impact reporting
   - name: rescue
     description: Wildlife rescue case management
+  - name: volunteers
+    description: Volunteer management and engagement
 paths:
   /healthz:
     get:
@@ -541,6 +543,590 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ImpactSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /volunteers:
+    get:
+      operationId: listVolunteers
+      tags: [volunteers]
+      summary: List volunteers
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Limit"
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/VolunteerStatus"
+        - name: skills
+          in: query
+          schema:
+            type: string
+        - name: availability
+          in: query
+          schema:
+            $ref: "#/components/schemas/VolunteerAvailability"
+        - name: assignmentType
+          in: query
+          schema:
+            $ref: "#/components/schemas/VolunteerAssignmentType"
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [name, joinedDate, status, createdAt]
+      responses:
+        "200":
+          description: Volunteer records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Volunteer"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createVolunteer
+      tags: [volunteers]
+      summary: Create a volunteer record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VolunteerInput"
+      responses:
+        "201":
+          description: Volunteer created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Volunteer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /volunteers/search:
+    get:
+      operationId: searchVolunteers
+      tags: [volunteers]
+      summary: Search volunteers
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Matching volunteers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Volunteer"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /volunteers/{id}:
+    get:
+      operationId: getVolunteer
+      tags: [volunteers]
+      summary: Get a volunteer
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Volunteer record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Volunteer"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateVolunteer
+      tags: [volunteers]
+      summary: Update a volunteer
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VolunteerUpdate"
+      responses:
+        "200":
+          description: Volunteer updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Volunteer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteVolunteer
+      tags: [volunteers]
+      summary: Delete a volunteer
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Volunteer deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /volunteer-applications:
+    get:
+      operationId: listVolunteerApplications
+      tags: [volunteers]
+      summary: List volunteer applications
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - name: volunteerId
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/VolunteerApplicationStatus"
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: Volunteer applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VolunteerApplication"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createVolunteerApplication
+      tags: [volunteers]
+      summary: Create a volunteer application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VolunteerApplicationInput"
+      responses:
+        "201":
+          description: Volunteer application created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerApplication"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /volunteer-applications/{id}:
+    get:
+      operationId: getVolunteerApplication
+      tags: [volunteers]
+      summary: Get a volunteer application
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Volunteer application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerApplication"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateVolunteerApplication
+      tags: [volunteers]
+      summary: Update a volunteer application
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VolunteerApplicationInput"
+      responses:
+        "200":
+          description: Volunteer application updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerApplication"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteVolunteerApplication
+      tags: [volunteers]
+      summary: Delete a volunteer application
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Volunteer application deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /volunteer-applications/{id}/approve:
+    post:
+      operationId: approveVolunteerApplication
+      tags: [volunteers]
+      summary: Approve a volunteer application
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VolunteerApplicationReviewInput"
+      responses:
+        "200":
+          description: Volunteer application updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerApplication"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /volunteer-applications/{id}/reject:
+    post:
+      operationId: rejectVolunteerApplication
+      tags: [volunteers]
+      summary: Reject a volunteer application
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VolunteerApplicationReviewInput"
+      responses:
+        "200":
+          description: Volunteer application updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerApplication"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /volunteer-applications/{id}/hold:
+    post:
+      operationId: holdVolunteerApplication
+      tags: [volunteers]
+      summary: Place a volunteer application on hold
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VolunteerApplicationReviewInput"
+      responses:
+        "200":
+          description: Volunteer application updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerApplication"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /volunteer-assignments:
+    get:
+      operationId: listVolunteerAssignments
+      tags: [volunteers]
+      summary: List volunteer assignments
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Volunteer assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VolunteerAssignment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createVolunteerAssignment
+      tags: [volunteers]
+      summary: Create a volunteer assignment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VolunteerAssignmentInput"
+      responses:
+        "201":
+          description: Volunteer assignment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerAssignment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /volunteer-assignments/{id}:
+    get:
+      operationId: getVolunteerAssignment
+      tags: [volunteers]
+      summary: Get a volunteer assignment
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Volunteer assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerAssignment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateVolunteerAssignment
+      tags: [volunteers]
+      summary: Update a volunteer assignment
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VolunteerAssignmentUpdate"
+      responses:
+        "200":
+          description: Volunteer assignment updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerAssignment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteVolunteerAssignment
+      tags: [volunteers]
+      summary: Delete a volunteer assignment
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Volunteer assignment deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /volunteers/{id}/assignments:
+    get:
+      operationId: listVolunteerAssignmentsByVolunteer
+      tags: [volunteers]
+      summary: Get volunteer assignments for a volunteer
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Volunteer assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VolunteerAssignment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /volunteer-hours:
+    post:
+      operationId: createVolunteerHour
+      tags: [volunteers]
+      summary: Create volunteer hours
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VolunteerHourInput"
+      responses:
+        "201":
+          description: Volunteer hour created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerHour"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /volunteers/{id}/hours:
+    get:
+      operationId: listVolunteerHoursByVolunteer
+      tags: [volunteers]
+      summary: Get volunteer hours for a volunteer
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Volunteer hours
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VolunteerHour"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /volunteer-hours/{id}:
+    get:
+      operationId: getVolunteerHour
+      tags: [volunteers]
+      summary: Get a volunteer hour record
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Volunteer hour
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerHour"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateVolunteerHour
+      tags: [volunteers]
+      summary: Update a volunteer hour record
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VolunteerHourUpdate"
+      responses:
+        "200":
+          description: Volunteer hour updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerHour"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteVolunteerHour
+      tags: [volunteers]
+      summary: Delete a volunteer hour record
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Volunteer hour deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /volunteer-dashboard:
+    get:
+      operationId: getVolunteerDashboard
+      tags: [volunteers]
+      summary: Get volunteer dashboard metrics
+      responses:
+        "200":
+          description: Volunteer dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerDashboard"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /reports/volunteers:
+    get:
+      operationId: getVolunteerReports
+      tags: [volunteers]
+      summary: Get volunteer reports
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/VolunteerStatus"
+        - name: assignmentType
+          in: query
+          schema:
+            $ref: "#/components/schemas/VolunteerAssignmentType"
+      responses:
+        "200":
+          description: Volunteer report rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VolunteerReport"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /rescue-volunteers:
+    get:
+      operationId: listRescueVolunteerWorkloads
+      tags: [rescue]
+      summary: Get rescue volunteer workload overview
+      responses:
+        "200":
+          description: Rescue volunteer workloads
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RescueVolunteerWorkload"
         "401":
           $ref: "#/components/responses/Unauthorized"
 components:
@@ -1084,3 +1670,245 @@ components:
         percent:
           type: number
       required: [label, amount, percent]
+    VolunteerStatus:
+      type: string
+      enum: [active, inactive, on_leave, pending]
+    VolunteerAvailability:
+      type: string
+      enum: [weekdays, weekends, flexible, limited]
+    VolunteerApplicationStatus:
+      type: string
+      enum: [pending, approved, rejected, hold]
+    VolunteerAssignmentType:
+      type: string
+      enum: [rescue_case, conservation_project, event]
+    VolunteerAssignmentStatus:
+      type: string
+      enum: [active, completed, cancelled, paused]
+    VolunteerHourStatus:
+      type: string
+      enum: [pending, approved, rejected]
+    Volunteer:
+      type: object
+      properties:
+        id: { type: integer }
+        volunteerCode: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        address: { type: string }
+        dateOfBirth: { type: [string, "null"], format: date-time }
+        skills: { type: string }
+        interests: { type: string }
+        availability: { $ref: "#/components/schemas/VolunteerAvailability" }
+        emergencyContact: { type: string }
+        status: { $ref: "#/components/schemas/VolunteerStatus" }
+        joinedDate: { type: string, format: date-time }
+        notes: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, volunteerCode, name, email, phone, address, skills, interests, availability, emergencyContact, status, joinedDate, createdAt, updatedAt]
+    VolunteerInput:
+      type: object
+      properties:
+        volunteerCode: { type: string, minLength: 1 }
+        name: { type: string, minLength: 1 }
+        email: { type: string, format: email }
+        phone: { type: string, minLength: 6 }
+        address: { type: string, minLength: 1 }
+        dateOfBirth: { type: string, format: date-time }
+        skills: { type: string }
+        interests: { type: string }
+        availability: { $ref: "#/components/schemas/VolunteerAvailability" }
+        emergencyContact: { type: string, minLength: 1 }
+        status: { $ref: "#/components/schemas/VolunteerStatus" }
+        joinedDate: { type: string, format: date-time }
+        notes: { type: string }
+      required: [volunteerCode, name, email, phone, address, emergencyContact]
+    VolunteerUpdate:
+      type: object
+      properties:
+        volunteerCode: { type: string, minLength: 1 }
+        name: { type: string, minLength: 1 }
+        email: { type: string, format: email }
+        phone: { type: string, minLength: 6 }
+        address: { type: string, minLength: 1 }
+        dateOfBirth: { type: [string, "null"], format: date-time }
+        skills: { type: string }
+        interests: { type: string }
+        availability: { $ref: "#/components/schemas/VolunteerAvailability" }
+        emergencyContact: { type: string, minLength: 1 }
+        status: { $ref: "#/components/schemas/VolunteerStatus" }
+        joinedDate: { type: string, format: date-time }
+        notes: { type: [string, "null"] }
+    VolunteerApplication:
+      type: object
+      properties:
+        id: { type: integer }
+        volunteerId: { type: integer }
+        applicationDate: { type: string, format: date-time }
+        motivation: { type: string }
+        experience: { type: string }
+        preferredRole: { type: string }
+        preferredArea: { type: string }
+        availability: { type: string }
+        status: { $ref: "#/components/schemas/VolunteerApplicationStatus" }
+        reviewedBy: { type: [string, "null"] }
+        reviewNotes: { type: [string, "null"] }
+        reviewedAt: { type: [string, "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, volunteerId, applicationDate, motivation, experience, preferredRole, preferredArea, availability, status, createdAt, updatedAt]
+    VolunteerApplicationInput:
+      type: object
+      properties:
+        volunteerId: { type: integer, minimum: 1 }
+        applicationDate: { type: string, format: date-time }
+        motivation: { type: string, minLength: 1 }
+        experience: { type: string, minLength: 1 }
+        preferredRole: { type: string, minLength: 1 }
+        preferredArea: { type: string, minLength: 1 }
+        availability: { type: string, minLength: 1 }
+        status: { $ref: "#/components/schemas/VolunteerApplicationStatus" }
+        reviewedBy: { type: string }
+        reviewNotes: { type: string }
+        reviewedAt: { type: string, format: date-time }
+      required: [volunteerId, motivation, experience, preferredRole, preferredArea, availability]
+    VolunteerApplicationReviewInput:
+      type: object
+      properties:
+        reviewedBy: { type: string, minLength: 1 }
+        reviewNotes: { type: string, minLength: 1 }
+    VolunteerAssignment:
+      type: object
+      properties:
+        id: { type: integer }
+        volunteerId: { type: integer }
+        assignmentType: { $ref: "#/components/schemas/VolunteerAssignmentType" }
+        referenceId: { type: integer }
+        role: { type: string }
+        startDate: { type: string, format: date-time }
+        endDate: { type: [string, "null"], format: date-time }
+        status: { $ref: "#/components/schemas/VolunteerAssignmentStatus" }
+        hoursExpected: { type: integer, minimum: 0 }
+        notes: { type: [string, "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, volunteerId, assignmentType, referenceId, role, startDate, status, hoursExpected, createdAt, updatedAt]
+    VolunteerAssignmentInput:
+      type: object
+      properties:
+        volunteerId: { type: integer, minimum: 1 }
+        assignmentType: { $ref: "#/components/schemas/VolunteerAssignmentType" }
+        referenceId: { type: integer, minimum: 1 }
+        role: { type: string, minLength: 1 }
+        startDate: { type: string, format: date-time }
+        endDate: { type: string, format: date-time }
+        status: { $ref: "#/components/schemas/VolunteerAssignmentStatus" }
+        hoursExpected: { type: integer, minimum: 0 }
+        notes: { type: string }
+      required: [volunteerId, assignmentType, referenceId, role]
+    VolunteerAssignmentUpdate:
+      type: object
+      properties:
+        volunteerId: { type: integer, minimum: 1 }
+        assignmentType: { $ref: "#/components/schemas/VolunteerAssignmentType" }
+        referenceId: { type: integer, minimum: 1 }
+        role: { type: string, minLength: 1 }
+        startDate: { type: string, format: date-time }
+        endDate: { type: [string, "null"], format: date-time }
+        status: { $ref: "#/components/schemas/VolunteerAssignmentStatus" }
+        hoursExpected: { type: integer, minimum: 0 }
+        notes: { type: [string, "null"] }
+    VolunteerHour:
+      type: object
+      properties:
+        id: { type: integer }
+        volunteerId: { type: integer }
+        assignmentId: { type: [integer, "null"] }
+        workDate: { type: string, format: date-time }
+        hours: { type: integer, minimum: 1 }
+        activity: { type: string }
+        description: { type: string }
+        approvedBy: { type: [string, "null"] }
+        status: { $ref: "#/components/schemas/VolunteerHourStatus" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, volunteerId, workDate, hours, activity, description, status, createdAt, updatedAt]
+    VolunteerHourInput:
+      type: object
+      properties:
+        volunteerId: { type: integer, minimum: 1 }
+        assignmentId: { type: integer, minimum: 1 }
+        workDate: { type: string, format: date-time }
+        hours: { type: integer, minimum: 1 }
+        activity: { type: string, minLength: 1 }
+        description: { type: string, minLength: 1 }
+        approvedBy: { type: string }
+        status: { $ref: "#/components/schemas/VolunteerHourStatus" }
+      required: [volunteerId, hours, activity, description]
+    VolunteerHourUpdate:
+      type: object
+      properties:
+        volunteerId: { type: integer, minimum: 1 }
+        assignmentId: { type: [integer, "null"] }
+        workDate: { type: string, format: date-time }
+        hours: { type: integer, minimum: 1 }
+        activity: { type: string, minLength: 1 }
+        description: { type: string, minLength: 1 }
+        approvedBy: { type: [string, "null"] }
+        status: { $ref: "#/components/schemas/VolunteerHourStatus" }
+    VolunteerDashboard:
+      type: object
+      properties:
+        totalVolunteers: { type: integer }
+        activeVolunteers: { type: integer }
+        pendingApplications: { type: integer }
+        approvedApplications: { type: integer }
+        volunteersCurrentlyAssigned: { type: integer }
+        totalVolunteerHours: { type: integer }
+        hoursThisMonth: { type: integer }
+        volunteersByStatus: { type: array, items: { $ref: "#/components/schemas/VolunteerCountByStatus" } }
+        volunteersBySkill: { type: array, items: { $ref: "#/components/schemas/VolunteerCountBySkill" } }
+        volunteersByAssignmentType: { type: array, items: { $ref: "#/components/schemas/VolunteerCountByAssignmentType" } }
+        topVolunteersByHours: { type: array, items: { $ref: "#/components/schemas/VolunteerHoursLeader" } }
+      required: [totalVolunteers, activeVolunteers, pendingApplications, approvedApplications, volunteersCurrentlyAssigned, totalVolunteerHours, hoursThisMonth, volunteersByStatus, volunteersBySkill, volunteersByAssignmentType, topVolunteersByHours]
+    VolunteerCountByStatus:
+      type: object
+      properties: { status: { $ref: "#/components/schemas/VolunteerStatus" }, count: { type: integer } }
+      required: [status, count]
+    VolunteerCountBySkill:
+      type: object
+      properties: { skill: { type: string }, count: { type: integer } }
+      required: [skill, count]
+    VolunteerCountByAssignmentType:
+      type: object
+      properties: { assignmentType: { $ref: "#/components/schemas/VolunteerAssignmentType" }, count: { type: integer } }
+      required: [assignmentType, count]
+    VolunteerHoursLeader:
+      type: object
+      properties: { volunteerId: { type: integer }, name: { type: string }, totalHours: { type: integer } }
+      required: [volunteerId, name, totalHours]
+    VolunteerReport:
+      type: object
+      properties:
+        volunteerId: { type: integer }
+        volunteerCode: { type: string }
+        volunteerName: { type: string }
+        status: { $ref: "#/components/schemas/VolunteerStatus" }
+        assignmentType: { type: [string, "null"] }
+        referenceId: { type: [integer, "null"] }
+        hours: { type: [integer, "null"] }
+        workDate: { type: [string, "null"], format: date-time }
+        approvedBy: { type: [string, "null"] }
+        activity: { type: [string, "null"] }
+      required: [volunteerId, volunteerCode, volunteerName, status, assignmentType, referenceId, hours, workDate, approvedBy, activity]
+    RescueVolunteerWorkload:
+      type: object
+      properties:
+        id: { type: string }
+        totalCases: { type: integer }
+        activeCases: { type: integer }
+        highPriorityCases: { type: integer }
+        lastAssignedAt: { type: [string, "null"], format: date-time }
+      required: [id, totalCases, activeCases, highPriorityCases, lastAssignedAt]

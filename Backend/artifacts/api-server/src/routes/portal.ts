@@ -31,8 +31,6 @@ import {
   insertAnimalSpeciesSchema,
   insertConservationAreaSchema,
   insertDonationChallengeSchema,
-  insertInventoryItemSchema,
-  insertInventoryMovementSchema,
   insertRecurringDonationSchema,
   insertRescueCaseNoteSchema,
   insertRescueCaseSchema,
@@ -49,8 +47,14 @@ import {
   sponsorshipPlansTable,
   sponsorshipsTable,
   tasksTable,
-  inventoryItemsTable,
-  inventoryMovementsTable,
+  volunteerApplicationsTable,
+  volunteerAssignmentsTable,
+  volunteerHoursTable,
+  volunteersTable,
+  insertVolunteerApplicationSchema,
+  insertVolunteerAssignmentSchema,
+  insertVolunteerHourSchema,
+  insertVolunteerSchema,
 } from "@workspace/db";
 import {
   CreateCampaignBody,
@@ -123,6 +127,13 @@ import {
   listAnimalObservations,
   listAnimalSpeciesRecords,
 } from "../lib/animal-inventory-data";
+import {
+  getVolunteerDashboard,
+  listVolunteerAssignmentsByVolunteerId,
+  listVolunteerHoursByVolunteerId,
+  listVolunteerRecords,
+  listVolunteerReports,
+} from "../lib/volunteer-data";
 import {
   getRescueDashboard,
   getRescueCaseRecord,
@@ -2391,6 +2402,806 @@ router.get("/rescue-dashboard", async (_req, res): Promise<void> => {
   res.json(dashboard);
 });
 
+const parseVolunteerListQuery = (query: Record<string, unknown>) => {
+  const limitResult = parseLimitQuery(query);
+  if (!limitResult.success) {
+    return limitResult;
+  }
+
+  const offsetValue = typeof query.offset === "string" ? Number(query.offset) : typeof query.offset === "number" ? query.offset : 0;
+
+  return {
+    success: true as const,
+    data: {
+      search: parseOptionalStringValue(query.search),
+      status: parseOptionalStringValue(query.status),
+      skills: parseOptionalStringValue(query.skills),
+      availability: parseOptionalStringValue(query.availability),
+      assignmentType: parseOptionalStringValue(query.assignmentType),
+      limit: limitResult.data.limit,
+      offset: Number.isInteger(offsetValue) && offsetValue >= 0 ? offsetValue : 0,
+      sort: parseOptionalStringValue(query.sort),
+    },
+  };
+};
+
+const VOLUNTEER_STATUS_VALUES = ["active", "inactive", "on_leave", "pending"] as const;
+const VOLUNTEER_APPLICATION_STATUS_VALUES = ["pending", "approved", "rejected", "hold"] as const;
+const VOLUNTEER_ASSIGNMENT_TYPES = ["rescue_case", "conservation_project", "event"] as const;
+const VOLUNTEER_ASSIGNMENT_STATUS_VALUES = ["active", "completed", "cancelled", "paused"] as const;
+const VOLUNTEER_HOUR_STATUS_VALUES = ["pending", "approved", "rejected"] as const;
+
+const validateVolunteerBody = (payload: Record<string, unknown>) => {
+  if (payload.status && !VOLUNTEER_STATUS_VALUES.includes(payload.status as (typeof VOLUNTEER_STATUS_VALUES)[number])) {
+    return "Invalid status";
+  }
+
+  if (payload.availability && !["weekdays", "weekends", "flexible", "limited"].includes(payload.availability as string)) {
+    return "Invalid availability";
+  }
+
+  if (payload.email && typeof payload.email === "string" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
+    return "Invalid email";
+  }
+
+  if (payload.phone && typeof payload.phone === "string" && payload.phone.trim().length < 6) {
+    return "Invalid phone";
+  }
+
+  return null;
+};
+
+const volunteerExists = async (volunteerId: number): Promise<boolean> => {
+  const [volunteer] = await db.select({ id: volunteersTable.id }).from(volunteersTable).where(eq(volunteersTable.id, volunteerId));
+  return Boolean(volunteer);
+};
+
+const validateVolunteerApplicationBody = (payload: Record<string, unknown>) => {
+  if (payload.status && !VOLUNTEER_APPLICATION_STATUS_VALUES.includes(payload.status as (typeof VOLUNTEER_APPLICATION_STATUS_VALUES)[number])) {
+    return "Invalid status";
+  }
+  return null;
+};
+
+const validateVolunteerAssignmentBody = (payload: Record<string, unknown>) => {
+  if (payload.assignmentType && !VOLUNTEER_ASSIGNMENT_TYPES.includes(payload.assignmentType as (typeof VOLUNTEER_ASSIGNMENT_TYPES)[number])) {
+    return "Invalid assignmentType";
+  }
+  if (payload.status && !VOLUNTEER_ASSIGNMENT_STATUS_VALUES.includes(payload.status as (typeof VOLUNTEER_ASSIGNMENT_STATUS_VALUES)[number])) {
+    return "Invalid status";
+  }
+  if (payload.hoursExpected !== undefined && (!Number.isInteger(payload.hoursExpected) || (payload.hoursExpected as number) < 0)) {
+    return "hoursExpected must be a non-negative integer";
+  }
+  return null;
+};
+
+const validateVolunteerHourBody = (payload: Record<string, unknown>) => {
+  if (payload.status && !VOLUNTEER_HOUR_STATUS_VALUES.includes(payload.status as (typeof VOLUNTEER_HOUR_STATUS_VALUES)[number])) {
+    return "Invalid status";
+  }
+  if (payload.hours !== undefined && (!Number.isInteger(payload.hours) || (payload.hours as number) <= 0)) {
+    return "hours must be a positive integer";
+  }
+  return null;
+};
+
+router.get("/volunteers", async (req, res): Promise<void> => {
+  const parsed = parseVolunteerListQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    const volunteers = await listVolunteerRecords(parsed.data);
+
+    if (parsed.data.assignmentType) {
+      const filtered: Array<(typeof volunteers)[number]> = [];
+      for (const volunteer of volunteers) {
+        const assignments = await listVolunteerAssignmentsByVolunteerId(volunteer.id);
+        if (assignments.some((assignment) => assignment.assignmentType === parsed.data.assignmentType)) {
+          filtered.push(volunteer);
+        }
+      }
+      res.json(filtered);
+      return;
+    }
+
+    res.json(volunteers);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer");
+  }
+});
+
+router.get("/volunteers/search", async (req, res): Promise<void> => {
+  const parsed = parseVolunteerListQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    const volunteers = await listVolunteerRecords(parsed.data);
+    res.json(volunteers);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer search");
+  }
+});
+
+router.post("/volunteers", async (req, res): Promise<void> => {
+  const payload = req.body as Record<string, unknown>;
+  const validationError = validateVolunteerBody(payload);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+
+  const parsed = insertVolunteerSchema.safeParse(payload);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .insert(volunteersTable)
+      .values({
+        ...parsed.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer");
+  }
+});
+
+router.get("/volunteers/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db.select().from(volunteersTable).where(eq(volunteersTable.id, parsed.data.id));
+    if (!record) {
+      res.status(404).json({ error: "Volunteer not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer");
+  }
+});
+
+router.patch("/volunteers/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  const payload = req.body as Record<string, unknown>;
+  const validationError = validateVolunteerBody(payload);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(volunteersTable)
+      .set({ ...payload, updatedAt: new Date() })
+      .where(eq(volunteersTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Volunteer not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer");
+  }
+});
+
+router.delete("/volunteers/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .delete(volunteersTable)
+      .where(eq(volunteersTable.id, parsed.data.id))
+      .returning({ id: volunteersTable.id });
+
+    if (!record) {
+      res.status(404).json({ error: "Volunteer not found" });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer");
+  }
+});
+
+router.get("/volunteer-applications", async (req, res): Promise<void> => {
+  const limitResult = parseLimitQuery(req.query as Record<string, unknown>);
+  if (!limitResult.success) {
+    res.status(400).json({ error: limitResult.error });
+    return;
+  }
+
+  const volunteerId = parseOptionalIntegerValue(req.query.volunteerId);
+  const status = parseOptionalStringValue(req.query.status);
+  const search = parseOptionalStringValue(req.query.search);
+
+  try {
+    const rows = await db
+      .select()
+      .from(volunteerApplicationsTable)
+      .where(
+        and(
+          volunteerId ? eq(volunteerApplicationsTable.volunteerId, volunteerId) : undefined,
+          status ? eq(volunteerApplicationsTable.status, status) : undefined,
+          search
+            ? or(
+                ilike(volunteerApplicationsTable.preferredRole, `%${search}%`),
+                ilike(volunteerApplicationsTable.preferredArea, `%${search}%`),
+                ilike(volunteerApplicationsTable.motivation, `%${search}%`),
+              )
+            : undefined,
+        ),
+      )
+      .orderBy(desc(volunteerApplicationsTable.createdAt))
+      .limit(limitResult.data.limit);
+
+    res.json(rows);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer application");
+  }
+});
+
+router.post("/volunteer-applications", async (req, res): Promise<void> => {
+  const payload = req.body as Record<string, unknown>;
+  const validationError = validateVolunteerApplicationBody(payload);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+
+  const parsed = insertVolunteerApplicationSchema.safeParse(payload);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    if (!(await volunteerExists(parsed.data.volunteerId))) {
+      res.status(404).json({ error: "Volunteer not found" });
+      return;
+    }
+
+    const [record] = await db
+      .insert(volunteerApplicationsTable)
+      .values({
+        ...parsed.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer application");
+  }
+});
+
+router.get("/volunteer-applications/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db.select().from(volunteerApplicationsTable).where(eq(volunteerApplicationsTable.id, parsed.data.id));
+    if (!record) {
+      res.status(404).json({ error: "Volunteer application not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer application");
+  }
+});
+
+router.patch("/volunteer-applications/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  const payload = req.body as Record<string, unknown>;
+  const validationError = validateVolunteerApplicationBody(payload);
+  const body = insertVolunteerApplicationSchema.partial().safeParse(payload);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  try {
+    if (body.data.volunteerId && !(await volunteerExists(body.data.volunteerId))) {
+      res.status(404).json({ error: "Volunteer not found" });
+      return;
+    }
+    const [record] = await db
+      .update(volunteerApplicationsTable)
+      .set({ ...body.data, updatedAt: new Date() })
+      .where(eq(volunteerApplicationsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Volunteer application not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer application");
+  }
+});
+
+router.delete("/volunteer-applications/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .delete(volunteerApplicationsTable)
+      .where(eq(volunteerApplicationsTable.id, parsed.data.id))
+      .returning({ id: volunteerApplicationsTable.id });
+
+    if (!record) {
+      res.status(404).json({ error: "Volunteer application not found" });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer application");
+  }
+});
+
+router.post("/volunteer-applications/:id/approve", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(volunteerApplicationsTable)
+      .set({
+        status: "approved",
+        reviewedBy: parseOptionalStringValue(req.body?.reviewedBy) ?? "system",
+        reviewNotes: parseOptionalStringValue(req.body?.reviewNotes) ?? "Approved by staff",
+        reviewedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(volunteerApplicationsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Volunteer application not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer application");
+  }
+});
+
+router.post("/volunteer-applications/:id/reject", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(volunteerApplicationsTable)
+      .set({
+        status: "rejected",
+        reviewedBy: parseOptionalStringValue(req.body?.reviewedBy) ?? "system",
+        reviewNotes: parseOptionalStringValue(req.body?.reviewNotes) ?? "Application rejected",
+        reviewedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(volunteerApplicationsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Volunteer application not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer application");
+  }
+});
+
+router.post("/volunteer-applications/:id/hold", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(volunteerApplicationsTable)
+      .set({
+        status: "hold",
+        reviewedBy: parseOptionalStringValue(req.body?.reviewedBy) ?? "system",
+        reviewNotes: parseOptionalStringValue(req.body?.reviewNotes) ?? "Application placed on hold",
+        reviewedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(volunteerApplicationsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Volunteer application not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer application");
+  }
+});
+
+router.post("/volunteer-assignments", async (req, res): Promise<void> => {
+  const payload = req.body as Record<string, unknown>;
+  const validationError = validateVolunteerAssignmentBody(payload);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+
+  const parsed = insertVolunteerAssignmentSchema.safeParse(payload);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    if (!(await volunteerExists(parsed.data.volunteerId))) {
+      res.status(404).json({ error: "Volunteer not found" });
+      return;
+    }
+
+    const [record] = await db
+      .insert(volunteerAssignmentsTable)
+      .values({
+        ...parsed.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer assignment");
+  }
+});
+
+router.get("/volunteer-assignments", async (req, res): Promise<void> => {
+  const limitResult = parseLimitQuery(req.query as Record<string, unknown>);
+  if (!limitResult.success) {
+    res.status(400).json({ error: limitResult.error });
+    return;
+  }
+
+  try {
+    const rows = await db
+      .select()
+      .from(volunteerAssignmentsTable)
+      .orderBy(desc(volunteerAssignmentsTable.createdAt))
+      .limit(limitResult.data.limit);
+
+    res.json(rows);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer assignment");
+  }
+});
+
+router.get("/volunteers/:id/assignments", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const records = await listVolunteerAssignmentsByVolunteerId(parsed.data.id);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer assignment");
+  }
+});
+
+router.get("/volunteer-assignments/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db.select().from(volunteerAssignmentsTable).where(eq(volunteerAssignmentsTable.id, parsed.data.id));
+    if (!record) {
+      res.status(404).json({ error: "Volunteer assignment not found" });
+      return;
+    }
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer assignment");
+  }
+});
+
+router.patch("/volunteer-assignments/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  const payload = req.body as Record<string, unknown>;
+  const validationError = validateVolunteerAssignmentBody(payload);
+  const body = insertVolunteerAssignmentSchema.partial().safeParse(payload);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  try {
+    if (body.data.volunteerId && !(await volunteerExists(body.data.volunteerId))) {
+      res.status(404).json({ error: "Volunteer not found" });
+      return;
+    }
+    const [record] = await db
+      .update(volunteerAssignmentsTable)
+      .set({ ...body.data, updatedAt: new Date() })
+      .where(eq(volunteerAssignmentsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Volunteer assignment not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer assignment");
+  }
+});
+
+router.delete("/volunteer-assignments/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .delete(volunteerAssignmentsTable)
+      .where(eq(volunteerAssignmentsTable.id, parsed.data.id))
+      .returning({ id: volunteerAssignmentsTable.id });
+
+    if (!record) {
+      res.status(404).json({ error: "Volunteer assignment not found" });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer assignment");
+  }
+});
+
+router.post("/volunteer-hours", async (req, res): Promise<void> => {
+  const payload = req.body as Record<string, unknown>;
+  const validationError = validateVolunteerHourBody(payload);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+
+  const parsed = insertVolunteerHourSchema.safeParse(payload);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    if (!(await volunteerExists(parsed.data.volunteerId))) {
+      res.status(404).json({ error: "Volunteer not found" });
+      return;
+    }
+
+    const [record] = await db
+      .insert(volunteerHoursTable)
+      .values({
+        ...parsed.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer hour");
+  }
+});
+
+router.get("/volunteers/:id/hours", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const records = await listVolunteerHoursByVolunteerId(parsed.data.id);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer hour");
+  }
+});
+
+router.get("/volunteer-hours/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db.select().from(volunteerHoursTable).where(eq(volunteerHoursTable.id, parsed.data.id));
+    if (!record) {
+      res.status(404).json({ error: "Volunteer hour not found" });
+      return;
+    }
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer hour");
+  }
+});
+
+router.patch("/volunteer-hours/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  const payload = req.body as Record<string, unknown>;
+  const validationError = validateVolunteerHourBody(payload);
+  const body = insertVolunteerHourSchema.partial().safeParse(payload);
+  if (validationError) {
+    res.status(400).json({ error: validationError });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  try {
+    if (body.data.volunteerId && !(await volunteerExists(body.data.volunteerId))) {
+      res.status(404).json({ error: "Volunteer not found" });
+      return;
+    }
+    const [record] = await db
+      .update(volunteerHoursTable)
+      .set({ ...body.data, updatedAt: new Date() })
+      .where(eq(volunteerHoursTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Volunteer hour not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer hour");
+  }
+});
+
+router.delete("/volunteer-hours/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .delete(volunteerHoursTable)
+      .where(eq(volunteerHoursTable.id, parsed.data.id))
+      .returning({ id: volunteerHoursTable.id });
+
+    if (!record) {
+      res.status(404).json({ error: "Volunteer hour not found" });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer hour");
+  }
+});
+
+router.get("/volunteer-dashboard", async (_req, res): Promise<void> => {
+  try {
+    const dashboard = await getVolunteerDashboard();
+    res.json(dashboard);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer dashboard");
+  }
+});
+
+router.get("/reports/volunteers", async (req, res): Promise<void> => {
+  const startDate = parseOptionalDateValue(req.query.startDate);
+  const endDate = parseOptionalDateValue(req.query.endDate);
+  const status = parseOptionalStringValue(req.query.status);
+  const assignmentType = parseOptionalStringValue(req.query.assignmentType);
+
+  try {
+    const records = await listVolunteerReports({
+      startDate,
+      endDate,
+      status,
+      assignmentType,
+    });
+
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Volunteer report");
+  }
+});
+
 router.get("/rescue-volunteers", async (_req, res): Promise<void> => {
   try {
     res.json(await listVolunteerWorkloads());
@@ -3440,17 +4251,6 @@ router.get("/sponsorship-dashboard", async (_req, res): Promise<void> => {
   const dashboard = await getSponsorshipDashboard();
   res.json(dashboard);
 });
-
-router.get("/inventory", async (req, res): Promise<void> => {
-  const search = parseOptionalStringValue(req.query.search); const category = parseOptionalStringValue(req.query.category);
-  try { const rows = await db.select().from(inventoryItemsTable).where(and(search ? ilike(inventoryItemsTable.name, `%${search}%`) : undefined, category ? eq(inventoryItemsTable.category, category) : undefined)).orderBy(desc(inventoryItemsTable.updatedAt)).limit(100); res.json(rows); } catch (error) { handleCrudError(error, res, "Inventory"); }
-});
-router.get("/inventory/dashboard", async (_req, res): Promise<void> => { try { const rows = await db.select().from(inventoryItemsTable); const total = rows.reduce((sum, item) => sum + item.quantity * item.unitCost, 0); res.json({ totalItems: rows.length, inStock: rows.filter((item) => item.quantity > 0).length, lowStock: rows.filter((item) => item.quantity > 0 && item.quantity <= item.minimumQuantity).length, outOfStock: rows.filter((item) => item.quantity <= 0).length, inventoryValue: total }); } catch (error) { handleCrudError(error, res, "Inventory dashboard"); } });
-router.post("/inventory", async (req, res): Promise<void> => { const body = insertInventoryItemSchema.safeParse(req.body); if (!body.success) { res.status(400).json({ error: body.error.message }); return; } try { const [item] = await db.insert(inventoryItemsTable).values(body.data).returning(); res.status(201).json(item); } catch (error) { handleCrudError(error, res, "Inventory item"); } });
-router.patch("/inventory/:id", async (req, res): Promise<void> => { const params = parseIdParam(req.params); const body = insertInventoryItemSchema.partial().safeParse(req.body); if (!params.success || !body.success) { res.status(400).json({ error: !params.success ? params.error.message : body.error.message }); return; } try { const [item] = await db.update(inventoryItemsTable).set({ ...body.data, updatedAt: new Date() }).where(eq(inventoryItemsTable.id, params.data.id)).returning(); if (!item) { res.status(404).json({ error: "Inventory item not found" }); return; } res.json(item); } catch (error) { handleCrudError(error, res, "Inventory item"); } });
-router.delete("/inventory/:id", async (req, res): Promise<void> => { const params = parseIdParam(req.params); if (!params.success) { res.status(400).json({ error: params.error.message }); return; } try { const [item] = await db.delete(inventoryItemsTable).where(eq(inventoryItemsTable.id, params.data.id)).returning(); if (!item) { res.status(404).json({ error: "Inventory item not found" }); return; } res.sendStatus(204); } catch (error) { handleCrudError(error, res, "Inventory item"); } });
-router.get("/inventory/:id/movements", async (req, res): Promise<void> => { const params = parseIdParam(req.params); if (!params.success) { res.status(400).json({ error: params.error.message }); return; } res.json(await db.select().from(inventoryMovementsTable).where(eq(inventoryMovementsTable.inventoryItemId, params.data.id)).orderBy(desc(inventoryMovementsTable.createdAt))); });
-router.post("/inventory/:id/adjust", async (req, res): Promise<void> => { const params = parseIdParam(req.params); const quantityChange = Number(req.body?.quantityChange); const reason = parseOptionalStringValue(req.body?.reason); if (!params.success || !Number.isInteger(quantityChange) || !quantityChange || !reason) { res.status(400).json({ error: "A non-zero whole quantity and reason are required" }); return; } try { const [existing] = await db.select().from(inventoryItemsTable).where(eq(inventoryItemsTable.id, params.data.id)); if (!existing) { res.status(404).json({ error: "Inventory item not found" }); return; } if (existing.quantity + quantityChange < 0) { res.status(400).json({ error: "Stock cannot fall below zero" }); return; } const [item] = await db.update(inventoryItemsTable).set({ quantity: existing.quantity + quantityChange, updatedAt: new Date() }).where(eq(inventoryItemsTable.id, params.data.id)).returning(); const movement = insertInventoryMovementSchema.safeParse({ inventoryItemId: item.id, quantityChange, reason, reference: parseOptionalStringValue(req.body?.reference), recordedBy: parseOptionalStringValue(req.body?.recordedBy) }); if (movement.success) await db.insert(inventoryMovementsTable).values(movement.data); res.json(item); } catch (error) { handleCrudError(error, res, "Inventory adjustment"); } });
 
 router.get("/reports/adoptions", async (req, res): Promise<void> => {
   const limitResult = parseLimitQuery(req.query as Record<string, unknown>);
