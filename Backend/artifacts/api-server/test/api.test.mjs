@@ -9,6 +9,8 @@ const portalData = vi.hoisted(() => ({
   addActivity: vi.fn(),
   getDonorRecord: vi.fn(),
   listDonorRecords: vi.fn(),
+  getDonationRecord: vi.fn(),
+  listDonationRecords: vi.fn(),
   getCampaignRecord: vi.fn(),
   listCampaignRecords: vi.fn(),
 }));
@@ -59,8 +61,8 @@ vi.mock("../src/lib/portal-data.ts", () => ({
   currency: vi.fn((value) => Math.round(Number(value ?? 0)) / 100),
   getCampaignRecord: portalData.getCampaignRecord,
   listCampaignRecords: portalData.listCampaignRecords,
-  getDonationRecord: vi.fn(),
-  listDonationRecords: vi.fn(),
+  getDonationRecord: portalData.getDonationRecord,
+  listDonationRecords: portalData.listDonationRecords,
 }));
 
 process.env.NODE_ENV = "test";
@@ -74,6 +76,8 @@ describe("API routes", () => {
     portalData.addActivity.mockReset();
     portalData.getDonorRecord.mockReset();
     portalData.listDonorRecords.mockReset();
+    portalData.getDonationRecord.mockReset();
+    portalData.listDonationRecords.mockReset();
     portalData.getCampaignRecord.mockReset();
     portalData.listCampaignRecords.mockReset();
     dbMock.select.mockReset();
@@ -247,6 +251,67 @@ describe("API routes", () => {
       campaignProgress: [],
       donationTrend: [],
     });
+  });
+
+  it("returns 400 for invalid donor path parameters", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const response = await request(app).get("/api/donors/not-a-number");
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toEqual(expect.any(String));
+  });
+
+  it("returns 404 when a donor record is missing", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    portalData.getDonorRecord.mockResolvedValue(undefined);
+
+    const response = await request(app).get("/api/donors/999");
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: "Donor not found" });
+  });
+
+  it("returns 404 when a donation record is missing", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    portalData.getDonationRecord.mockResolvedValue(undefined);
+
+    const response = await request(app).get("/api/donations/999");
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: "Donation not found" });
+  });
+
+  it("returns 409 for duplicate donor creation", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    dbMock.insert.mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockRejectedValue({ code: "23505" }),
+      }),
+    });
+
+    const response = await request(app)
+      .post("/api/donors")
+      .send({ name: "Nisha Kumar", email: "nisha@example.com" });
+
+    expect(response.status).toBe(409);
+    expect(response.body).toEqual({ error: "Donor already exists" });
+  });
+
+  it("returns 500 for unexpected dashboard failures", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    dbMock.select.mockImplementation(() => {
+      throw new Error("database exploded");
+    });
+
+    const response = await request(app).get("/api/dashboard");
+
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({ error: "Internal server error" });
   });
 
   it("rejects unauthenticated access to activity", async () => {
