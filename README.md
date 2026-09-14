@@ -14,7 +14,7 @@ visitors about India's endangered wildlife and the threats they face, and conver
 awareness into actual donations through a smooth, guided flow. Below is a walkthrough
 of every component, with its features explained directly underneath it.
 
-## 1. Navbar (Our Mission / Impact / FAQ / Donate)
+## 1. Navbar 
 The navigation bar sits fixed at the top of every page and contains the Wild Haven logo/name 
 on the left and four links/buttons on the right: **Our Mission, species map, Quiz** and a highlighted **Donate** button.
 
