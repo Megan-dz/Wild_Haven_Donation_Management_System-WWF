@@ -668,6 +668,101 @@ describe("API routes", () => {
     expect(response.body.error).toEqual(expect.any(String));
   });
 
+  it("updates a task", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const updatedTask = {
+      id: 1,
+      title: "Update donor outreach plan",
+      description: "Follow up with priority donors.",
+      employeeId: "staff_42",
+      priority: "high",
+      status: "in_progress",
+      dueDate: "2026-09-20T00:00:00.000Z",
+      createdAt: "2026-09-10T00:00:00.000Z",
+      updatedAt: "2026-09-14T00:00:00.000Z",
+    };
+
+    dbMock.update.mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([updatedTask]),
+        }),
+      }),
+    });
+
+    const response = await request(app)
+      .patch("/api/tasks/1")
+      .send({
+        title: "Update donor outreach plan",
+        status: "in_progress",
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(updatedTask);
+    expect(dbMock.update).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects invalid task updates", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const response = await request(app)
+      .patch("/api/tasks/1")
+      .send({ priority: "urgent" });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toEqual(expect.any(String));
+  });
+
+  it("returns 404 when updating a nonexistent task", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    dbMock.update.mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([]),
+        }),
+      }),
+    });
+
+    const response = await request(app)
+      .patch("/api/tasks/999")
+      .send({ status: "done" });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: "Task not found" });
+  });
+
+  it("deletes a task", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    dbMock.delete.mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 1 }]),
+      }),
+    });
+
+    const response = await request(app).delete("/api/tasks/1");
+
+    expect(response.status).toBe(204);
+    expect(response.text).toBe("");
+  });
+
+  it("returns 404 when deleting a nonexistent task", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    dbMock.delete.mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([]),
+      }),
+    });
+
+    const response = await request(app).delete("/api/tasks/999");
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: "Task not found" });
+  });
+
   it("deletes a campaign", async () => {
     clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
 

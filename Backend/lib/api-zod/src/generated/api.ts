@@ -77,6 +77,19 @@ export const GetTaskParams = zod.object({
   "id": zod.coerce.number().int().min(1)
 })
 
+export const UpdateTaskBody = zod.object({
+  "title": zod.string().min(createTaskBodyTitleMin).optional(),
+  "description": zod.string().min(createTaskBodyDescriptionMin).optional(),
+  "employeeId": zod.string().min(createTaskBodyEmployeeIdMin).optional(),
+  "priority": TaskPriority.optional(),
+  "status": TaskStatus.optional(),
+  "dueDate": zod.coerce.date().optional()
+})
+
+export const DeleteTaskParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
 
 /**
  * @summary Get the operations dashboard summary

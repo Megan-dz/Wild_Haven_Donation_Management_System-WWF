@@ -8,6 +8,7 @@ import {
   DeleteCampaignParams,
   DeleteDonorParams,
   DeleteDonationParams,
+  DeleteTaskParams,
   GetCampaignParams,
   GetCurrentStaffResponse,
   CreateTaskBody,
@@ -15,6 +16,8 @@ import {
   ListTasksQueryParams,
   ListTasksResponse,
   TaskSchema,
+  UpdateTaskBody,
+  UpdateTaskParams,
   GetDashboardSummaryResponse,
   GetDonorParams,
   GetDonationParams,
@@ -141,6 +144,59 @@ router.post("/tasks", async (req, res): Promise<void> => {
       .returning();
 
     res.status(201).json(TaskSchema.parse(task));
+  } catch (error) {
+    handleCrudError(error, res, "Task");
+  }
+});
+
+router.patch("/tasks/:id", async (req, res): Promise<void> => {
+  const params = UpdateTaskParams.safeParse(req.params);
+  const body = UpdateTaskBody.safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  try {
+    const update = {
+      ...(body.data.title === undefined ? {} : { title: body.data.title }),
+      ...(body.data.description === undefined ? {} : { description: body.data.description }),
+      ...(body.data.employeeId === undefined ? {} : { employeeId: body.data.employeeId }),
+      ...(body.data.priority === undefined ? {} : { priority: body.data.priority }),
+      ...(body.data.status === undefined ? {} : { status: body.data.status }),
+      ...(body.data.dueDate === undefined ? {} : { dueDate: body.data.dueDate }),
+    };
+    const [task] = await db.update(tasksTable).set(update).where(eq(tasksTable.id, params.data.id)).returning();
+    if (!task) {
+      res.status(404).json({ error: "Task not found" });
+      return;
+    }
+
+    res.json(TaskSchema.parse(task));
+  } catch (error) {
+    handleCrudError(error, res, "Task");
+  }
+});
+
+router.delete("/tasks/:id", async (req, res): Promise<void> => {
+  const params = DeleteTaskParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  try {
+    const [task] = await db.delete(tasksTable).where(eq(tasksTable.id, params.data.id)).returning();
+    if (!task) {
+      res.status(404).json({ error: "Task not found" });
+      return;
+    }
+
+    res.sendStatus(204);
   } catch (error) {
     handleCrudError(error, res, "Task");
   }
