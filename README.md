@@ -20,7 +20,7 @@ on the left and four links/buttons on the right: **Our Mission, species map, Qui
 
 **Features:**
 - Clicking "Our Mission," "species map," or "Quiz" does **not load a new page** — instead,
- the browser **smoothly scrolls down** to that specific section on the same homepage. This is called anchor navigation (visible in the URL as `#mission`, `#impact`, `#faq`).
+ the browser **smoothly scrolls down** to that specific section on the same homepage. This is called anchor navigation (visible in the URL as `#mission`, `#species`, `#quiz`).
 - Because there's no full page reload, the transition feels instant and keeps the user in context.
 - The "Donate" button in the navbar is always visible, so no matter where the user scrolls, they can jump straight to donating.
 - The navbar stays consistent across every sub-page (campaign pages, payment page), giving the site a unified feel, though sub-pages replace the nav links with a simple "← Back home" button for easier return navigation.
