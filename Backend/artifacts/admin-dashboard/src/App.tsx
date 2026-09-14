@@ -17,6 +17,8 @@ import { MedicalRecovery } from '@/pages/medical-recovery';
 import { Adoptions } from '@/pages/adoptions';
 import { Inventory } from '@/pages/inventory';
 import { CommandCenter } from '@/pages/command-center';
+import { Notifications } from '@/pages/notifications';
+import { NotificationsProvider } from '@/features/notifications/use-notifications';
 import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient();
@@ -27,6 +29,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Dashboard} />
         <Route path="/command-center" component={CommandCenter} />
+        <Route path="/notifications" component={Notifications} />
         <Route path="/analytics" component={Analytics} />
         <Route path="/donations" component={Donations} />
         <Route path="/campaigns" component={Campaigns} />
@@ -47,12 +50,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
+      <NotificationsProvider>
+        <TooltipProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </TooltipProvider>
+      </NotificationsProvider>
     </QueryClientProvider>
   );
 }
