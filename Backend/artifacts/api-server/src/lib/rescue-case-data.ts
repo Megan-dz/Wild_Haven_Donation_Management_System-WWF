@@ -46,11 +46,12 @@ export async function listRescueCases(options: RescueCaseQueryOptions = {}) {
     options.toDate ? sql`${rescueCasesTable.reportedAt} <= ${options.toDate}` : undefined,
   ].filter((filter): filter is NonNullable<typeof filter> => Boolean(filter));
 
+  const sortColumn = options.sort === "reportedAt" ? rescueCasesTable.reportedAt : options.sort === "priority" ? rescueCasesTable.priority : rescueCasesTable.createdAt;
   const query = db
     .select()
     .from(rescueCasesTable)
     .where(filters.length > 0 ? and(...filters) : undefined)
-    .orderBy(desc(rescueCasesTable.createdAt))
+    .orderBy(desc(sortColumn))
     .limit(limit)
     .offset(offset);
 
@@ -99,15 +100,15 @@ export async function getRescueDashboard() {
   const activeCasesResult = await db
     .select({ value: sql<number>`count(*)` })
     .from(rescueCasesTable)
-    .where(eq(rescueCasesTable.status, "reported"));
+    .where(sql`${rescueCasesTable.status} not in ('released', 'closed', 'cancelled')`);
   const completedCasesResult = await db
     .select({ value: sql<number>`count(*)` })
     .from(rescueCasesTable)
     .where(eq(rescueCasesTable.status, "closed"));
-  const criticalCasesResult = await db
+  const highPriorityCasesResult = await db
     .select({ value: sql<number>`count(*)` })
     .from(rescueCasesTable)
-    .where(eq(rescueCasesTable.priority, "critical"));
+    .where(or(eq(rescueCasesTable.priority, "high"), eq(rescueCasesTable.priority, "critical")));
   const awaitingAssignmentResult = await db
     .select({ value: sql<number>`count(*)` })
     .from(rescueCasesTable)
@@ -146,7 +147,7 @@ export async function getRescueDashboard() {
     totalRescueCases: Number(totalCasesResult[0]?.value ?? 0),
     activeCases: Number(activeCasesResult[0]?.value ?? 0),
     completedCases: Number(completedCasesResult[0]?.value ?? 0),
-    criticalCases: Number(criticalCasesResult[0]?.value ?? 0),
+    highPriorityCases: Number(highPriorityCasesResult[0]?.value ?? 0),
     casesAwaitingAssignment: Number(awaitingAssignmentResult[0]?.value ?? 0),
     casesInRehabilitation: Number(inRehabilitationResult[0]?.value ?? 0),
     casesReleased: Number(releasedCasesResult[0]?.value ?? 0),

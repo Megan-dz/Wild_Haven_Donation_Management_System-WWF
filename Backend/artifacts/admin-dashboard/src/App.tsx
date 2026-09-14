@@ -10,6 +10,8 @@ import { Donations } from '@/pages/donations';
 import { Campaigns } from '@/pages/campaigns';
 import { Donors } from '@/pages/donors';
 import { DonorDetail } from '@/pages/donor-detail';
+import { RescueCases } from '@/pages/rescue-cases';
+import { RescueCaseDetail } from '@/pages/rescue-case-detail';
 import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient();
@@ -24,6 +26,8 @@ function Router() {
         <Route path="/campaigns" component={Campaigns} />
         <Route path="/donors" component={Donors} />
         <Route path="/donors/:id" component={DonorDetail} />
+        <Route path="/rescue-cases" component={RescueCases} />
+        <Route path="/rescue-cases/:id" component={RescueCaseDetail} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

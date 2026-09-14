@@ -242,23 +242,57 @@ const parseRescueCaseListQuery = (query: Record<string, unknown>) => {
   }
 
   const offsetValue = typeof query.offset === "string" ? Number(query.offset) : typeof query.offset === "number" ? query.offset : 0;
-  const offset = Number.isInteger(offsetValue) && offsetValue >= 0 ? offsetValue : 0;
+  if (!Number.isInteger(offsetValue) || offsetValue < 0) {
+    return { success: false as const, error: "Invalid offset" };
+  }
+  const fromDate = query.fromDate === undefined ? undefined : parseOptionalDate(query.fromDate);
+  const toDate = query.toDate === undefined ? undefined : parseOptionalDate(query.toDate);
+  if (query.fromDate !== undefined && !fromDate) {
+    return { success: false as const, error: "Invalid fromDate" };
+  }
+  if (query.toDate !== undefined && !toDate) {
+    return { success: false as const, error: "Invalid toDate" };
+  }
+  if (fromDate && toDate && fromDate > toDate) {
+    return { success: false as const, error: "fromDate must be before toDate" };
+  }
+
+  const status = parseOptionalString(query.status);
+  const priority = parseOptionalString(query.priority);
+  const severity = parseOptionalString(query.severity);
+  const rescueType = parseOptionalString(query.rescueType);
+  const sort = parseOptionalString(query.sort);
+  if (status && !RESCUE_CASE_STATUSES.includes(status as (typeof RESCUE_CASE_STATUSES)[number])) {
+    return { success: false as const, error: "Invalid status" };
+  }
+  if (priority && !RESCUE_CASE_PRIORITIES.includes(priority as (typeof RESCUE_CASE_PRIORITIES)[number])) {
+    return { success: false as const, error: "Invalid priority" };
+  }
+  if (severity && !RESCUE_CASE_SEVERITIES.includes(severity as (typeof RESCUE_CASE_SEVERITIES)[number])) {
+    return { success: false as const, error: "Invalid severity" };
+  }
+  if (rescueType && !RESCUE_CASE_TYPES.includes(rescueType as (typeof RESCUE_CASE_TYPES)[number])) {
+    return { success: false as const, error: "Invalid rescueType" };
+  }
+  if (sort && !["createdAt", "reportedAt", "priority"].includes(sort)) {
+    return { success: false as const, error: "Invalid sort" };
+  }
 
   return {
     success: true as const,
     data: {
       search: parseOptionalString(query.search),
-      status: parseOptionalString(query.status),
-      priority: parseOptionalString(query.priority),
-      severity: parseOptionalString(query.severity),
-      rescueType: parseOptionalString(query.rescueType),
+      status,
+      priority,
+      severity,
+      rescueType,
       location: parseOptionalString(query.location),
       assignedEmployeeId: parseOptionalString(query.assignedEmployeeId),
-      fromDate: parseOptionalDate(query.fromDate),
-      toDate: parseOptionalDate(query.toDate),
+      fromDate,
+      toDate,
       limit: limitResult.data.limit,
-      offset,
-      sort: parseOptionalString(query.sort),
+      offset: offsetValue,
+      sort,
     },
   };
 };
@@ -1328,10 +1362,13 @@ router.patch("/rescue-cases/:id/notes/:noteId", async (req, res): Promise<void> 
   }
 
   try {
+    // The URL establishes ownership. Never accept a body value that could move
+    // a note to another rescue case.
+    const { rescueCaseId: _rescueCaseId, ...update } = body.data;
     const [note] = await db
       .update(rescueCaseNotesTable)
       .set({
-        ...body.data,
+        ...update,
         updatedAt: new Date(),
       })
       .where(
@@ -1460,10 +1497,11 @@ router.patch("/rescue-cases/:id/medical-records/:recordId", async (req, res): Pr
   }
 
   try {
+    const { rescueCaseId: _rescueCaseId, ...update } = body.data;
     const [record] = await db
       .update(animalMedicalRecordsTable)
       .set({
-        ...body.data,
+        ...update,
         updatedAt: new Date(),
       })
       .where(
@@ -1575,9 +1613,10 @@ router.patch("/rescue-cases/:id/expenses/:expenseId", async (req, res): Promise<
   }
 
   try {
+    const { rescueCaseId: _rescueCaseId, ...update } = body.data;
     const [expense] = await db
       .update(rescueExpensesTable)
-      .set(body.data)
+      .set(update)
       .where(
         and(
           eq(rescueExpensesTable.id, params.data.childId),
@@ -1664,6 +1703,16 @@ router.post("/rescue-cases/:id/assign", async (req, res): Promise<void> => {
       return;
     }
 
+    if (caseRecord.status !== updated.status) {
+      await db.insert(rescueCaseStatusHistoryTable).values({
+        rescueCaseId: updated.id,
+        previousStatus: caseRecord.status,
+        newStatus: updated.status,
+        changedBy: updated.assignedEmployeeId ?? caseRecord.reportedBy,
+        reason: "Case assigned",
+      });
+    }
+
     res.json(updated);
   } catch (error) {
     handleCrudError(error, res, "Rescue case assignment");
@@ -1678,6 +1727,11 @@ router.delete("/rescue-cases/:id/assign", async (req, res): Promise<void> => {
   }
 
   try {
+    const existingCase = await getRescueCaseRecord(params.data.id);
+    if (!existingCase) {
+      res.status(404).json({ error: "Rescue case not found" });
+      return;
+    }
     const [caseRecord] = await db
       .update(rescueCasesTable)
       .set({ assignedEmployeeId: null, status: "reported", updatedAt: new Date() })
@@ -1687,6 +1741,16 @@ router.delete("/rescue-cases/:id/assign", async (req, res): Promise<void> => {
     if (!caseRecord) {
       res.status(404).json({ error: "Rescue case not found" });
       return;
+    }
+
+    if (existingCase.status !== caseRecord.status) {
+      await db.insert(rescueCaseStatusHistoryTable).values({
+        rescueCaseId: caseRecord.id,
+        previousStatus: existingCase.status,
+        newStatus: caseRecord.status,
+        changedBy: existingCase.assignedEmployeeId ?? existingCase.reportedBy,
+        reason: "Case unassigned",
+      });
     }
 
     res.json(caseRecord);

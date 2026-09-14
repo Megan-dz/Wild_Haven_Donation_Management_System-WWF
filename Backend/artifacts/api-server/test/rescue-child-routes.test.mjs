@@ -201,4 +201,17 @@ describe("nested rescue child mutations", () => {
       expect(response.body).toEqual({ error: mutationCase.notFoundMessage });
     });
   }
+
+  it("does not allow a nested update body to re-parent a note", async () => {
+    configureUpdate([{ id: 27, rescueCaseId: 4, note: "Updated note" }]);
+
+    const response = await request(app)
+      .patch("/api/rescue-cases/4/notes/27")
+      .send({ note: "Updated note", rescueCaseId: 99 });
+
+    expect(response.status).toBe(200);
+    expect(dbMock.update.mock.results[0].value.set).toHaveBeenCalledWith(
+      expect.not.objectContaining({ rescueCaseId: 99 }),
+    );
+  });
 });
