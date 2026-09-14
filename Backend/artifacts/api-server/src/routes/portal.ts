@@ -98,6 +98,7 @@ import {
   getRescueCaseRecord,
   listVolunteerWorkloads,
   listAnimalMedicalRecords,
+  listMedicalCases,
   listRescueCaseNotes,
   listRescueCaseStatusHistory,
   listRescueCases,
@@ -1451,6 +1452,14 @@ router.get("/rescue-cases/:id/medical-records", async (req, res): Promise<void> 
 
   const records = await listAnimalMedicalRecords(params.data.id);
   res.json(records);
+});
+
+router.get("/medical-records", async (req, res): Promise<void> => {
+  const medicalStatus = typeof req.query.medicalStatus === "string" ? req.query.medicalStatus.trim() : undefined;
+  const priority = typeof req.query.priority === "string" ? req.query.priority.trim() : undefined;
+  const search = typeof req.query.search === "string" ? req.query.search.trim() : undefined;
+  if (priority && !RESCUE_CASE_PRIORITIES.includes(priority as (typeof RESCUE_CASE_PRIORITIES)[number])) { res.status(400).json({ error: "Invalid priority" }); return; }
+  try { res.json(await listMedicalCases({ medicalStatus, priority, search })); } catch (error) { handleCrudError(error, res, "Medical records"); }
 });
 
 router.post("/rescue-cases/:id/medical-records", async (req, res): Promise<void> => {

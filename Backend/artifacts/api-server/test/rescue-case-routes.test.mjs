@@ -5,6 +5,7 @@ const rescueData = vi.hoisted(() => ({
   getRescueCaseRecord: vi.fn(),
   listRescueCases: vi.fn(),
   listVolunteerWorkloads: vi.fn(),
+  listMedicalCases: vi.fn(),
 }));
 
 vi.mock("@clerk/express", () => ({ clerkMiddleware: () => (_req, _res, next) => next() }));
@@ -24,6 +25,7 @@ describe("rescue case routes", () => {
     rescueData.getRescueCaseRecord.mockReset();
     rescueData.listRescueCases.mockReset();
     rescueData.listVolunteerWorkloads.mockReset();
+    rescueData.listMedicalCases.mockReset();
     rescueData.listRescueCases.mockResolvedValue([]);
   });
 
@@ -66,5 +68,14 @@ describe("rescue case routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual([{ id: "staff-123", activeCases: 2, totalCases: 3, highPriorityCases: 1, lastAssignedAt: null }]);
+  });
+
+  it("passes medical queue filters to the existing medical-record data query", async () => {
+    rescueData.listMedicalCases.mockResolvedValue([]);
+
+    const response = await request(app).get("/api/medical-records?medicalStatus=recovering&priority=high&search=otter");
+
+    expect(response.status).toBe(200);
+    expect(rescueData.listMedicalCases).toHaveBeenCalledWith({ medicalStatus: "recovering", priority: "high", search: "otter" });
   });
 });

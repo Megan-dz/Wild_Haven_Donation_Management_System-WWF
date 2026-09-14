@@ -13,6 +13,7 @@ import { DonorDetail } from '@/pages/donor-detail';
 import { RescueCases } from '@/pages/rescue-cases';
 import { RescueCaseDetail } from '@/pages/rescue-case-detail';
 import { Volunteers } from '@/pages/volunteers';
+import { MedicalRecovery } from '@/pages/medical-recovery';
 import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ function Router() {
         <Route path="/rescue-cases" component={RescueCases} />
         <Route path="/rescue-cases/:id" component={RescueCaseDetail} />
         <Route path="/volunteers" component={Volunteers} />
+        <Route path="/medical-recovery" component={MedicalRecovery} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

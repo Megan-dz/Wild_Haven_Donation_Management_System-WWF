@@ -87,6 +87,15 @@ export async function listAnimalMedicalRecords(rescueCaseId: number) {
     .orderBy(desc(animalMedicalRecordsTable.treatmentDate));
 }
 
+export async function listMedicalCases(options: { medicalStatus?: string; priority?: string; search?: string } = {}) {
+  const filters = [
+    options.medicalStatus ? eq(animalMedicalRecordsTable.medicalStatus, options.medicalStatus) : undefined,
+    options.priority ? eq(rescueCasesTable.priority, options.priority) : undefined,
+    options.search ? or(ilike(rescueCasesTable.caseNumber, `%${options.search}%`), ilike(rescueCasesTable.animalName, `%${options.search}%`), ilike(rescueCasesTable.species, `%${options.search}%`), ilike(animalMedicalRecordsTable.diagnosis, `%${options.search}%`), ilike(animalMedicalRecordsTable.veterinarian, `%${options.search}%`)) : undefined,
+  ].filter((filter): filter is NonNullable<typeof filter> => Boolean(filter));
+  return db.select({ record: animalMedicalRecordsTable, rescueCase: rescueCasesTable }).from(animalMedicalRecordsTable).innerJoin(rescueCasesTable, eq(animalMedicalRecordsTable.rescueCaseId, rescueCasesTable.id)).where(filters.length ? and(...filters) : undefined).orderBy(desc(animalMedicalRecordsTable.treatmentDate)).limit(100);
+}
+
 export async function listRescueExpenses(rescueCaseId: number) {
   return db
     .select()
