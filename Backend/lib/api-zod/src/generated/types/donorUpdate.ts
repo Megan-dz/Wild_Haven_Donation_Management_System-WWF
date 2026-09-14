@@ -7,11 +7,23 @@
  */
 
 export interface DonorUpdate {
-  /** @minLength 2 */
+  /**
+     * @minLength 2
+     * @maxLength 120
+     * @pattern \S
+     */
   name?: string;
+  /** @maxLength 254 */
   email?: string;
-  /** @nullable */
+  /**
+     * @maxLength 30
+     * @nullable
+     */
   phone?: string | null;
-  /** @nullable */
+  /**
+     * @maxLength 100
+     * @nullable
+     * @pattern \S
+     */
   city?: string | null;
 }

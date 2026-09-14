@@ -582,13 +582,19 @@ components:
         name:
           type: string
           minLength: 2
+          maxLength: 120
+          pattern: '\S'
         email:
           type: string
           format: email
+          maxLength: 254
         phone:
           type: ["string", "null"]
+          maxLength: 30
         city:
           type: ["string", "null"]
+          maxLength: 100
+          pattern: '\S'
       required: [name, email]
     DonorUpdate:
       type: object
@@ -596,13 +602,19 @@ components:
         name:
           type: string
           minLength: 2
+          maxLength: 120
+          pattern: '\S'
         email:
           type: string
           format: email
+          maxLength: 254
         phone:
           type: ["string", "null"]
+          maxLength: 30
         city:
           type: ["string", "null"]
+          maxLength: 100
+          pattern: '\S'
     Donation:
       type: object
       properties:

@@ -50,4 +50,15 @@ describe("API routes", () => {
     expect(response.status).toBe(400);
     expect(response.body.error).toEqual(expect.any(String));
   });
+
+  it("rejects a donor name that contains only whitespace", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const response = await request(app)
+      .post("/api/donors")
+      .send({ name: "   ", email: "donor@example.com" });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toEqual(expect.any(String));
+  });
 });

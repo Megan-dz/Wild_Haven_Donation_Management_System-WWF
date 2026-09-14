@@ -110,14 +110,25 @@ export const ListDonorsResponse = zod.array(ListDonorsResponseItem)
  * @summary Create a donor record
  */
 export const createDonorBodyNameMin = 2;
+export const createDonorBodyNameMax = 120;
 
+
+export const createDonorBodyNameRegExp = new RegExp('\\S');
+export const createDonorBodyEmailMax = 254;
+
+export const createDonorBodyPhoneMax = 30;
+
+export const createDonorBodyCityMax = 100;
+
+
+export const createDonorBodyCityRegExp = new RegExp('\\S');
 
 
 export const CreateDonorBody = zod.object({
-  "name": zod.string().min(createDonorBodyNameMin),
-  "email": zod.email(),
-  "phone": zod.string().nullish(),
-  "city": zod.string().nullish()
+  "name": zod.string().min(createDonorBodyNameMin).max(createDonorBodyNameMax).regex(createDonorBodyNameRegExp),
+  "email": zod.email().max(createDonorBodyEmailMax),
+  "phone": zod.string().max(createDonorBodyPhoneMax).nullish(),
+  "city": zod.string().max(createDonorBodyCityMax).regex(createDonorBodyCityRegExp).nullish()
 })
 
 export const CreateDonorResponse = zod.object({
@@ -173,14 +184,25 @@ export const UpdateDonorParams = zod.object({
 })
 
 export const updateDonorBodyNameMin = 2;
+export const updateDonorBodyNameMax = 120;
 
+
+export const updateDonorBodyNameRegExp = new RegExp('\\S');
+export const updateDonorBodyEmailMax = 254;
+
+export const updateDonorBodyPhoneMax = 30;
+
+export const updateDonorBodyCityMax = 100;
+
+
+export const updateDonorBodyCityRegExp = new RegExp('\\S');
 
 
 export const UpdateDonorBody = zod.object({
-  "name": zod.string().min(updateDonorBodyNameMin).optional(),
-  "email": zod.email().optional(),
-  "phone": zod.string().nullish(),
-  "city": zod.string().nullish()
+  "name": zod.string().min(updateDonorBodyNameMin).max(updateDonorBodyNameMax).regex(updateDonorBodyNameRegExp).optional(),
+  "email": zod.email().max(updateDonorBodyEmailMax).optional(),
+  "phone": zod.string().max(updateDonorBodyPhoneMax).nullish(),
+  "city": zod.string().max(updateDonorBodyCityMax).regex(updateDonorBodyCityRegExp).nullish()
 })
 
 export const UpdateDonorResponse = zod.object({
