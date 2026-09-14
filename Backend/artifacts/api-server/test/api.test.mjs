@@ -91,6 +91,164 @@ describe("API routes", () => {
     expect(response.body).toEqual({ status: "ok" });
   });
 
+  it("rejects unauthenticated access to dashboard", async () => {
+    clerk.getAuth.mockReturnValue(null);
+
+    const response = await request(app).get("/api/dashboard");
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: "Authentication required" });
+  });
+
+  it("returns a complete dashboard summary for authenticated requests", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    portalData.listCampaignRecords.mockResolvedValue([
+      {
+        id: 1,
+        name: "Forest Guard",
+        species: "Leopard",
+        location: "Karnataka",
+        description: "Support local wildlife volunteers.",
+        goal: 2000,
+        raised: 1500,
+        status: "active",
+        supporters: 10,
+        createdAt: "2026-08-01T00:00:00.000Z",
+      },
+      {
+        id: 2,
+        name: "Elephant Corridor",
+        species: "Elephant",
+        location: "Odisha",
+        description: "Safeguarding migration routes.",
+        goal: 500,
+        raised: 600,
+        status: "completed",
+        supporters: 18,
+        createdAt: "2026-08-05T00:00:00.000Z",
+      },
+    ]);
+
+    dbMock.select
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ value: 250000 }]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ value: 180000 }]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ value: 38 }]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ value: 4 }]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue([
+              { donatedAt: new Date("2026-01-01T00:00:00.000Z"), amountCents: 12500 },
+              { donatedAt: new Date("2026-02-01T00:00:00.000Z"), amountCents: 25000 },
+            ]),
+          }),
+        }),
+      });
+
+    const response = await request(app).get("/api/dashboard");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      totalRaised: 2500,
+      totalRaisedChange: 18.4,
+      donorCount: 38,
+      donorCountChange: 9.2,
+      activeCampaignCount: 4,
+      monthlyRecurring: 1800,
+      monthlyRecurringChange: 12.8,
+      campaignProgress: [
+        {
+          id: 1,
+          name: "Forest Guard",
+          raised: 1500,
+          goal: 2000,
+          percent: 75,
+          status: "active",
+        },
+        {
+          id: 2,
+          name: "Elephant Corridor",
+          raised: 600,
+          goal: 500,
+          percent: 100,
+          status: "completed",
+        },
+      ],
+      donationTrend: [
+        { label: "Jan", value: 125 },
+        { label: "Feb", value: 250 },
+      ],
+    });
+    expect(portalData.listCampaignRecords).toHaveBeenCalledWith(undefined, undefined, 6);
+  });
+
+  it("returns zeroed dashboard values when the underlying data is empty", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    portalData.listCampaignRecords.mockResolvedValue([]);
+
+    dbMock.select
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ value: 0 }]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ value: 0 }]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ value: 0 }]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ value: 0 }]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+    const response = await request(app).get("/api/dashboard");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      totalRaised: 0,
+      totalRaisedChange: 18.4,
+      donorCount: 0,
+      donorCountChange: 9.2,
+      activeCampaignCount: 0,
+      monthlyRecurring: 0,
+      monthlyRecurringChange: 12.8,
+      campaignProgress: [],
+      donationTrend: [],
+    });
+  });
+
   it("rejects unauthenticated access to activity", async () => {
     clerk.getAuth.mockReturnValue(null);
 
