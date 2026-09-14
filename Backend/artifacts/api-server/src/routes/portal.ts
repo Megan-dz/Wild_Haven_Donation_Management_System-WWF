@@ -4,7 +4,14 @@ import {
   activityTable,
   adoptionApplicationsTable,
   adoptionHistoriesTable,
+  animalCareAssignmentsTable,
+  animalDocumentsTable,
+  animalFeedingSchedulesTable,
+  animalHabitatsTable,
   animalMedicalRecordsTable,
+  animalMovementHistoryTable,
+  animalObservationsTable,
+  animalSpeciesTable,
   animalsTable,
   campaignsTable,
   conservationAreasTable,
@@ -13,7 +20,15 @@ import {
   donationChallengesTable,
   insertAdoptionApplicationSchema,
   insertAdoptionHistorySchema,
+  insertAnimalCareAssignmentSchema,
+  insertAnimalDocumentSchema,
+  insertAnimalFeedingScheduleSchema,
+  insertAnimalHabitatSchema,
   insertAnimalMedicalRecordSchema,
+  insertAnimalMovementHistorySchema,
+  insertAnimalObservationSchema,
+  insertAnimalSchema,
+  insertAnimalSpeciesSchema,
   insertConservationAreaSchema,
   insertDonationChallengeSchema,
   insertRecurringDonationSchema,
@@ -93,6 +108,17 @@ import {
   listSponsorships,
   listAdoptionHistoryByAnimalId,
 } from "../lib/adoption-sponsorship-data";
+import {
+  getAnimalInventoryDashboard,
+  listAnimalCareAssignments,
+  listAnimalDocuments,
+  listAnimalFeedingSchedules,
+  listAnimalHabitatsRecords,
+  listAnimalInventoryRecords,
+  listAnimalMovementHistory,
+  listAnimalObservations,
+  listAnimalSpeciesRecords,
+} from "../lib/animal-inventory-data";
 import {
   getRescueDashboard,
   getRescueCaseRecord,
@@ -459,6 +485,577 @@ router.delete("/tasks/:id", async (req, res): Promise<void> => {
     res.sendStatus(204);
   } catch (error) {
     handleCrudError(error, res, "Task");
+  }
+});
+
+const parseAnimalListQuery = (query: Record<string, unknown>) => {
+  const limitResult = parseLimitQuery(query);
+  if (!limitResult.success) {
+    return limitResult;
+  }
+
+  const offsetValue = typeof query.offset === "string" ? Number(query.offset) : typeof query.offset === "number" ? query.offset : 0;
+
+  return {
+    success: true as const,
+    data: {
+      search: parseOptionalStringValue(query.search),
+      status: parseOptionalStringValue(query.status),
+      species: parseOptionalStringValue(query.species),
+      habitat: parseOptionalStringValue(query.habitat),
+      limit: limitResult.data.limit,
+      offset: Number.isInteger(offsetValue) && offsetValue >= 0 ? offsetValue : 0,
+    },
+  };
+};
+
+router.get("/animals/dashboard", async (_req, res): Promise<void> => {
+  try {
+    const dashboard = await getAnimalInventoryDashboard();
+    res.json(dashboard);
+  } catch (error) {
+    handleCrudError(error, res, "Animal inventory dashboard");
+  }
+});
+
+router.get("/animals", async (req, res): Promise<void> => {
+  const parsed = parseAnimalListQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    const records = await listAnimalInventoryRecords(parsed.data);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Animal");
+  }
+});
+
+router.post("/animals", async (req, res): Promise<void> => {
+  const parsed = insertAnimalSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .insert(animalsTable)
+      .values({
+        ...parsed.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal");
+  }
+});
+
+router.get("/animals/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db.select().from(animalsTable).where(eq(animalsTable.id, parsed.data.id));
+    if (!record) {
+      res.status(404).json({ error: "Animal not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal");
+  }
+});
+
+router.patch("/animals/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(animalsTable)
+      .set({ ...req.body, updatedAt: new Date() })
+      .where(eq(animalsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Animal not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal");
+  }
+});
+
+router.delete("/animals/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .delete(animalsTable)
+      .where(eq(animalsTable.id, parsed.data.id))
+      .returning({ id: animalsTable.id });
+
+    if (!record) {
+      res.status(404).json({ error: "Animal not found" });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    handleCrudError(error, res, "Animal");
+  }
+});
+
+router.get("/animals/species", async (req, res): Promise<void> => {
+  const parsed = parseLimitQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    const records = await listAnimalSpeciesRecords(parsed.data.limit);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Animal species");
+  }
+});
+
+router.post("/animals/species", async (req, res): Promise<void> => {
+  const parsed = insertAnimalSpeciesSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .insert(animalSpeciesTable)
+      .values({
+        ...parsed.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal species");
+  }
+});
+
+router.get("/animals/species/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db.select().from(animalSpeciesTable).where(eq(animalSpeciesTable.id, parsed.data.id));
+    if (!record) {
+      res.status(404).json({ error: "Animal species not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal species");
+  }
+});
+
+router.patch("/animals/species/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(animalSpeciesTable)
+      .set({ ...req.body, updatedAt: new Date() })
+      .where(eq(animalSpeciesTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Animal species not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal species");
+  }
+});
+
+router.delete("/animals/species/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .delete(animalSpeciesTable)
+      .where(eq(animalSpeciesTable.id, parsed.data.id))
+      .returning({ id: animalSpeciesTable.id });
+
+    if (!record) {
+      res.status(404).json({ error: "Animal species not found" });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    handleCrudError(error, res, "Animal species");
+  }
+});
+
+router.get("/animals/habitats", async (req, res): Promise<void> => {
+  const parsed = parseLimitQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    const records = await listAnimalHabitatsRecords(parsed.data.limit);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Animal habitat");
+  }
+});
+
+router.post("/animals/habitats", async (req, res): Promise<void> => {
+  const parsed = insertAnimalHabitatSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .insert(animalHabitatsTable)
+      .values({
+        ...parsed.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal habitat");
+  }
+});
+
+router.get("/animals/habitats/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db.select().from(animalHabitatsTable).where(eq(animalHabitatsTable.id, parsed.data.id));
+    if (!record) {
+      res.status(404).json({ error: "Animal habitat not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal habitat");
+  }
+});
+
+router.patch("/animals/habitats/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(animalHabitatsTable)
+      .set({ ...req.body, updatedAt: new Date() })
+      .where(eq(animalHabitatsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Animal habitat not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal habitat");
+  }
+});
+
+router.delete("/animals/habitats/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .delete(animalHabitatsTable)
+      .where(eq(animalHabitatsTable.id, parsed.data.id))
+      .returning({ id: animalHabitatsTable.id });
+
+    if (!record) {
+      res.status(404).json({ error: "Animal habitat not found" });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    handleCrudError(error, res, "Animal habitat");
+  }
+});
+
+router.get("/animals/:animalId/care-assignments", async (req, res): Promise<void> => {
+  const animalId = parseOptionalIntegerValue(req.params.animalId);
+  if (!animalId) {
+    res.status(400).json({ error: "Invalid animalId" });
+    return;
+  }
+
+  try {
+    const records = await listAnimalCareAssignments(animalId);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Animal care assignment");
+  }
+});
+
+router.post("/animals/:animalId/care-assignments", async (req, res): Promise<void> => {
+  const animalId = parseOptionalIntegerValue(req.params.animalId);
+  if (!animalId) {
+    res.status(400).json({ error: "Invalid animalId" });
+    return;
+  }
+
+  const parsed = insertAnimalCareAssignmentSchema.safeParse({ ...req.body, animalId });
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .insert(animalCareAssignmentsTable)
+      .values({
+        ...parsed.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal care assignment");
+  }
+});
+
+router.get("/animals/:animalId/feeding-schedules", async (req, res): Promise<void> => {
+  const animalId = parseOptionalIntegerValue(req.params.animalId);
+  if (!animalId) {
+    res.status(400).json({ error: "Invalid animalId" });
+    return;
+  }
+
+  try {
+    const records = await listAnimalFeedingSchedules(animalId);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Animal feeding schedule");
+  }
+});
+
+router.post("/animals/:animalId/feeding-schedules", async (req, res): Promise<void> => {
+  const animalId = parseOptionalIntegerValue(req.params.animalId);
+  if (!animalId) {
+    res.status(400).json({ error: "Invalid animalId" });
+    return;
+  }
+
+  const parsed = insertAnimalFeedingScheduleSchema.safeParse({ ...req.body, animalId });
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .insert(animalFeedingSchedulesTable)
+      .values({
+        ...parsed.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal feeding schedule");
+  }
+});
+
+router.get("/animals/:animalId/observations", async (req, res): Promise<void> => {
+  const animalId = parseOptionalIntegerValue(req.params.animalId);
+  if (!animalId) {
+    res.status(400).json({ error: "Invalid animalId" });
+    return;
+  }
+
+  try {
+    const records = await listAnimalObservations(animalId);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Animal observation");
+  }
+});
+
+router.post("/animals/:animalId/observations", async (req, res): Promise<void> => {
+  const animalId = parseOptionalIntegerValue(req.params.animalId);
+  if (!animalId) {
+    res.status(400).json({ error: "Invalid animalId" });
+    return;
+  }
+
+  const parsed = insertAnimalObservationSchema.safeParse({ ...req.body, animalId });
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .insert(animalObservationsTable)
+      .values({
+        ...parsed.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal observation");
+  }
+});
+
+router.get("/animals/:animalId/movement-history", async (req, res): Promise<void> => {
+  const animalId = parseOptionalIntegerValue(req.params.animalId);
+  if (!animalId) {
+    res.status(400).json({ error: "Invalid animalId" });
+    return;
+  }
+
+  try {
+    const records = await listAnimalMovementHistory(animalId);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Animal movement history");
+  }
+});
+
+router.post("/animals/:animalId/movement-history", async (req, res): Promise<void> => {
+  const animalId = parseOptionalIntegerValue(req.params.animalId);
+  if (!animalId) {
+    res.status(400).json({ error: "Invalid animalId" });
+    return;
+  }
+
+  const parsed = insertAnimalMovementHistorySchema.safeParse({ ...req.body, animalId });
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .insert(animalMovementHistoryTable)
+      .values({
+        ...parsed.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal movement history");
+  }
+});
+
+router.get("/animals/:animalId/documents", async (req, res): Promise<void> => {
+  const animalId = parseOptionalIntegerValue(req.params.animalId);
+  if (!animalId) {
+    res.status(400).json({ error: "Invalid animalId" });
+    return;
+  }
+
+  try {
+    const records = await listAnimalDocuments(animalId);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Animal document");
+  }
+});
+
+router.post("/animals/:animalId/documents", async (req, res): Promise<void> => {
+  const animalId = parseOptionalIntegerValue(req.params.animalId);
+  if (!animalId) {
+    res.status(400).json({ error: "Invalid animalId" });
+    return;
+  }
+
+  const parsed = insertAnimalDocumentSchema.safeParse({ ...req.body, animalId });
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .insert(animalDocumentsTable)
+      .values({
+        ...parsed.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Animal document");
   }
 });
 
