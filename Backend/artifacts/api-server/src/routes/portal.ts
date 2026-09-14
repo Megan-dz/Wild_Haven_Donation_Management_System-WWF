@@ -145,6 +145,22 @@ const IdParams = {
   safeParse: parseIdParam,
 };
 
+const parseNestedIdParams = (params: Record<string, unknown>, childParam: string) => {
+  const parentResult = parseIdParam(params);
+  const childValue = params[childParam];
+  const childId = typeof childValue === "string" ? Number(childValue) : typeof childValue === "number" ? childValue : NaN;
+
+  if (!parentResult.success) {
+    return parentResult;
+  }
+
+  if (!Number.isInteger(childId) || childId < 1) {
+    return { success: false as const, error: { message: `Invalid ${childParam}` } };
+  }
+
+  return { success: true as const, data: { id: parentResult.data.id, childId } };
+};
+
 const parseRecurringDonationsQuery = (query: Record<string, unknown>) => {
   const donorIdValue = query.donorId;
   const donorId = typeof donorIdValue === "string" ? Number(donorIdValue) : typeof donorIdValue === "number" ? donorIdValue : undefined;
@@ -1259,7 +1275,7 @@ router.post("/rescue-cases/:id/notes", async (req, res): Promise<void> => {
 });
 
 router.patch("/rescue-cases/:id/notes/:noteId", async (req, res): Promise<void> => {
-  const params = IdParams.safeParse(req.params);
+  const params = parseNestedIdParams(req.params, "noteId");
   const body = insertRescueCaseNoteSchema.partial().safeParse(req.body);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -1277,7 +1293,12 @@ router.patch("/rescue-cases/:id/notes/:noteId", async (req, res): Promise<void> 
         ...body.data,
         updatedAt: new Date(),
       })
-      .where(eq(rescueCaseNotesTable.id, params.data.id))
+      .where(
+        and(
+          eq(rescueCaseNotesTable.id, params.data.childId),
+          eq(rescueCaseNotesTable.rescueCaseId, params.data.id),
+        ),
+      )
       .returning();
 
     if (!note) {
@@ -1292,14 +1313,22 @@ router.patch("/rescue-cases/:id/notes/:noteId", async (req, res): Promise<void> 
 });
 
 router.delete("/rescue-cases/:id/notes/:noteId", async (req, res): Promise<void> => {
-  const params = IdParams.safeParse(req.params);
+  const params = parseNestedIdParams(req.params, "noteId");
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
   try {
-    const [note] = await db.delete(rescueCaseNotesTable).where(eq(rescueCaseNotesTable.id, params.data.id)).returning();
+    const [note] = await db
+      .delete(rescueCaseNotesTable)
+      .where(
+        and(
+          eq(rescueCaseNotesTable.id, params.data.childId),
+          eq(rescueCaseNotesTable.rescueCaseId, params.data.id),
+        ),
+      )
+      .returning();
     if (!note) {
       res.status(404).json({ error: "Rescue case note not found" });
       return;
@@ -1378,7 +1407,7 @@ router.post("/rescue-cases/:id/medical-records", async (req, res): Promise<void>
 });
 
 router.patch("/rescue-cases/:id/medical-records/:recordId", async (req, res): Promise<void> => {
-  const params = IdParams.safeParse(req.params);
+  const params = parseNestedIdParams(req.params, "recordId");
   const body = insertAnimalMedicalRecordSchema.partial().safeParse(req.body);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -1396,7 +1425,12 @@ router.patch("/rescue-cases/:id/medical-records/:recordId", async (req, res): Pr
         ...body.data,
         updatedAt: new Date(),
       })
-      .where(eq(animalMedicalRecordsTable.id, params.data.id))
+      .where(
+        and(
+          eq(animalMedicalRecordsTable.id, params.data.childId),
+          eq(animalMedicalRecordsTable.rescueCaseId, params.data.id),
+        ),
+      )
       .returning();
 
     if (!record) {
@@ -1411,14 +1445,22 @@ router.patch("/rescue-cases/:id/medical-records/:recordId", async (req, res): Pr
 });
 
 router.delete("/rescue-cases/:id/medical-records/:recordId", async (req, res): Promise<void> => {
-  const params = IdParams.safeParse(req.params);
+  const params = parseNestedIdParams(req.params, "recordId");
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
   try {
-    const [record] = await db.delete(animalMedicalRecordsTable).where(eq(animalMedicalRecordsTable.id, params.data.id)).returning();
+    const [record] = await db
+      .delete(animalMedicalRecordsTable)
+      .where(
+        and(
+          eq(animalMedicalRecordsTable.id, params.data.childId),
+          eq(animalMedicalRecordsTable.rescueCaseId, params.data.id),
+        ),
+      )
+      .returning();
     if (!record) {
       res.status(404).json({ error: "Medical record not found" });
       return;
@@ -1480,7 +1522,7 @@ router.post("/rescue-cases/:id/expenses", async (req, res): Promise<void> => {
 });
 
 router.patch("/rescue-cases/:id/expenses/:expenseId", async (req, res): Promise<void> => {
-  const params = IdParams.safeParse(req.params);
+  const params = parseNestedIdParams(req.params, "expenseId");
   const body = insertRescueExpenseSchema.partial().safeParse(req.body);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -1495,7 +1537,12 @@ router.patch("/rescue-cases/:id/expenses/:expenseId", async (req, res): Promise<
     const [expense] = await db
       .update(rescueExpensesTable)
       .set(body.data)
-      .where(eq(rescueExpensesTable.id, params.data.id))
+      .where(
+        and(
+          eq(rescueExpensesTable.id, params.data.childId),
+          eq(rescueExpensesTable.rescueCaseId, params.data.id),
+        ),
+      )
       .returning();
 
     if (!expense) {
@@ -1510,14 +1557,22 @@ router.patch("/rescue-cases/:id/expenses/:expenseId", async (req, res): Promise<
 });
 
 router.delete("/rescue-cases/:id/expenses/:expenseId", async (req, res): Promise<void> => {
-  const params = IdParams.safeParse(req.params);
+  const params = parseNestedIdParams(req.params, "expenseId");
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
 
   try {
-    const [expense] = await db.delete(rescueExpensesTable).where(eq(rescueExpensesTable.id, params.data.id)).returning();
+    const [expense] = await db
+      .delete(rescueExpensesTable)
+      .where(
+        and(
+          eq(rescueExpensesTable.id, params.data.childId),
+          eq(rescueExpensesTable.rescueCaseId, params.data.id),
+        ),
+      )
+      .returning();
     if (!expense) {
       res.status(404).json({ error: "Rescue expense not found" });
       return;
