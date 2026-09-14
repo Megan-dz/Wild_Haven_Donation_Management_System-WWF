@@ -1,14 +1,18 @@
 import { Router, type IRouter, type Response } from "express";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import {
-  db,
   activityTable,
+  adoptionApplicationsTable,
+  adoptionHistoriesTable,
   animalMedicalRecordsTable,
+  animalsTable,
   campaignsTable,
   conservationAreasTable,
-  donationsTable,
+  db,
   donorsTable,
   donationChallengesTable,
+  insertAdoptionApplicationSchema,
+  insertAdoptionHistorySchema,
   insertAnimalMedicalRecordSchema,
   insertConservationAreaSchema,
   insertDonationChallengeSchema,
@@ -16,11 +20,17 @@ import {
   insertRescueCaseNoteSchema,
   insertRescueCaseSchema,
   insertRescueExpenseSchema,
+  insertSponsorshipPaymentSchema,
+  insertSponsorshipPlanSchema,
+  insertSponsorshipSchema,
   recurringDonationsTable,
   rescueCaseNotesTable,
   rescueCaseStatusHistoryTable,
   rescueCasesTable,
   rescueExpensesTable,
+  sponsorshipPaymentsTable,
+  sponsorshipPlansTable,
+  sponsorshipsTable,
   tasksTable,
 } from "@workspace/db";
 import {
@@ -73,6 +83,15 @@ import {
   listDonationRecords,
   listDonorRecords,
 } from "../lib/portal-data";
+import {
+  getAdoptionDashboard,
+  getSponsorshipDashboard,
+  listAdoptionApplications,
+  listAnimalAdoptionOptions,
+  listSponsorshipPaymentsBySponsorshipId,
+  listSponsorships,
+  listAdoptionHistoryByAnimalId,
+} from "../lib/adoption-sponsorship-data";
 import {
   getRescueDashboard,
   getRescueCaseRecord,
@@ -1599,6 +1618,1131 @@ router.get("/rescue-cases/assigned/:employeeId", async (req, res): Promise<void>
 router.get("/rescue-dashboard", async (_req, res): Promise<void> => {
   const dashboard = await getRescueDashboard();
   res.json(dashboard);
+});
+
+const ADOPTION_STATUS_VALUES = ["pending_review", "approved", "rejected", "on_hold", "completed"] as const;
+const SPONSORSHIP_STATUS_VALUES = ["active", "paused", "cancelled", "expired"] as const;
+const SPONSORSHIP_FREQUENCY_VALUES = ["monthly", "quarterly", "annual", "one_time"] as const;
+
+const parseOptionalStringValue = (value: unknown) => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value.trim();
+  }
+
+  return undefined;
+};
+
+const parseOptionalIntegerValue = (value: unknown) => {
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+  }
+
+  if (typeof value === "number" && Number.isInteger(value) && value > 0) {
+    return value;
+  }
+
+  return undefined;
+};
+
+const parseOptionalDateValue = (value: unknown) => {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return undefined;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+};
+
+const parseAdoptionListQuery = (query: Record<string, unknown>) => {
+  const limitResult = parseLimitQuery(query);
+  if (!limitResult.success) {
+    return limitResult;
+  }
+
+  const offsetValue = typeof query.offset === "string" ? Number(query.offset) : typeof query.offset === "number" ? query.offset : 0;
+
+  return {
+    success: true as const,
+    data: {
+      search: parseOptionalStringValue(query.search),
+      status: parseOptionalStringValue(query.status),
+      animalId: parseOptionalIntegerValue(query.animalId),
+      limit: limitResult.data.limit,
+      offset: Number.isInteger(offsetValue) && offsetValue >= 0 ? offsetValue : 0,
+      sort: parseOptionalStringValue(query.sort),
+    },
+  };
+};
+
+const parseSponsorshipListQuery = (query: Record<string, unknown>) => {
+  const limitResult = parseLimitQuery(query);
+  if (!limitResult.success) {
+    return limitResult;
+  }
+
+  const offsetValue = typeof query.offset === "string" ? Number(query.offset) : typeof query.offset === "number" ? query.offset : 0;
+
+  return {
+    success: true as const,
+    data: {
+      search: parseOptionalStringValue(query.search),
+      animalId: parseOptionalIntegerValue(query.animalId),
+      donorId: parseOptionalIntegerValue(query.donorId),
+      planId: parseOptionalIntegerValue(query.planId),
+      status: parseOptionalStringValue(query.status),
+      frequency: parseOptionalStringValue(query.frequency),
+      fromDate: parseOptionalDateValue(query.fromDate),
+      toDate: parseOptionalDateValue(query.toDate),
+      limit: limitResult.data.limit,
+      offset: Number.isInteger(offsetValue) && offsetValue >= 0 ? offsetValue : 0,
+      sort: parseOptionalStringValue(query.sort),
+    },
+  };
+};
+
+router.get("/adoptions", async (req, res): Promise<void> => {
+  const parsed = parseAdoptionListQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    const records = await listAdoptionApplications(parsed.data);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Adoption applications");
+  }
+});
+
+router.post("/adoptions", async (req, res): Promise<void> => {
+  const payload = {
+    ...req.body,
+    applicationNumber: typeof req.body?.applicationNumber === "string" && req.body.applicationNumber.trim().length > 0
+      ? req.body.applicationNumber.trim()
+      : `APP-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+  };
+
+  const parsed = insertAdoptionApplicationSchema.safeParse(payload);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const existing = await db
+      .select({ id: adoptionApplicationsTable.id })
+      .from(adoptionApplicationsTable)
+      .where(
+        and(
+          eq(adoptionApplicationsTable.animalId, Number(parsed.data.animalId)),
+          eq(adoptionApplicationsTable.applicantName, String(parsed.data.applicantName)),
+          eq(adoptionApplicationsTable.email, String(parsed.data.email)),
+        ),
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      res.status(409).json({ error: "Duplicate adoption application already exists for this applicant and animal" });
+      return;
+    }
+
+    const [record] = await db
+      .insert(adoptionApplicationsTable)
+      .values({
+        ...parsed.data,
+        applicationDate: parsed.data.applicationDate ?? new Date(),
+        status: parsed.data.status ?? "pending_review",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Adoption application");
+  }
+});
+
+router.get("/adoptions/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .select({
+        application: adoptionApplicationsTable,
+        animalName: animalsTable.name,
+        animalSpecies: animalsTable.species,
+      })
+      .from(adoptionApplicationsTable)
+      .innerJoin(animalsTable, eq(adoptionApplicationsTable.animalId, animalsTable.id))
+      .where(eq(adoptionApplicationsTable.id, parsed.data.id));
+
+    if (!record) {
+      res.status(404).json({ error: "Adoption application not found" });
+      return;
+    }
+
+    res.json({ ...record.application, animalName: record.animalName, animalSpecies: record.animalSpecies });
+  } catch (error) {
+    handleCrudError(error, res, "Adoption application");
+  }
+});
+
+router.patch("/adoptions/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [existing] = await db.select().from(adoptionApplicationsTable).where(eq(adoptionApplicationsTable.id, parsed.data.id));
+    if (!existing) {
+      res.status(404).json({ error: "Adoption application not found" });
+      return;
+    }
+
+    const nextStatus = typeof req.body?.status === "string" ? req.body.status : existing.status;
+    if (!ADOPTION_STATUS_VALUES.includes(nextStatus as (typeof ADOPTION_STATUS_VALUES)[number])) {
+      res.status(400).json({ error: "Invalid status" });
+      return;
+    }
+
+    const updates: Record<string, unknown> = {
+      ...req.body,
+      updatedAt: new Date(),
+      reviewedAt: req.body?.reviewedAt ? new Date(req.body.reviewedAt) : existing.reviewedAt,
+    };
+
+    if (req.body?.status) {
+      updates.reviewedAt = new Date();
+    }
+
+    const [record] = await db
+      .update(adoptionApplicationsTable)
+      .set(updates)
+      .where(eq(adoptionApplicationsTable.id, parsed.data.id))
+      .returning();
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Adoption application");
+  }
+});
+
+router.delete("/adoptions/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [result] = await db
+      .delete(adoptionApplicationsTable)
+      .where(eq(adoptionApplicationsTable.id, parsed.data.id))
+      .returning({ id: adoptionApplicationsTable.id });
+
+    if (!result) {
+      res.status(404).json({ error: "Adoption application not found" });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    handleCrudError(error, res, "Adoption application");
+  }
+});
+
+router.post("/adoptions/:id/approve", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [existing] = await db.select().from(adoptionApplicationsTable).where(eq(adoptionApplicationsTable.id, parsed.data.id));
+    if (!existing) {
+      res.status(404).json({ error: "Adoption application not found" });
+      return;
+    }
+
+    const [record] = await db
+      .update(adoptionApplicationsTable)
+      .set({
+        status: "approved",
+        reviewedBy: typeof req.body?.reviewedBy === "string" ? req.body.reviewedBy : existing.reviewedBy ?? "staff",
+        reviewNotes: typeof req.body?.reviewNotes === "string" ? req.body.reviewNotes : existing.reviewNotes,
+        reviewedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(adoptionApplicationsTable.id, parsed.data.id))
+      .returning();
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Adoption application");
+  }
+});
+
+router.post("/adoptions/:id/reject", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [existing] = await db.select().from(adoptionApplicationsTable).where(eq(adoptionApplicationsTable.id, parsed.data.id));
+    if (!existing) {
+      res.status(404).json({ error: "Adoption application not found" });
+      return;
+    }
+
+    const [record] = await db
+      .update(adoptionApplicationsTable)
+      .set({
+        status: "rejected",
+        reviewedBy: typeof req.body?.reviewedBy === "string" ? req.body.reviewedBy : existing.reviewedBy ?? "staff",
+        reviewNotes: typeof req.body?.reviewNotes === "string" ? req.body.reviewNotes : existing.reviewNotes,
+        reviewedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(adoptionApplicationsTable.id, parsed.data.id))
+      .returning();
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Adoption application");
+  }
+});
+
+router.post("/adoptions/:id/hold", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [existing] = await db.select().from(adoptionApplicationsTable).where(eq(adoptionApplicationsTable.id, parsed.data.id));
+    if (!existing) {
+      res.status(404).json({ error: "Adoption application not found" });
+      return;
+    }
+
+    const [record] = await db
+      .update(adoptionApplicationsTable)
+      .set({
+        status: "on_hold",
+        reviewedBy: typeof req.body?.reviewedBy === "string" ? req.body.reviewedBy : existing.reviewedBy ?? "staff",
+        reviewNotes: typeof req.body?.reviewNotes === "string" ? req.body.reviewNotes : existing.reviewNotes,
+        reviewedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(adoptionApplicationsTable.id, parsed.data.id))
+      .returning();
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Adoption application");
+  }
+});
+
+router.post("/adoptions/:id/assign-reviewer", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  const reviewedBy = parseOptionalStringValue(req.body?.reviewedBy);
+  if (!reviewedBy) {
+    res.status(400).json({ error: "reviewedBy is required" });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(adoptionApplicationsTable)
+      .set({ reviewedBy, updatedAt: new Date() })
+      .where(eq(adoptionApplicationsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Adoption application not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Adoption application");
+  }
+});
+
+router.post("/adoptions/:id/review-notes", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  const reviewNotes = parseOptionalStringValue(req.body?.reviewNotes);
+  if (!reviewNotes) {
+    res.status(400).json({ error: "reviewNotes is required" });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(adoptionApplicationsTable)
+      .set({ reviewNotes, reviewedAt: new Date(), updatedAt: new Date() })
+      .where(eq(adoptionApplicationsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Adoption application not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Adoption application");
+  }
+});
+
+router.get("/adoption-dashboard", async (_req, res): Promise<void> => {
+  const dashboard = await getAdoptionDashboard();
+  res.json(dashboard);
+});
+
+router.get("/animals/adoption-list", async (req, res): Promise<void> => {
+  const parsed = parseAdoptionListQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    const records = await listAnimalAdoptionOptions({
+      ...parsed.data,
+      status: parsed.data.status,
+    });
+
+    const filtered = records.filter((animal) => animal.adoptionAvailable);
+    res.json(filtered);
+  } catch (error) {
+    handleCrudError(error, res, "Animal adoption list");
+  }
+});
+
+router.get("/animals/sponsorship-list", async (req, res): Promise<void> => {
+  const parsed = parseAdoptionListQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    const records = await listAnimalAdoptionOptions({
+      ...parsed.data,
+      status: parsed.data.status,
+    });
+
+    const filtered = records.filter((animal) => animal.sponsorshipAvailable);
+    res.json(filtered);
+  } catch (error) {
+    handleCrudError(error, res, "Animal sponsorship list");
+  }
+});
+
+router.get("/adoption-histories", async (req, res): Promise<void> => {
+  const parsed = parseSponsorshipListQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    const rows = await db
+      .select()
+      .from(adoptionHistoriesTable)
+      .where(
+        and(
+          parsed.data.animalId ? eq(adoptionHistoriesTable.animalId, parsed.data.animalId) : undefined,
+          parsed.data.status ? eq(adoptionHistoriesTable.status, parsed.data.status) : undefined,
+        ),
+      )
+      .orderBy(desc(adoptionHistoriesTable.adoptionDate))
+      .limit(parsed.data.limit)
+      .offset(parsed.data.offset);
+
+    res.json(rows);
+  } catch (error) {
+    handleCrudError(error, res, "Adoption history");
+  }
+});
+
+router.post("/adoption-histories", async (req, res): Promise<void> => {
+  const parsed = insertAdoptionHistorySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .insert(adoptionHistoriesTable)
+      .values({
+        ...parsed.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Adoption history");
+  }
+});
+
+router.get("/adoption-histories/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db.select().from(adoptionHistoriesTable).where(eq(adoptionHistoriesTable.id, parsed.data.id));
+    if (!record) {
+      res.status(404).json({ error: "Adoption history not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Adoption history");
+  }
+});
+
+router.patch("/adoption-histories/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(adoptionHistoriesTable)
+      .set({ ...req.body, updatedAt: new Date() })
+      .where(eq(adoptionHistoriesTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Adoption history not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Adoption history");
+  }
+});
+
+router.delete("/adoption-histories/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .delete(adoptionHistoriesTable)
+      .where(eq(adoptionHistoriesTable.id, parsed.data.id))
+      .returning({ id: adoptionHistoriesTable.id });
+
+    if (!record) {
+      res.status(404).json({ error: "Adoption history not found" });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    handleCrudError(error, res, "Adoption history");
+  }
+});
+
+router.get("/animals/:animalId/adoption-history", async (req, res): Promise<void> => {
+  const animalId = parseOptionalIntegerValue(req.params.animalId);
+  if (!animalId) {
+    res.status(400).json({ error: "Invalid animalId" });
+    return;
+  }
+
+  try {
+    const history = await listAdoptionHistoryByAnimalId(animalId);
+    res.json(history);
+  } catch (error) {
+    handleCrudError(error, res, "Adoption history");
+  }
+});
+
+router.get("/sponsorship-plans", async (req, res): Promise<void> => {
+  const limitResult = parseLimitQuery(req.query as Record<string, unknown>);
+  if (!limitResult.success) {
+    res.status(400).json({ error: limitResult.error });
+    return;
+  }
+
+  try {
+    const records = await db
+      .select()
+      .from(sponsorshipPlansTable)
+      .orderBy(desc(sponsorshipPlansTable.createdAt))
+      .limit(limitResult.data.limit);
+
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship plan");
+  }
+});
+
+router.post("/sponsorship-plans", async (req, res): Promise<void> => {
+  const parsed = insertSponsorshipPlanSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .insert(sponsorshipPlansTable)
+      .values({
+        ...parsed.data,
+        amount: Number(parsed.data.amount ?? 0),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship plan");
+  }
+});
+
+router.get("/sponsorship-plans/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db.select().from(sponsorshipPlansTable).where(eq(sponsorshipPlansTable.id, parsed.data.id));
+    if (!record) {
+      res.status(404).json({ error: "Sponsorship plan not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship plan");
+  }
+});
+
+router.patch("/sponsorship-plans/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(sponsorshipPlansTable)
+      .set({ ...req.body, updatedAt: new Date() })
+      .where(eq(sponsorshipPlansTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Sponsorship plan not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship plan");
+  }
+});
+
+router.delete("/sponsorship-plans/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .delete(sponsorshipPlansTable)
+      .where(eq(sponsorshipPlansTable.id, parsed.data.id))
+      .returning({ id: sponsorshipPlansTable.id });
+
+    if (!record) {
+      res.status(404).json({ error: "Sponsorship plan not found" });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship plan");
+  }
+});
+
+router.get("/sponsorships", async (req, res): Promise<void> => {
+  const parsed = parseSponsorshipListQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    const records = await listSponsorships(parsed.data);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship");
+  }
+});
+
+router.post("/sponsorships", async (req, res): Promise<void> => {
+  const payload = {
+    ...req.body,
+    sponsorshipNumber:
+      typeof req.body?.sponsorshipNumber === "string" && req.body.sponsorshipNumber.trim().length > 0
+        ? req.body.sponsorshipNumber.trim()
+        : `SP-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+  };
+
+  const parsed = insertSponsorshipSchema.safeParse(payload);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .insert(sponsorshipsTable)
+      .values({
+        ...parsed.data,
+        amount: Number(parsed.data.amount ?? 0),
+        totalContributed: Number(parsed.data.totalContributed ?? 0),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship");
+  }
+});
+
+router.get("/sponsorships/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db.select().from(sponsorshipsTable).where(eq(sponsorshipsTable.id, parsed.data.id));
+    if (!record) {
+      res.status(404).json({ error: "Sponsorship not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship");
+  }
+});
+
+router.patch("/sponsorships/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(sponsorshipsTable)
+      .set({ ...req.body, updatedAt: new Date() })
+      .where(eq(sponsorshipsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Sponsorship not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship");
+  }
+});
+
+router.delete("/sponsorships/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .delete(sponsorshipsTable)
+      .where(eq(sponsorshipsTable.id, parsed.data.id))
+      .returning({ id: sponsorshipsTable.id });
+
+    if (!record) {
+      res.status(404).json({ error: "Sponsorship not found" });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship");
+  }
+});
+
+router.post("/sponsorships/:id/activate", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(sponsorshipsTable)
+      .set({ status: "active", nextPaymentDate: req.body?.nextPaymentDate ? new Date(req.body.nextPaymentDate) : new Date(), updatedAt: new Date() })
+      .where(eq(sponsorshipsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Sponsorship not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship");
+  }
+});
+
+router.post("/sponsorships/:id/pause", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(sponsorshipsTable)
+      .set({ status: "paused", updatedAt: new Date() })
+      .where(eq(sponsorshipsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Sponsorship not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship");
+  }
+});
+
+router.post("/sponsorships/:id/resume", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(sponsorshipsTable)
+      .set({ status: "active", updatedAt: new Date() })
+      .where(eq(sponsorshipsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Sponsorship not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship");
+  }
+});
+
+router.post("/sponsorships/:id/cancel", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(sponsorshipsTable)
+      .set({ status: "cancelled", endDate: req.body?.endDate ? new Date(req.body.endDate) : new Date(), updatedAt: new Date() })
+      .where(eq(sponsorshipsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Sponsorship not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship");
+  }
+});
+
+router.post("/sponsorships/:id/renew", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [record] = await db
+      .update(sponsorshipsTable)
+      .set({
+        status: "active",
+        startDate: req.body?.startDate ? new Date(req.body.startDate) : new Date(),
+        endDate: req.body?.endDate ? new Date(req.body.endDate) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        nextPaymentDate: req.body?.nextPaymentDate ? new Date(req.body.nextPaymentDate) : new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(sponsorshipsTable.id, parsed.data.id))
+      .returning();
+
+    if (!record) {
+      res.status(404).json({ error: "Sponsorship not found" });
+      return;
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship");
+  }
+});
+
+router.post("/sponsorships/:id/payments", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  const paymentPayload = { ...req.body, sponsorshipId: parsed.data.id };
+  const paymentParsed = insertSponsorshipPaymentSchema.safeParse(paymentPayload);
+  if (!paymentParsed.success) {
+    res.status(400).json({ error: paymentParsed.error.message });
+    return;
+  }
+
+  try {
+    const [sponsorship] = await db.select().from(sponsorshipsTable).where(eq(sponsorshipsTable.id, parsed.data.id));
+    if (!sponsorship) {
+      res.status(404).json({ error: "Sponsorship not found" });
+      return;
+    }
+
+    const [record] = await db
+      .insert(sponsorshipPaymentsTable)
+      .values({
+        ...paymentParsed.data,
+        amount: Number(paymentParsed.data.amount ?? 0),
+        paymentDate: paymentParsed.data.paymentDate ?? new Date(),
+        createdAt: new Date(),
+      })
+      .returning();
+
+    if (paymentParsed.data.status === "completed") {
+      const totalContributed = Number(sponsorship.totalContributed ?? 0) + Number(paymentParsed.data.amount ?? 0);
+      await db
+        .update(sponsorshipsTable)
+        .set({ totalContributed, updatedAt: new Date() })
+        .where(eq(sponsorshipsTable.id, parsed.data.id));
+    }
+
+    res.status(201).json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship payment");
+  }
+});
+
+router.get("/sponsorships/:id/payments", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const records = await listSponsorshipPaymentsBySponsorshipId(parsed.data.id);
+    res.json(records);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship payment");
+  }
+});
+
+router.patch("/sponsorship-payments/:id", async (req, res): Promise<void> => {
+  const parsed = parseIdParam(req.params);
+  if (!parsed.success) {
+    res.status(400).json(parsed.error);
+    return;
+  }
+
+  try {
+    const [existing] = await db.select().from(sponsorshipPaymentsTable).where(eq(sponsorshipPaymentsTable.id, parsed.data.id));
+    if (!existing) {
+      res.status(404).json({ error: "Sponsorship payment not found" });
+      return;
+    }
+
+    const nextStatus = typeof req.body?.status === "string" ? req.body.status : existing.status;
+    const nextAmount = typeof req.body?.amount === "number" ? req.body.amount : existing.amount;
+
+    const [record] = await db
+      .update(sponsorshipPaymentsTable)
+      .set({ ...req.body, amount: nextAmount, updatedAt: new Date() })
+      .where(eq(sponsorshipPaymentsTable.id, parsed.data.id))
+      .returning();
+
+    if (nextStatus === "completed" && existing.status !== "completed") {
+      const [sponsorship] = await db.select().from(sponsorshipsTable).where(eq(sponsorshipsTable.id, existing.sponsorshipId));
+      if (sponsorship) {
+        await db
+          .update(sponsorshipsTable)
+          .set({ totalContributed: Number(sponsorship.totalContributed ?? 0) + Number(nextAmount ?? 0), updatedAt: new Date() })
+          .where(eq(sponsorshipsTable.id, existing.sponsorshipId));
+      }
+    }
+
+    res.json(record);
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship payment");
+  }
+});
+
+router.get("/sponsorship-dashboard", async (_req, res): Promise<void> => {
+  const dashboard = await getSponsorshipDashboard();
+  res.json(dashboard);
+});
+
+router.get("/reports/adoptions", async (req, res): Promise<void> => {
+  const limitResult = parseLimitQuery(req.query as Record<string, unknown>);
+  if (!limitResult.success) {
+    res.status(400).json({ error: limitResult.error });
+    return;
+  }
+
+  const animalId = parseOptionalIntegerValue(req.query.animalId);
+  const status = parseOptionalStringValue(req.query.status);
+  const startDate = parseOptionalDateValue(req.query.startDate);
+  const endDate = parseOptionalDateValue(req.query.endDate);
+
+  try {
+    const rows = await db
+      .select({
+        applicationNumber: adoptionApplicationsTable.applicationNumber,
+        animalId: adoptionApplicationsTable.animalId,
+        applicantName: adoptionApplicationsTable.applicantName,
+        email: adoptionApplicationsTable.email,
+        status: adoptionApplicationsTable.status,
+        applicationDate: adoptionApplicationsTable.applicationDate,
+        reviewedAt: adoptionApplicationsTable.reviewedAt,
+      })
+      .from(adoptionApplicationsTable)
+      .where(
+        and(
+          animalId ? eq(adoptionApplicationsTable.animalId, animalId) : undefined,
+          status ? eq(adoptionApplicationsTable.status, status) : undefined,
+          startDate ? sql`${adoptionApplicationsTable.applicationDate} >= ${startDate}` : undefined,
+          endDate ? sql`${adoptionApplicationsTable.applicationDate} <= ${endDate}` : undefined,
+        ),
+      )
+      .orderBy(desc(adoptionApplicationsTable.applicationDate))
+      .limit(limitResult.data.limit);
+
+    res.json({ generatedAt: new Date(), records: rows });
+  } catch (error) {
+    handleCrudError(error, res, "Adoption report");
+  }
+});
+
+router.get("/reports/sponsorships", async (req, res): Promise<void> => {
+  const limitResult = parseLimitQuery(req.query as Record<string, unknown>);
+  if (!limitResult.success) {
+    res.status(400).json({ error: limitResult.error });
+    return;
+  }
+
+  const animalId = parseOptionalIntegerValue(req.query.animalId);
+  const status = parseOptionalStringValue(req.query.status);
+  const startDate = parseOptionalDateValue(req.query.startDate);
+  const endDate = parseOptionalDateValue(req.query.endDate);
+
+  try {
+    const rows = await db
+      .select({
+        sponsorshipNumber: sponsorshipsTable.sponsorshipNumber,
+        animalId: sponsorshipsTable.animalId,
+        donorId: sponsorshipsTable.donorId,
+        status: sponsorshipsTable.status,
+        amount: sponsorshipsTable.amount,
+        totalContributed: sponsorshipsTable.totalContributed,
+        startDate: sponsorshipsTable.startDate,
+        endDate: sponsorshipsTable.endDate,
+      })
+      .from(sponsorshipsTable)
+      .where(
+        and(
+          animalId ? eq(sponsorshipsTable.animalId, animalId) : undefined,
+          status ? eq(sponsorshipsTable.status, status) : undefined,
+          startDate ? sql`${sponsorshipsTable.startDate} >= ${startDate}` : undefined,
+          endDate ? sql`${sponsorshipsTable.startDate} <= ${endDate}` : undefined,
+        ),
+      )
+      .orderBy(desc(sponsorshipsTable.startDate))
+      .limit(limitResult.data.limit);
+
+    res.json({ generatedAt: new Date(), records: rows });
+  } catch (error) {
+    handleCrudError(error, res, "Sponsorship report");
+  }
 });
 
 export default router;

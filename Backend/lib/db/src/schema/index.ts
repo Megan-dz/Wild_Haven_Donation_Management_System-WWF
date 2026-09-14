@@ -18,6 +18,9 @@
 //   export type Post = typeof postsTable.$inferSelect;
 
 export * from "./activity";
+export * from "./adoptionApplications";
+export * from "./adoptionHistories";
+export * from "./animals";
 export * from "./campaigns";
 export * from "./conservationAreas";
 export * from "./donationChallenges";
@@ -29,4 +32,7 @@ export * from "./rescueCaseNotes";
 export * from "./rescueCaseStatusHistory";
 export * from "./animalMedicalRecords";
 export * from "./rescueExpenses";
+export * from "./sponsorshipPayments";
+export * from "./sponsorshipPlans";
+export * from "./sponsorships";
 export * from "./tasks";
