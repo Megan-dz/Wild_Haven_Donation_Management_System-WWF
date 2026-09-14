@@ -96,6 +96,7 @@ import {
 import {
   getRescueDashboard,
   getRescueCaseRecord,
+  listVolunteerWorkloads,
   listAnimalMedicalRecords,
   listRescueCaseNotes,
   listRescueCaseStatusHistory,
@@ -1778,6 +1779,14 @@ router.get("/rescue-cases/assigned/:employeeId", async (req, res): Promise<void>
 router.get("/rescue-dashboard", async (_req, res): Promise<void> => {
   const dashboard = await getRescueDashboard();
   res.json(dashboard);
+});
+
+router.get("/rescue-volunteers", async (_req, res): Promise<void> => {
+  try {
+    res.json(await listVolunteerWorkloads());
+  } catch (error) {
+    handleCrudError(error, res, "Rescue volunteer workload");
+  }
 });
 
 const ADOPTION_STATUS_VALUES = ["pending_review", "approved", "rejected", "on_hold", "completed"] as const;

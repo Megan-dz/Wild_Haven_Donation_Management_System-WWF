@@ -158,3 +158,26 @@ export async function getRescueDashboard() {
     casesByPriority: casesByPriority.map((item) => ({ priority: item.priority, count: Number(item.count) })),
   };
 }
+
+export async function listVolunteerWorkloads() {
+  const rows = await db
+    .select({
+      employeeId: rescueCasesTable.assignedEmployeeId,
+      totalCases: sql<number>`count(*)`,
+      activeCases: sql<number>`count(*) filter (where ${rescueCasesTable.status} not in ('released', 'closed', 'cancelled'))`,
+      highPriorityCases: sql<number>`count(*) filter (where ${rescueCasesTable.priority} in ('high', 'critical'))`,
+      lastAssignedAt: sql<Date | null>`max(${rescueCasesTable.updatedAt})`,
+    })
+    .from(rescueCasesTable)
+    .where(sql`${rescueCasesTable.assignedEmployeeId} is not null`)
+    .groupBy(rescueCasesTable.assignedEmployeeId)
+    .orderBy(desc(sql`count(*) filter (where ${rescueCasesTable.status} not in ('released', 'closed', 'cancelled'))`));
+
+  return rows.filter((row): row is typeof row & { employeeId: string } => Boolean(row.employeeId)).map((row) => ({
+    id: row.employeeId,
+    totalCases: Number(row.totalCases),
+    activeCases: Number(row.activeCases),
+    highPriorityCases: Number(row.highPriorityCases),
+    lastAssignedAt: row.lastAssignedAt,
+  }));
+}

@@ -4,6 +4,7 @@ import request from "supertest";
 const rescueData = vi.hoisted(() => ({
   getRescueCaseRecord: vi.fn(),
   listRescueCases: vi.fn(),
+  listVolunteerWorkloads: vi.fn(),
 }));
 
 vi.mock("@clerk/express", () => ({ clerkMiddleware: () => (_req, _res, next) => next() }));
@@ -22,6 +23,7 @@ describe("rescue case routes", () => {
   beforeEach(() => {
     rescueData.getRescueCaseRecord.mockReset();
     rescueData.listRescueCases.mockReset();
+    rescueData.listVolunteerWorkloads.mockReset();
     rescueData.listRescueCases.mockResolvedValue([]);
   });
 
@@ -55,5 +57,14 @@ describe("rescue case routes", () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toEqual({ error: "Rescue case not found" });
+  });
+
+  it("returns workload summaries derived from assigned rescue cases", async () => {
+    rescueData.listVolunteerWorkloads.mockResolvedValue([{ id: "staff-123", activeCases: 2, totalCases: 3, highPriorityCases: 1, lastAssignedAt: null }]);
+
+    const response = await request(app).get("/api/rescue-volunteers");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([{ id: "staff-123", activeCases: 2, totalCases: 3, highPriorityCases: 1, lastAssignedAt: null }]);
   });
 });
