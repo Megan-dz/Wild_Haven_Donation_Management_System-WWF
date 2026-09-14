@@ -272,12 +272,13 @@ export const createDonationBodyAmountExclusiveMin = 0;
 
 
 
+
 export const CreateDonationBody = zod.object({
   "donorId": zod.int().min(1),
   "amount": zod.number().gt(createDonationBodyAmountExclusiveMin),
   "frequency": zod.enum(['one_time', 'monthly']),
   "status": zod.enum(['completed', 'pending', 'refunded']),
-  "campaignId": zod.int().nullish(),
+  "campaignId": zod.int().min(1).nullish(),
   "donatedAt": zod.coerce.date().optional()
 })
 
@@ -335,11 +336,12 @@ export const updateDonationBodyAmountExclusiveMin = 0;
 
 
 
+
 export const UpdateDonationBody = zod.object({
   "amount": zod.number().gt(updateDonationBodyAmountExclusiveMin).optional(),
   "frequency": zod.enum(['one_time', 'monthly']).optional(),
   "status": zod.enum(['completed', 'pending', 'refunded']).optional(),
-  "campaignId": zod.int().nullish(),
+  "campaignId": zod.int().min(1).nullish(),
   "donatedAt": zod.coerce.date().optional()
 })
 

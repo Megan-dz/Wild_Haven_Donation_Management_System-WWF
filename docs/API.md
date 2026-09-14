@@ -136,14 +136,12 @@ This document describes the currently implemented backend API in the project. Th
 - Purpose: create a donation
 - Authentication: required
 - Request body:
-  - `donorId` (optional)
-  - `campaignId` (optional)
-  - `donorName` (required)
-  - `donorEmail` (required)
-  - `amount` (required, numeric)
-  - `status` (optional)
-  - `paymentMethod` (optional)
-  - `notes` (optional)
+  - `donorId` (required, must be a positive integer)
+  - `campaignId` (optional, if provided must be a positive integer)
+  - `amount` (required, must be greater than `0`)
+  - `frequency` (required)
+  - `status` (required)
+  - `donatedAt` (optional, must be a valid ISO date-time)
 - Notes:
   - `amount` is converted to cents internally
   - a receipt number is generated automatically
@@ -162,6 +160,10 @@ This document describes the currently implemented backend API in the project. Th
 - Path parameter:
   - `id` (integer)
 - Request body: partial donation fields (`amount`, `frequency`, `status`, `campaignId`, `donatedAt`)
+- Validation notes:
+  - `amount`, when provided, must be greater than `0`
+  - `campaignId`, when provided, must be a positive integer
+  - `donatedAt`, when provided, must be a valid ISO date-time
 - Response: updated donation record
 
 #### `DELETE /api/donations/:id`

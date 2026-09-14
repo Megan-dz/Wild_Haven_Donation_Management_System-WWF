@@ -15,7 +15,10 @@ export interface DonationInput {
   amount: number;
   frequency: DonationFrequency;
   status: DonationStatus;
-  /** @nullable */
+  /**
+     * @minimum 1
+     * @nullable
+     */
   campaignId?: number | null;
   donatedAt?: Date;
 }

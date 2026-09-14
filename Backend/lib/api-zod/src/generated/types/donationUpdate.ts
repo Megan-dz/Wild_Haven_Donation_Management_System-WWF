@@ -13,7 +13,10 @@ export interface DonationUpdate {
   amount?: number;
   frequency?: DonationFrequency;
   status?: DonationStatus;
-  /** @nullable */
+  /**
+     * @minimum 1
+     * @nullable
+     */
   campaignId?: number | null;
   donatedAt?: Date;
 }

@@ -657,6 +657,7 @@ components:
           $ref: "#/components/schemas/DonationStatus"
         campaignId:
           type: ["integer", "null"]
+          minimum: 1
         donatedAt:
           type: string
           format: date-time
@@ -673,6 +674,7 @@ components:
           $ref: "#/components/schemas/DonationStatus"
         campaignId:
           type: ["integer", "null"]
+          minimum: 1
         donatedAt:
           type: string
           format: date-time

@@ -181,6 +181,97 @@ describe("API routes", () => {
     );
   });
 
+  it("creates a valid donation", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const payload = {
+      donorId: 7,
+      amount: 125.5,
+      frequency: "monthly",
+      status: "completed",
+      campaignId: 3,
+      donatedAt: "2026-09-10T08:00:00.000Z",
+    };
+
+    dbMock.insert.mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 99 }]),
+      }),
+    });
+
+    const createdDonation = {
+      id: 99,
+      donorId: 7,
+      donorName: "Rohan Mehta",
+      amount: 125.5,
+      currency: "INR",
+      frequency: "monthly",
+      status: "completed",
+      campaignId: 3,
+      campaignName: "Snow Leopard Patrol",
+      donatedAt: new Date("2026-09-10T08:00:00.000Z"),
+      receiptNumber: "WH-12345678",
+    };
+
+    portalData.getDonationRecord.mockResolvedValue(createdDonation);
+
+    const response = await request(app)
+      .post("/api/donations")
+      .send(payload);
+
+    expect(response.status).toBe(201);
+    expect(response.body).toEqual(createdDonation);
+    expect(portalData.addActivity).toHaveBeenCalledWith(
+      "donation",
+      "Donation recorded",
+      expect.stringContaining("₹125.5"),
+    );
+  });
+
+  it("rejects invalid donation input before accessing the database", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const response = await request(app)
+      .post("/api/donations")
+      .send({ donorId: 0, amount: 25, frequency: "one_time", status: "completed" });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toEqual(expect.any(String));
+  });
+
+  it("rejects a donation when campaignId is non-positive", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const response = await request(app)
+      .post("/api/donations")
+      .send({ donorId: 7, amount: 25, frequency: "one_time", status: "completed", campaignId: 0 });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toEqual(expect.any(String));
+  });
+
+  it("rejects invalid donatedAt input", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const response = await request(app)
+      .post("/api/donations")
+      .send({ donorId: 7, amount: 25, frequency: "one_time", status: "completed", donatedAt: "not-a-date" });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toEqual(expect.any(String));
+  });
+
+  it("rejects invalid donation updates when campaignId is non-positive", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const response = await request(app)
+      .patch("/api/donations/7")
+      .send({ campaignId: 0 });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toEqual(expect.any(String));
+  });
+
   it("rejects invalid donor data before accessing the database", async () => {
     clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
 
