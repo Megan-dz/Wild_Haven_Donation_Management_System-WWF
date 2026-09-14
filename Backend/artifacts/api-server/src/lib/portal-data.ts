@@ -305,6 +305,7 @@ export async function getDonationAnalytics(filters: DonationAnalyticsFilters = {
         goal,
         percent: goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0,
         status: campaign.status,
+        createdAt: campaign.createdAt,
       };
     }),
   };
