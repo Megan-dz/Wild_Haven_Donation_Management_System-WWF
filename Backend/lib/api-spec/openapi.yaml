@@ -86,6 +86,42 @@ paths:
                   $ref: "#/components/schemas/ActivityItem"
         "401":
           $ref: "#/components/responses/Unauthorized"
+  /donation-analytics:
+    get:
+      operationId: getDonationAnalytics
+      tags: [dashboard]
+      summary: Get filtered donation analytics
+      parameters:
+        - name: campaignId
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/DonationStatus"
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Donation analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DonationAnalytics"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /tasks:
     get:
       operationId: listTasks
@@ -615,6 +651,107 @@ components:
         - monthlyRecurringChange
         - campaignProgress
         - donationTrend
+    DonationAnalytics:
+      type: object
+      properties:
+        summary:
+          $ref: "#/components/schemas/DonationAnalyticsSummary"
+        byCampaign:
+          type: array
+          items:
+            $ref: "#/components/schemas/DonationAnalyticsCampaign"
+        byMonth:
+          type: array
+          items:
+            $ref: "#/components/schemas/DonationAnalyticsMonth"
+        byStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/DonationAnalyticsStatus"
+        topDonors:
+          type: array
+          items:
+            $ref: "#/components/schemas/DonationAnalyticsDonor"
+        recentDonations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DonationAnalyticsRecentDonation"
+        campaignProgress:
+          type: array
+          items:
+            $ref: "#/components/schemas/CampaignProgress"
+      required: [summary, byCampaign, byMonth, byStatus, topDonors, recentDonations, campaignProgress]
+    DonationAnalyticsSummary:
+      type: object
+      properties:
+        totalDonations:
+          type: integer
+        totalAmount:
+          type: number
+        averageAmount:
+          type: number
+      required: [totalDonations, totalAmount, averageAmount]
+    DonationAnalyticsCampaign:
+      type: object
+      properties:
+        campaignId:
+          type: [integer, "null"]
+        campaignName:
+          type: string
+        donationCount:
+          type: integer
+        amount:
+          type: number
+      required: [campaignId, campaignName, donationCount, amount]
+    DonationAnalyticsMonth:
+      type: object
+      properties:
+        month:
+          type: string
+        donationCount:
+          type: integer
+        amount:
+          type: number
+      required: [month, donationCount, amount]
+    DonationAnalyticsStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        donationCount:
+          type: integer
+        amount:
+          type: number
+      required: [status, donationCount, amount]
+    DonationAnalyticsDonor:
+      type: object
+      properties:
+        donorId:
+          type: integer
+        donorName:
+          type: string
+        donationCount:
+          type: integer
+        amount:
+          type: number
+      required: [donorId, donorName, donationCount, amount]
+    DonationAnalyticsRecentDonation:
+      type: object
+      properties:
+        id:
+          type: integer
+        donorName:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+        campaignName:
+          type: string
+        donatedAt:
+          type: string
+          format: date-time
+      required: [id, donorName, amount, status, campaignName, donatedAt]
     CampaignProgress:
       type: object
       properties:

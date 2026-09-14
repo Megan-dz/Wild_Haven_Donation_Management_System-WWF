@@ -5,6 +5,7 @@ import { Route, Switch, Router as WouterRouter } from 'wouter';
 
 import { AppLayout } from '@/components/layout/app-layout';
 import { Dashboard } from '@/pages/dashboard';
+import { Analytics } from '@/pages/analytics';
 import { Donations } from '@/pages/donations';
 import { Campaigns } from '@/pages/campaigns';
 import { Donors } from '@/pages/donors';
@@ -18,6 +19,7 @@ function Router() {
     <AppLayout>
       <Switch>
         <Route path="/" component={Dashboard} />
+        <Route path="/analytics" component={Analytics} />
         <Route path="/donations" component={Donations} />
         <Route path="/campaigns" component={Campaigns} />
         <Route path="/donors" component={Donors} />

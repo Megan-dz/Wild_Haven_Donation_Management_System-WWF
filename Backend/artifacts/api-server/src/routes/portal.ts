@@ -73,6 +73,7 @@ import {
   addActivity,
   currency,
   getCampaignRecord,
+  getDonationAnalytics,
   getDonorDashboard,
   getDonorRecord,
   getDonationChallengeRecord,
@@ -175,6 +176,32 @@ const parseRecurringDonationsQuery = (query: Record<string, unknown>) => {
   }
 
   return { success: true as const, data: { donorId, limit: limitResult.data.limit } };
+};
+
+const parseDonationAnalyticsQuery = (query: Record<string, unknown>) => {
+  const campaignIdValue = query.campaignId;
+  const campaignId = campaignIdValue === undefined ? undefined : Number(campaignIdValue);
+  const status = typeof query.status === "string" && query.status.length > 0 ? query.status : undefined;
+  const fromDate = typeof query.from === "string" && query.from.length > 0 ? new Date(query.from) : undefined;
+  const toDate = typeof query.to === "string" && query.to.length > 0 ? new Date(query.to) : undefined;
+
+  if (campaignId !== undefined && (!Number.isInteger(campaignId) || campaignId < 1)) {
+    return { success: false as const, error: "Invalid campaignId" };
+  }
+  if (status && !["completed", "pending", "refunded"].includes(status)) {
+    return { success: false as const, error: "Invalid status" };
+  }
+  if (fromDate && Number.isNaN(fromDate.getTime())) {
+    return { success: false as const, error: "Invalid from date" };
+  }
+  if (toDate && Number.isNaN(toDate.getTime())) {
+    return { success: false as const, error: "Invalid to date" };
+  }
+  if (fromDate && toDate && fromDate > toDate) {
+    return { success: false as const, error: "from date must be before to date" };
+  }
+
+  return { success: true as const, data: { campaignId, status, fromDate, toDate } };
 };
 
 const RESCUE_CASE_STATUSES = [
@@ -741,6 +768,20 @@ router.get("/dashboard", async (req, res): Promise<void> => {
     donationTrend: Object.entries(trend).map(([label, value]) => ({ label, value })),
   };
   res.json(GetDashboardSummaryResponse.parse(response));
+});
+
+router.get("/donation-analytics", async (req, res): Promise<void> => {
+  const parsed = parseDonationAnalyticsQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  try {
+    res.json(await getDonationAnalytics(parsed.data));
+  } catch (error) {
+    handleCrudError(error, res, "Donation analytics");
+  }
 });
 
 router.get("/activity", async (req, res): Promise<void> => {

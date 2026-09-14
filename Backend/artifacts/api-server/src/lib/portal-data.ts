@@ -167,6 +167,149 @@ export async function listDonationRecords(
   }));
 }
 
+export type DonationAnalyticsFilters = {
+  campaignId?: number;
+  status?: string;
+  fromDate?: Date;
+  toDate?: Date;
+};
+
+export async function getDonationAnalytics(filters: DonationAnalyticsFilters = {}) {
+  const conditions = [
+    filters.campaignId !== undefined ? eq(donationsTable.campaignId, filters.campaignId) : undefined,
+    filters.status ? eq(donationsTable.status, filters.status) : undefined,
+    filters.fromDate ? sql`${donationsTable.donatedAt} >= ${filters.fromDate}` : undefined,
+    filters.toDate ? sql`${donationsTable.donatedAt} <= ${filters.toDate}` : undefined,
+  ].filter((condition): condition is NonNullable<typeof condition> => Boolean(condition));
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const [summaryRows, campaignRows, monthlyRows, statusRows, donorRows, recentRows, campaigns] = await Promise.all([
+    db
+      .select({
+        totalDonations: sql<number>`count(*)`,
+        totalAmountCents: sql<number>`coalesce(sum(${donationsTable.amountCents}), 0)`,
+        averageAmountCents: sql<number>`coalesce(avg(${donationsTable.amountCents}), 0)`,
+      })
+      .from(donationsTable)
+      .where(where),
+    db
+      .select({
+        campaignId: donationsTable.campaignId,
+        campaignName: sql<string>`coalesce(${campaignsTable.name}, 'General Fund')`,
+        donationCount: sql<number>`count(*)`,
+        amountCents: sql<number>`coalesce(sum(${donationsTable.amountCents}), 0)`,
+      })
+      .from(donationsTable)
+      .leftJoin(campaignsTable, eq(donationsTable.campaignId, campaignsTable.id))
+      .where(where)
+      .groupBy(donationsTable.campaignId, campaignsTable.name)
+      .orderBy(desc(sql`sum(${donationsTable.amountCents})`)),
+    db
+      .select({
+        month: sql<string>`to_char(date_trunc('month', ${donationsTable.donatedAt}), 'YYYY-MM')`,
+        donationCount: sql<number>`count(*)`,
+        amountCents: sql<number>`coalesce(sum(${donationsTable.amountCents}), 0)`,
+      })
+      .from(donationsTable)
+      .where(where)
+      .groupBy(sql`date_trunc('month', ${donationsTable.donatedAt})`)
+      .orderBy(sql`date_trunc('month', ${donationsTable.donatedAt})`),
+    db
+      .select({
+        status: donationsTable.status,
+        donationCount: sql<number>`count(*)`,
+        amountCents: sql<number>`coalesce(sum(${donationsTable.amountCents}), 0)`,
+      })
+      .from(donationsTable)
+      .where(where)
+      .groupBy(donationsTable.status)
+      .orderBy(desc(sql`count(*)`)),
+    db
+      .select({
+        donorId: donorsTable.id,
+        donorName: donorsTable.name,
+        donationCount: sql<number>`count(*)`,
+        amountCents: sql<number>`coalesce(sum(${donationsTable.amountCents}), 0)`,
+      })
+      .from(donationsTable)
+      .innerJoin(donorsTable, eq(donationsTable.donorId, donorsTable.id))
+      .where(where)
+      .groupBy(donorsTable.id, donorsTable.name)
+      .orderBy(desc(sql`sum(${donationsTable.amountCents})`))
+      .limit(10),
+    db
+      .select({
+        id: donationsTable.id,
+        donorName: donorsTable.name,
+        amountCents: donationsTable.amountCents,
+        status: donationsTable.status,
+        campaignName: sql<string | null>`${campaignsTable.name}`,
+        donatedAt: donationsTable.donatedAt,
+      })
+      .from(donationsTable)
+      .innerJoin(donorsTable, eq(donationsTable.donorId, donorsTable.id))
+      .leftJoin(campaignsTable, eq(donationsTable.campaignId, campaignsTable.id))
+      .where(where)
+      .orderBy(desc(donationsTable.donatedAt))
+      .limit(10),
+    db.select().from(campaignsTable).orderBy(desc(campaignsTable.createdAt)),
+  ]);
+
+  const campaignTotals = new Map(
+    campaignRows.map((row) => [row.campaignId, Number(row.amountCents ?? 0)]),
+  );
+
+  return {
+    summary: {
+      totalDonations: Number(summaryRows[0]?.totalDonations ?? 0),
+      totalAmount: currency(summaryRows[0]?.totalAmountCents),
+      averageAmount: currency(summaryRows[0]?.averageAmountCents),
+    },
+    byCampaign: campaignRows.map((row) => ({
+      campaignId: row.campaignId,
+      campaignName: row.campaignName,
+      donationCount: Number(row.donationCount ?? 0),
+      amount: currency(row.amountCents),
+    })),
+    byMonth: monthlyRows.map((row) => ({
+      month: row.month,
+      donationCount: Number(row.donationCount ?? 0),
+      amount: currency(row.amountCents),
+    })),
+    byStatus: statusRows.map((row) => ({
+      status: row.status,
+      donationCount: Number(row.donationCount ?? 0),
+      amount: currency(row.amountCents),
+    })),
+    topDonors: donorRows.map((row) => ({
+      donorId: row.donorId,
+      donorName: row.donorName,
+      donationCount: Number(row.donationCount ?? 0),
+      amount: currency(row.amountCents),
+    })),
+    recentDonations: recentRows.map((row) => ({
+      id: row.id,
+      donorName: row.donorName,
+      amount: currency(row.amountCents),
+      status: row.status,
+      campaignName: row.campaignName ?? "General Fund",
+      donatedAt: row.donatedAt,
+    })),
+    campaignProgress: campaigns.map((campaign) => {
+      const raised = currency(campaignTotals.get(campaign.id));
+      const goal = currency(campaign.goalCents);
+      return {
+        id: campaign.id,
+        name: campaign.name,
+        raised,
+        goal,
+        percent: goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0,
+        status: campaign.status,
+      };
+    }),
+  };
+}
+
 export async function addActivity(type: string, title: string, detail: string) {
   await db.insert(activityTable).values({ type, title, detail });
 }
