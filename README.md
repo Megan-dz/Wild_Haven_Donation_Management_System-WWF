@@ -19,7 +19,7 @@ The navigation bar sits fixed at the top of every page and contains the Wild Hav
 on the left and four links/buttons on the right: **Our Mission, species map, Quiz** and a highlighted **Donate** button.
 
 **Features:**
-- Clicking "Our Mission," "Impact," or "FAQ" does **not load a new page** — instead,
+- Clicking "Our Mission," "species map," or "Quiz" does **not load a new page** — instead,
  the browser **smoothly scrolls down** to that specific section on the same homepage. This is called anchor navigation (visible in the URL as `#mission`, `#impact`, `#faq`).
 - Because there's no full page reload, the transition feels instant and keeps the user in context.
 - The "Donate" button in the navbar is always visible, so no matter where the user scrolls, they can jump straight to donating.
