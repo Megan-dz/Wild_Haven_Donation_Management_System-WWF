@@ -15,6 +15,9 @@ awareness into actual donations through a smooth, guided flow. Below is a walkth
 of every component, with its features explained directly underneath it.
 
 ## 1. Navbar 
+
+<img width="1021" height="76" alt="image" src="https://github.com/user-attachments/assets/faf664e2-8dc1-4b7e-9709-eeed2b1c83c8" />
+
 The navigation bar sits fixed at the top of every page and contains the Wild Haven logo/name 
 on the left and four links/buttons on the right: **Our Mission, species map, Quiz** and a highlighted **Donate** button.
 
