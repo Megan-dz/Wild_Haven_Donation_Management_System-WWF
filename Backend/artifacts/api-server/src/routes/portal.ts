@@ -31,6 +31,8 @@ import {
   insertAnimalSpeciesSchema,
   insertConservationAreaSchema,
   insertDonationChallengeSchema,
+  insertInventoryItemSchema,
+  insertInventoryMovementSchema,
   insertRecurringDonationSchema,
   insertRescueCaseNoteSchema,
   insertRescueCaseSchema,
@@ -47,6 +49,8 @@ import {
   sponsorshipPlansTable,
   sponsorshipsTable,
   tasksTable,
+  inventoryItemsTable,
+  inventoryMovementsTable,
 } from "@workspace/db";
 import {
   CreateCampaignBody,
@@ -3436,6 +3440,17 @@ router.get("/sponsorship-dashboard", async (_req, res): Promise<void> => {
   const dashboard = await getSponsorshipDashboard();
   res.json(dashboard);
 });
+
+router.get("/inventory", async (req, res): Promise<void> => {
+  const search = parseOptionalStringValue(req.query.search); const category = parseOptionalStringValue(req.query.category);
+  try { const rows = await db.select().from(inventoryItemsTable).where(and(search ? ilike(inventoryItemsTable.name, `%${search}%`) : undefined, category ? eq(inventoryItemsTable.category, category) : undefined)).orderBy(desc(inventoryItemsTable.updatedAt)).limit(100); res.json(rows); } catch (error) { handleCrudError(error, res, "Inventory"); }
+});
+router.get("/inventory/dashboard", async (_req, res): Promise<void> => { try { const rows = await db.select().from(inventoryItemsTable); const total = rows.reduce((sum, item) => sum + item.quantity * item.unitCost, 0); res.json({ totalItems: rows.length, inStock: rows.filter((item) => item.quantity > 0).length, lowStock: rows.filter((item) => item.quantity > 0 && item.quantity <= item.minimumQuantity).length, outOfStock: rows.filter((item) => item.quantity <= 0).length, inventoryValue: total }); } catch (error) { handleCrudError(error, res, "Inventory dashboard"); } });
+router.post("/inventory", async (req, res): Promise<void> => { const body = insertInventoryItemSchema.safeParse(req.body); if (!body.success) { res.status(400).json({ error: body.error.message }); return; } try { const [item] = await db.insert(inventoryItemsTable).values(body.data).returning(); res.status(201).json(item); } catch (error) { handleCrudError(error, res, "Inventory item"); } });
+router.patch("/inventory/:id", async (req, res): Promise<void> => { const params = parseIdParam(req.params); const body = insertInventoryItemSchema.partial().safeParse(req.body); if (!params.success || !body.success) { res.status(400).json({ error: !params.success ? params.error.message : body.error.message }); return; } try { const [item] = await db.update(inventoryItemsTable).set({ ...body.data, updatedAt: new Date() }).where(eq(inventoryItemsTable.id, params.data.id)).returning(); if (!item) { res.status(404).json({ error: "Inventory item not found" }); return; } res.json(item); } catch (error) { handleCrudError(error, res, "Inventory item"); } });
+router.delete("/inventory/:id", async (req, res): Promise<void> => { const params = parseIdParam(req.params); if (!params.success) { res.status(400).json({ error: params.error.message }); return; } try { const [item] = await db.delete(inventoryItemsTable).where(eq(inventoryItemsTable.id, params.data.id)).returning(); if (!item) { res.status(404).json({ error: "Inventory item not found" }); return; } res.sendStatus(204); } catch (error) { handleCrudError(error, res, "Inventory item"); } });
+router.get("/inventory/:id/movements", async (req, res): Promise<void> => { const params = parseIdParam(req.params); if (!params.success) { res.status(400).json({ error: params.error.message }); return; } res.json(await db.select().from(inventoryMovementsTable).where(eq(inventoryMovementsTable.inventoryItemId, params.data.id)).orderBy(desc(inventoryMovementsTable.createdAt))); });
+router.post("/inventory/:id/adjust", async (req, res): Promise<void> => { const params = parseIdParam(req.params); const quantityChange = Number(req.body?.quantityChange); const reason = parseOptionalStringValue(req.body?.reason); if (!params.success || !Number.isInteger(quantityChange) || !quantityChange || !reason) { res.status(400).json({ error: "A non-zero whole quantity and reason are required" }); return; } try { const [existing] = await db.select().from(inventoryItemsTable).where(eq(inventoryItemsTable.id, params.data.id)); if (!existing) { res.status(404).json({ error: "Inventory item not found" }); return; } if (existing.quantity + quantityChange < 0) { res.status(400).json({ error: "Stock cannot fall below zero" }); return; } const [item] = await db.update(inventoryItemsTable).set({ quantity: existing.quantity + quantityChange, updatedAt: new Date() }).where(eq(inventoryItemsTable.id, params.data.id)).returning(); const movement = insertInventoryMovementSchema.safeParse({ inventoryItemId: item.id, quantityChange, reason, reference: parseOptionalStringValue(req.body?.reference), recordedBy: parseOptionalStringValue(req.body?.recordedBy) }); if (movement.success) await db.insert(inventoryMovementsTable).values(movement.data); res.json(item); } catch (error) { handleCrudError(error, res, "Inventory adjustment"); } });
 
 router.get("/reports/adoptions", async (req, res): Promise<void> => {
   const limitResult = parseLimitQuery(req.query as Record<string, unknown>);

@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Heart, TreePine, Users, BarChart3, Siren, UserRoundCheck, HeartPulse, HeartHandshake } from "lucide-react";
+import { LayoutDashboard, Heart, TreePine, Users, BarChart3, Siren, UserRoundCheck, HeartPulse, HeartHandshake, Package } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -8,6 +8,7 @@ const navigation = [
   { name: "Rescue Cases", href: "/rescue-cases", icon: Siren },
   { name: "Medical & Recovery", href: "/medical-recovery", icon: HeartPulse },
   { name: "Adoptions", href: "/adoptions", icon: HeartHandshake },
+  { name: "Inventory", href: "/inventory", icon: Package },
   { name: "Volunteer Assignments", href: "/volunteers", icon: UserRoundCheck },
   { name: "Donations", href: "/donations", icon: Heart },
   { name: "Campaigns", href: "/campaigns", icon: TreePine },

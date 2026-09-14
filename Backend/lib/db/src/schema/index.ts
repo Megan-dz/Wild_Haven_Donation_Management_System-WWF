@@ -43,3 +43,5 @@ export * from "./sponsorshipPayments";
 export * from "./sponsorshipPlans";
 export * from "./sponsorships";
 export * from "./tasks";
+export * from "./inventoryItems";
+export * from "./inventoryMovements";
