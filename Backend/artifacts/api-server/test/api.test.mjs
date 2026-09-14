@@ -14,6 +14,7 @@ const portalData = vi.hoisted(() => ({
 }));
 
 const dbMock = vi.hoisted(() => ({
+  select: vi.fn(),
   insert: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),
@@ -28,7 +29,9 @@ const donorsTable = vi.hoisted(() => ({
   createdAt: "donors.created_at",
 }));
 
-const activityTable = vi.hoisted(() => ({}));
+const activityTable = vi.hoisted(() => ({
+  createdAt: "activity.created_at",
+}));
 const campaignsTable = vi.hoisted(() => ({}));
 const donationsTable = vi.hoisted(() => ({}));
 
@@ -73,6 +76,7 @@ describe("API routes", () => {
     portalData.listDonorRecords.mockReset();
     portalData.getCampaignRecord.mockReset();
     portalData.listCampaignRecords.mockReset();
+    dbMock.select.mockReset();
     dbMock.insert.mockReset();
     dbMock.update.mockReset();
     dbMock.delete.mockReset();
@@ -85,6 +89,84 @@ describe("API routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ status: "ok" });
+  });
+
+  it("rejects unauthenticated access to activity", async () => {
+    clerk.getAuth.mockReturnValue(null);
+
+    const response = await request(app).get("/api/activity");
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: "Authentication required" });
+  });
+
+  it("lists activity for authenticated requests with a custom limit", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const activity = [
+      {
+        id: 1,
+        type: "donation",
+        title: "Donation recorded",
+        detail: "₹125.5 donation added to the ledger.",
+        createdAt: "2026-09-10T08:00:00.000Z",
+      },
+      {
+        id: 2,
+        type: "campaign",
+        title: "Campaign created",
+        detail: "Forest Guard was added to the campaign portfolio.",
+        createdAt: "2026-09-09T12:30:00.000Z",
+      },
+    ];
+
+    const limitMock = vi.fn().mockResolvedValue(activity);
+    const orderByMock = vi.fn().mockReturnValue({ limit: limitMock });
+    const fromMock = vi.fn().mockReturnValue({ orderBy: orderByMock });
+    dbMock.select.mockReturnValue({ from: fromMock });
+
+    const response = await request(app).get("/api/activity?limit=7");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(activity);
+    expect(dbMock.select).toHaveBeenCalledTimes(1);
+    expect(fromMock).toHaveBeenCalledWith(activityTable);
+    expect(orderByMock).toHaveBeenCalledWith(expect.anything());
+    expect(limitMock).toHaveBeenCalledWith(7);
+  });
+
+  it("uses the default activity limit when no limit query parameter is provided", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const activity = [
+      {
+        id: 3,
+        type: "donor",
+        title: "New donor added",
+        detail: "Nisha Kumar was added to the donor directory.",
+        createdAt: "2026-09-08T10:15:00.000Z",
+      },
+    ];
+
+    const limitMock = vi.fn().mockResolvedValue(activity);
+    const orderByMock = vi.fn().mockReturnValue({ limit: limitMock });
+    const fromMock = vi.fn().mockReturnValue({ orderBy: orderByMock });
+    dbMock.select.mockReturnValue({ from: fromMock });
+
+    const response = await request(app).get("/api/activity");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(activity);
+    expect(limitMock).toHaveBeenCalledWith(50);
+  });
+
+  it("rejects invalid activity query parameters", async () => {
+    clerk.getAuth.mockReturnValue({ userId: "staff_test_123" });
+
+    const response = await request(app).get("/api/activity?limit=0");
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toEqual(expect.any(String));
   });
 
   it("rejects unauthenticated access to donors", async () => {
