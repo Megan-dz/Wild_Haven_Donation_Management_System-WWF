@@ -1,5 +1,14 @@
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
-import { db, activityTable, campaignsTable, donationsTable, donorsTable } from "@workspace/db";
+import {
+  db,
+  activityTable,
+  campaignsTable,
+  conservationAreasTable,
+  donationsTable,
+  donorsTable,
+  donationChallengesTable,
+  recurringDonationsTable,
+} from "@workspace/db";
 
 export const currency = (cents: number | string | null | undefined) =>
   Math.round(Number(cents ?? 0)) / 100;
@@ -121,6 +130,7 @@ export async function listDonationRecords(
   status: string | undefined,
   campaignId: number | undefined,
   limit: number,
+  donorId?: number,
 ) {
   const rows = await db
     .select({
@@ -136,6 +146,7 @@ export async function listDonationRecords(
         search ? or(ilike(donorsTable.name, `%${search}%`), ilike(donationsTable.receiptNumber, `%${search}%`)) : undefined,
         status ? eq(donationsTable.status, status) : undefined,
         campaignId ? eq(donationsTable.campaignId, campaignId) : undefined,
+        donorId ? eq(donationsTable.donorId, donorId) : undefined,
       ),
     )
     .orderBy(desc(donationsTable.donatedAt))
@@ -158,4 +169,100 @@ export async function listDonationRecords(
 
 export async function addActivity(type: string, title: string, detail: string) {
   await db.insert(activityTable).values({ type, title, detail });
+}
+
+export async function listConservationAreas(limit: number) {
+  const areas = await db
+    .select()
+    .from(conservationAreasTable)
+    .where(eq(conservationAreasTable.status, "active"))
+    .orderBy(desc(conservationAreasTable.createdAt))
+    .limit(limit);
+
+  return areas.map((area) => ({
+    id: area.id,
+    name: area.name,
+    description: area.description,
+    status: area.status,
+    createdAt: area.createdAt,
+  }));
+}
+
+export async function getDonationChallengeRecord(id: number) {
+  const [challenge] = await db.select().from(donationChallengesTable).where(eq(donationChallengesTable.id, id));
+  if (!challenge) return undefined;
+
+  return {
+    id: challenge.id,
+    name: challenge.name,
+    description: challenge.description,
+    sponsorName: challenge.sponsorName,
+    matchingRate: challenge.matchingRate,
+    maximumMatchAmountCents: challenge.maximumMatchAmountCents,
+    currentMatchedAmountCents: challenge.currentMatchedAmountCents,
+    status: challenge.status,
+    startDate: challenge.startDate,
+    endDate: challenge.endDate,
+    createdAt: challenge.createdAt,
+    updatedAt: challenge.updatedAt,
+  };
+}
+
+export async function listDonationChallenges(limit: number) {
+  const challenges = await db
+    .select()
+    .from(donationChallengesTable)
+    .orderBy(desc(donationChallengesTable.startDate))
+    .limit(limit);
+
+  return challenges.map((challenge) => ({
+    id: challenge.id,
+    name: challenge.name,
+    description: challenge.description,
+    sponsorName: challenge.sponsorName,
+    matchingRate: challenge.matchingRate,
+    maximumMatchAmountCents: challenge.maximumMatchAmountCents,
+    currentMatchedAmountCents: challenge.currentMatchedAmountCents,
+    status: challenge.status,
+    startDate: challenge.startDate,
+    endDate: challenge.endDate,
+    createdAt: challenge.createdAt,
+    updatedAt: challenge.updatedAt,
+  }));
+}
+
+export async function getDonorDashboard(id: number) {
+  const donor = await getDonorRecord(id);
+  if (!donor) return undefined;
+
+  const recurringPlans = await db
+    .select()
+    .from(recurringDonationsTable)
+    .where(and(eq(recurringDonationsTable.donorId, id), eq(recurringDonationsTable.status, "active")))
+    .orderBy(desc(recurringDonationsTable.nextScheduledAt));
+
+  const recentDonations = await listDonationRecords(undefined, undefined, undefined, 5, id);
+  const challenges = await listDonationChallenges(5);
+  const activeChallenges = challenges.filter((challenge) => challenge.status === "active");
+
+  return {
+    donor,
+    summary: {
+      donationCount: donor.donationCount,
+      recurringPlans: recurringPlans.length,
+      activeChallenges: activeChallenges.length,
+      lifetimeContribution: donor.totalGiven,
+    },
+    recentDonations,
+    recurringPlans: recurringPlans.map((plan) => ({
+      id: plan.id,
+      amountCents: plan.amountCents,
+      currency: plan.currency,
+      frequency: plan.frequency,
+      status: plan.status,
+      nextScheduledAt: plan.nextScheduledAt,
+      areaId: plan.areaId,
+    })),
+    challenges,
+  };
 }

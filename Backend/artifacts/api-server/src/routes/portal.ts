@@ -1,6 +1,19 @@
 import { Router, type IRouter, type Response } from "express";
 import { and, desc, eq, sql } from "drizzle-orm";
-import { db, activityTable, campaignsTable, donationsTable, donorsTable } from "@workspace/db";
+import {
+  db,
+  activityTable,
+  campaignsTable,
+  conservationAreasTable,
+  donationsTable,
+  donorsTable,
+  donationChallengesTable,
+  insertConservationAreaSchema,
+  insertDonationChallengeSchema,
+  insertRecurringDonationSchema,
+  recurringDonationsTable,
+  tasksTable,
+} from "@workspace/db";
 import {
   CreateCampaignBody,
   CreateDonorBody,
@@ -17,7 +30,6 @@ import {
   ListTasksResponse,
   TaskSchema,
   UpdateTaskBody,
-  UpdateTaskParams,
   GetDashboardSummaryResponse,
   GetDonorParams,
   GetDonationParams,
@@ -42,13 +54,16 @@ import {
   addActivity,
   currency,
   getCampaignRecord,
+  getDonorDashboard,
   getDonorRecord,
+  getDonationChallengeRecord,
   getDonationRecord,
   listCampaignRecords,
+  listConservationAreas,
+  listDonationChallenges,
   listDonationRecords,
   listDonorRecords,
 } from "../lib/portal-data";
-import { tasksTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 
 const isDuplicateRecordError = (error: unknown): boolean =>
@@ -66,6 +81,48 @@ const handleCrudError = (error: unknown, res: Response, entity: string): void =>
 
 const router: IRouter = Router();
 router.use(requireAuth);
+
+const parseLimitQuery = (query: Record<string, unknown>) => {
+  const limitValue = query.limit;
+  const limit = typeof limitValue === "string" ? Number(limitValue) : typeof limitValue === "number" ? limitValue : 50;
+
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+    return { success: false as const, error: "Invalid limit" };
+  }
+
+  return { success: true as const, data: { limit } };
+};
+
+const parseIdParam = (params: Record<string, unknown>) => {
+  const idValue = params.id;
+  const id = typeof idValue === "string" ? Number(idValue) : typeof idValue === "number" ? idValue : NaN;
+
+  if (!Number.isInteger(id) || id < 1) {
+    return { success: false as const, error: { message: "Invalid id" } };
+  }
+
+  return { success: true as const, data: { id } };
+};
+
+const IdParams = {
+  safeParse: parseIdParam,
+};
+
+const parseRecurringDonationsQuery = (query: Record<string, unknown>) => {
+  const donorIdValue = query.donorId;
+  const donorId = typeof donorIdValue === "string" ? Number(donorIdValue) : typeof donorIdValue === "number" ? donorIdValue : undefined;
+  const limitResult = parseLimitQuery(query);
+
+  if (!limitResult.success) {
+    return limitResult;
+  }
+
+  if (donorId !== undefined && (!Number.isInteger(donorId) || donorId < 1)) {
+    return { success: false as const, error: "Invalid donorId" };
+  }
+
+  return { success: true as const, data: { donorId, limit: limitResult.data.limit } };
+};
 
 router.get("/auth/me", (req, res): void => {
   const claims = (req as typeof req & { auth?: { sessionClaims?: Record<string, unknown> } }).auth?.sessionClaims;
@@ -150,7 +207,7 @@ router.post("/tasks", async (req, res): Promise<void> => {
 });
 
 router.patch("/tasks/:id", async (req, res): Promise<void> => {
-  const params = UpdateTaskParams.safeParse(req.params);
+  const params = GetTaskParams.safeParse(req.params);
   const body = UpdateTaskBody.safeParse(req.body);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -199,6 +256,304 @@ router.delete("/tasks/:id", async (req, res): Promise<void> => {
     res.sendStatus(204);
   } catch (error) {
     handleCrudError(error, res, "Task");
+  }
+});
+
+router.get("/conservation-areas", async (req, res): Promise<void> => {
+  const parsed = parseLimitQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  const areas = await listConservationAreas(parsed.data.limit);
+  res.json(areas);
+});
+
+router.post("/conservation-areas", async (req, res): Promise<void> => {
+  const parsed = insertConservationAreaSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [area] = await db.insert(conservationAreasTable).values(parsed.data).returning();
+    res.status(201).json(area);
+  } catch (error) {
+    handleCrudError(error, res, "Conservation area");
+  }
+});
+
+router.get("/conservation-areas/:id", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [area] = await db.select().from(conservationAreasTable).where(eq(conservationAreasTable.id, params.data.id));
+  if (!area) {
+    res.status(404).json({ error: "Conservation area not found" });
+    return;
+  }
+
+  res.json(area);
+});
+
+router.patch("/conservation-areas/:id", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  const body = insertConservationAreaSchema.partial().safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  try {
+    const [area] = await db
+      .update(conservationAreasTable)
+      .set(body.data)
+      .where(eq(conservationAreasTable.id, params.data.id))
+      .returning();
+
+    if (!area) {
+      res.status(404).json({ error: "Conservation area not found" });
+      return;
+    }
+
+    res.json(area);
+  } catch (error) {
+    handleCrudError(error, res, "Conservation area");
+  }
+});
+
+router.delete("/conservation-areas/:id", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  try {
+    const [area] = await db
+      .delete(conservationAreasTable)
+      .where(eq(conservationAreasTable.id, params.data.id))
+      .returning();
+
+    if (!area) {
+      res.status(404).json({ error: "Conservation area not found" });
+      return;
+    }
+
+    res.sendStatus(204);
+  } catch (error) {
+    handleCrudError(error, res, "Conservation area");
+  }
+});
+
+router.get("/donation-challenges", async (req, res): Promise<void> => {
+  const parsed = parseLimitQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  const challenges = await listDonationChallenges(parsed.data.limit);
+  res.json(challenges);
+});
+
+router.post("/donation-challenges", async (req, res): Promise<void> => {
+  const parsed = insertDonationChallengeSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [challenge] = await db.insert(donationChallengesTable).values(parsed.data).returning();
+    res.status(201).json(challenge);
+  } catch (error) {
+    handleCrudError(error, res, "Donation challenge");
+  }
+});
+
+router.get("/donation-challenges/:id", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const challenge = await getDonationChallengeRecord(params.data.id);
+  if (!challenge) {
+    res.status(404).json({ error: "Donation challenge not found" });
+    return;
+  }
+
+  res.json(challenge);
+});
+
+router.patch("/donation-challenges/:id", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  const body = insertDonationChallengeSchema.partial().safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  try {
+    const [challenge] = await db
+      .update(donationChallengesTable)
+      .set(body.data)
+      .where(eq(donationChallengesTable.id, params.data.id))
+      .returning();
+
+    if (!challenge) {
+      res.status(404).json({ error: "Donation challenge not found" });
+      return;
+    }
+
+    res.json(challenge);
+  } catch (error) {
+    handleCrudError(error, res, "Donation challenge");
+  }
+});
+
+router.delete("/donation-challenges/:id", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  try {
+    const [challenge] = await db
+      .delete(donationChallengesTable)
+      .where(eq(donationChallengesTable.id, params.data.id))
+      .returning();
+
+    if (!challenge) {
+      res.status(404).json({ error: "Donation challenge not found" });
+      return;
+    }
+
+    res.sendStatus(204);
+  } catch (error) {
+    handleCrudError(error, res, "Donation challenge");
+  }
+});
+
+router.get("/recurring-donations", async (req, res): Promise<void> => {
+  const parsed = parseRecurringDonationsQuery(req.query as Record<string, unknown>);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error });
+    return;
+  }
+
+  const recurring = await db
+    .select()
+    .from(recurringDonationsTable)
+    .where(parsed.data.donorId ? eq(recurringDonationsTable.donorId, parsed.data.donorId) : undefined)
+    .orderBy(desc(recurringDonationsTable.nextScheduledAt))
+    .limit(parsed.data.limit);
+
+  res.json(recurring);
+});
+
+router.post("/recurring-donations", async (req, res): Promise<void> => {
+  const parsed = insertRecurringDonationSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  try {
+    const [plan] = await db.insert(recurringDonationsTable).values(parsed.data).returning();
+    res.status(201).json(plan);
+  } catch (error) {
+    handleCrudError(error, res, "Recurring donation");
+  }
+});
+
+router.get("/recurring-donations/:id", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const [plan] = await db
+    .select()
+    .from(recurringDonationsTable)
+    .where(eq(recurringDonationsTable.id, params.data.id));
+
+  if (!plan) {
+    res.status(404).json({ error: "Recurring donation not found" });
+    return;
+  }
+
+  res.json(plan);
+});
+
+router.patch("/recurring-donations/:id", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  const body = insertRecurringDonationSchema.partial().safeParse(req.body);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+
+  try {
+    const [plan] = await db
+      .update(recurringDonationsTable)
+      .set(body.data)
+      .where(eq(recurringDonationsTable.id, params.data.id))
+      .returning();
+
+    if (!plan) {
+      res.status(404).json({ error: "Recurring donation not found" });
+      return;
+    }
+
+    res.json(plan);
+  } catch (error) {
+    handleCrudError(error, res, "Recurring donation");
+  }
+});
+
+router.delete("/recurring-donations/:id", async (req, res): Promise<void> => {
+  const params = IdParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  try {
+    const [plan] = await db
+      .delete(recurringDonationsTable)
+      .where(eq(recurringDonationsTable.id, params.data.id))
+      .returning();
+
+    if (!plan) {
+      res.status(404).json({ error: "Recurring donation not found" });
+      return;
+    }
+
+    res.sendStatus(204);
+  } catch (error) {
+    handleCrudError(error, res, "Recurring donation");
   }
 });
 
@@ -296,6 +651,39 @@ router.get("/donors/:id", async (req, res): Promise<void> => {
     return;
   }
   res.json(donor);
+});
+
+router.get("/donors/:id/donations", async (req, res): Promise<void> => {
+  const params = GetDonorParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const donor = await getDonorRecord(params.data.id);
+  if (!donor) {
+    res.status(404).json({ error: "Donor not found" });
+    return;
+  }
+
+  const donations = await listDonationRecords(undefined, undefined, undefined, 50, params.data.id);
+  res.json(ListDonationsResponse.parse(donations));
+});
+
+router.get("/donors/:id/dashboard", async (req, res): Promise<void> => {
+  const params = GetDonorParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const dashboard = await getDonorDashboard(params.data.id);
+  if (!dashboard) {
+    res.status(404).json({ error: "Donor not found" });
+    return;
+  }
+
+  res.json(dashboard);
 });
 
 router.patch("/donors/:id", async (req, res): Promise<void> => {

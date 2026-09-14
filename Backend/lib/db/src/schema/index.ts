@@ -19,5 +19,9 @@
 
 export * from "./activity";
 export * from "./campaigns";
+export * from "./conservationAreas";
+export * from "./donationChallenges";
 export * from "./donations";
 export * from "./donors";
+export * from "./recurringDonations";
+export * from "./tasks";

@@ -2,6 +2,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { z } from "zod/v4";
 import { campaignsTable } from "./campaigns";
+import { conservationAreasTable } from "./conservationAreas";
 import { donorsTable } from "./donors";
 
 export const donationsTable = pgTable("donations", {
@@ -12,6 +13,7 @@ export const donationsTable = pgTable("donations", {
   frequency: text("frequency").notNull().default("one_time"),
   status: text("status").notNull().default("completed"),
   campaignId: integer("campaign_id").references(() => campaignsTable.id, { onDelete: "set null" }),
+  areaId: integer("area_id").references(() => conservationAreasTable.id, { onDelete: "set null" }),
   donatedAt: timestamp("donated_at", { withTimezone: true }).notNull().defaultNow(),
   receiptNumber: text("receipt_number").notNull().unique(),
 });
