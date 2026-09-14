@@ -16,7 +16,7 @@ of every component, with its features explained directly underneath it.
 
 ## 1. Navbar (Our Mission / Impact / FAQ / Donate)
 The navigation bar sits fixed at the top of every page and contains the Wild Haven logo/name 
-on the left and four links/buttons on the right: **Our Mission, Impact, FAQ,** and a highlighted **Donate** button.
+on the left and four links/buttons on the right: **Our Mission, species map, Quiz** and a highlighted **Donate** button.
 
 **Features:**
 - Clicking "Our Mission," "Impact," or "FAQ" does **not load a new page** — instead,
@@ -57,7 +57,43 @@ This is a compact, self-contained donation form that sits alongside the hero sec
 - **"Continue to Donate" button** at the bottom 
 - this is what actually moves the user forward into the payment process (explained in section 7).
 <img width="742" height="1074" alt="Screenshot 2026-09-08 175639" src="https://github.com/user-attachments/assets/ae993a02-f953-42c8-9c09-84dddaabc4a8" />
----
+
+## 3. Search Interface
+
+DISCOVERY & SEARCH INTERFACE
+
+### 3.1 Section Title & Header Overview
+* **Section Tag:** EXPLORE WILD HAVEN
+* **Main Headline:** What would you like to discover?
+* **Sub-headline:** Search our species, field programs and active conservation goals.
+* **Primary Purpose:** Provide full-text query capability across species, programs, and conservation goals while offering fast-track visual program shortcuts.
+
+### 3.2 Interactive Search Input
+* **Component Type:** Dynamic text search input field with magnifying glass icon.
+* **Placeholder Text:** `Try "elephant", "forest" or "patrol"...`
+* **Interactive Behavior:** Real-time query matching across species databases, field reports, and project pages as the user types.
+
+### 3.3 Quick-Access Program Grid
+* **Layout:** 2x2 grid of interactive program cards positioned directly below the search bar.
+* **Card 1 — Species Protection:**
+  * Category Tag: `PROGRAM`
+  * Description: *Protect tigers, elephants and snow leopards.*
+  * Target Destination: Routes directly to the Species Protection portal (`/#species-protection`).
+* **Card 2 — Habitat Restoration:**
+  * Category Tag: `PROGRAM`
+  * Description: *Revive forests, rivers and wetlands.*
+  * Target Destination: Routes directly to the Habitat Restoration portal (`/#habitat-restoration`).
+* **Card 3 — Anti-Poaching:**
+  * Category Tag: `PROGRAM`
+  * Description: *Equip and train frontline forest patrols.*
+  * Target Destination: Routes directly to the Anti-Poaching initiative page (`/#anti-poaching`).
+* **Card 4 — Community Programs:**
+  * Category Tag: `PROGRAM`
+  * Description: *Create livelihoods that reward coexistence.*
+  * Target Destination: Routes directly to Community Engagement hub (`/#community-programs`).
+
+<img width="1897" height="532" alt="image" src="https://github.com/user-attachments/assets/06debb79-a8ec-484b-ba7c-b0a3ac16f3c3" />
+
 
 ## 4. Our Mission Section
 This section (reached either by scrolling or clicking "Our Mission" in the navbar) explains the organization's purpose in more depth.
@@ -73,7 +109,193 @@ This section (reached either by scrolling or clicking "Our Mission" in the navba
 <img width="942" height="1026" alt="Screenshot 2026-09-08 175916" src="https://github.com/user-attachments/assets/b830dc73-fb68-49fb-91bc-4ea6d94cbb61" />
 ---
 
-## 5. Impact Section
+
+## 5. HOW YOU CAN HELP SECTION
+
+### 5.1 Section Title & Header Overview
+* **Component Title:** TAKE ACTION
+* **Main Headline:** How you can help the wild
+* **Sub-headline:** Change begins with one informed choice. Pick the action that feels right today.
+* **Primary Purpose:** Serve as the central hub connecting main user paths across the web platform.
+* **Design Layout:** 4-column responsive grid container with interactive card elements.
+
+<img width="1900" height="812" alt="image" src="https://github.com/user-attachments/assets/eef3bbde-def7-4364-a226-cd5ddd13861b" />
+
+
+
+### 5.2 Card 01 — Give (Donation Flow Navigation)
+* **Card Index:** 01
+* **Icon Type:** Hand holding heart / Support icon
+* **Main Title:** Give
+* **Card Description:** Fund field patrols,
+  rescue care and habitat recovery.
+* **Interactive Button Label:** `Donate now →`
+* **User Action:** Hover over card 01 container
+   and click the action arrow button.
+* **Target Destination:** Payment gateway and primary donation form (`/#donate`).
+* **Expected Result:** Smooth scroll or direct page routing straight to the donation form.
+
+### 5.3 Card 02 — Speak Up (Conservation Timeline Navigation)
+* **Card Index:** 02
+* **Icon Type:** Share / Network node icon
+* **Main Title:** Speak up
+* **Card Description:** Share reliable
+  conservation stories with your community.
+* **Interactive Button Label:** `Explore stories →`
+* **User Action:** Hover over card 02 container
+   and click the action arrow button.
+* **Target Destination:** Interactive historical journey section (`/#timeline`).
+* **Expected Result:** Smooth scroll or direct page routing straight to the timeline.
+
+### 5.4 Card 03 — Live Lightly (Interactive Quiz Navigation)
+* **Card Index:** 03
+* **Icon Type:** Sprout / Sustainable leaf icon
+* **Main Title:** Live lightly
+* **Card Description:** Choose wildlife-friendly products and reduce daily waste.
+* **Interactive Button Label:** `Test your knowledge →`
+* **User Action:** Hover over card 03 container and click the action arrow button.
+* **Target Destination:** Educational interactive quiz component (`/#quiz`).
+* **Expected Result:** Smooth scroll or direct page routing straight to the quiz.
+
+### 5.5 Card 04 — Stay Curious (Endangered Species Map Navigation)
+* **Card Index:** 04
+* **Icon Type:** Location marker / Pin icon
+* **Main Title:** Stay curious
+* **Card Description:** Meet threatened species and understand where they live.
+* **Interactive Button Label:** `Explore the map →`
+* **User Action:** Hover over card 04 container and click the action arrow button.
+* **Target Destination:** Interactive spatial GIS map component (`/#species-map`).
+* **Expected Result:** Smooth scroll or direct page routing straight to the map.
+
+---
+
+## 6. CONSERVATION TIMELINE TABLE
+
+<img width="1901" height="818" alt="image" src="https://github.com/user-attachments/assets/c02c0010-fbd8-44a8-9b9e-9b91fd4516da" />
+
+
+### 6.1 Section Title & Header Overview
+* **Section Pre-title:** OUR JOURNEY
+* **Headline Text:** Conservation is measured in generations.
+* **Instructions Text:** Select a year to follow the partnerships, fieldwork and patient restoration behind every milestone.
+* **Design Aesthetic:** Dark green backdrop with gold typography and active indicator rings.
+
+### 6.2 Timeline Navigation Nodes
+* **Timeline Layout:** Horizontal line with clickable node markers across historical checkpoints.
+* **Checkpoint 1 Year:** 2016
+* **Checkpoint 2 Year:** 2018
+* **Checkpoint 3 Year:** 2020
+* **Checkpoint 4 Year:** 2023
+* **Checkpoint 5 Year:** 2026
+
+### 6.3 Interactive Node Behaviors
+* **Initial Default State:** 2026 selected by default with highlighted filled circle.
+* **Interaction Step 1:** User clicks on node `2016`.
+* **Display Result 1:** Dynamic card content updates to display founding initiatives.
+* **Interaction Step 2:** User clicks on node `2018`.
+* **Display Result 2:** Content transitions to show reserve expansion milestones.
+* **Interaction Step 3:** User clicks on node `2020`.
+* **Display Result 3:** Content updates to detail ecological monitoring rollout.
+* **Interaction Step 4:** User clicks on node `2023`.
+* **Display Result 4:** Content updates to highlight habitat corridor connections.
+* **Interaction Step 5:** User clicks on node `2026`.
+* **Display Result 5:** Content displays headline "2026 - Restoration at scale".
+* **Detail Description:** *"Wild Haven expands river, wetland and forest recovery while measuring how threatened species return."*
+
+---
+
+## 7. ENDANGERED SPECIES MAP SECTION
+
+<img width="1662" height="862" alt="image" src="https://github.com/user-attachments/assets/b5dd3345-d4ba-4364-bb0b-86c041980ab0" />
+
+
+### 7.1 Section Title & Header Overview
+* **Section Headline:** Meet the species holding on to their wild homes.
+* **Layout Format:** Split-screen visual grid with visual map left and species focus card right.
+
+### 7.2 Interactive Map Container (Left Panel)
+* **Map Graphic:** Stylized territory overlay showing protected land zones and movement paths.
+* **Interactive Markers:** Multiple colored spatial pins placed across regions.
+* **Green Pin 1:** Northern reserve sector marker.
+* **Green Pin 2:** Western corridor sector marker.
+* **Red Pin:** Active focused region marker (Central Indian Forests).
+
+### 7.3 Species Info Card (Right Panel)
+* **Region Indicator:** CENTRAL INDIAN FORESTS
+* **Animal Name:** Bengal Tiger
+* **Conservation Status Badge:** ENDANGERED (Highlighted in soft red badge tag)
+* **Ecological Context:** Connected forest corridors let tigers move safely between protected areas.
+* **Population Metric Subhead:** POPULATION SNAPSHOT
+* **Population Data:** About 3,600 across India
+
+### 7.4 Primary Action Button & Routing
+* **CTA Button Text:** `Help protect this species →`
+* **User Interaction:** User clicks the primary red CTA button on the species details card.
+* **Target Destination:** Payment modal/section pre-selected with Bengal Tiger fund support.
+* **Expected Result:** Immediate redirect to complete a donation to protect the targeted species.
+
+---
+
+## 8. INTERACTIVE QUIZ
+
+<img width="1896" height="817" alt="image" src="https://github.com/user-attachments/assets/8f8c08cb-8b93-4a30-a06b-e3bfbe676a4c" />
+
+
+### 8.1 Section Title & Header Overview
+* **Section Header:** WILDLIFE CHALLENGE
+* **Main Headline Question:** How conservation-smart are you?
+* **Card Container:** Center-aligned framed interface box with dynamic progress headers.
+
+### 8.2 Progress & Score Header Bar
+* **Progress Indicator:** QUESTION 1 OF 4
+* **Live Tracker:** 0 CORRECT
+* **Visual Progress Bar:** Line indicator showing progress through the 4 questions.
+
+### 8.3 Question 1 Interface & Selection Options
+* **Question Text:** Which action best helps wildlife move safely between habitats?
+* **Answer Option 1:** Building wider roads
+* **Answer Option 2:** Protecting forest corridors
+* **Answer Option 3:** Feeding wild animals
+
+### 8.4 Interactive User Logic & State Responses
+* **Choice Path A (Wrong):** User clicks `Building wider roads`. Card flashes red, retains 0 correct score, shows explanation.
+* **Choice Path B (Correct):** User clicks `Protecting forest corridors`. Card flashes green, score increments to `1 CORRECT`.
+* **Choice Path C (Wrong):** User clicks `Feeding wild animals`. Card flashes red, displays advice on wild animal dependency.
+
+### 8.5 Quiz Completion & Final Score Display
+* **Final Trigger:** User completes Question 4.
+* **Modal Trigger:** Score overlay screen appears displaying total correct answers.
+* **Dynamic Feedback:** Displays customized result banner based on final score percentage.
+* **Re-engagement Option:** Includes buttons to re-take quiz or share total score.
+
+---
+
+## 9. BEFORE AND AFTER SLIDER
+
+<img width="1901" height="836" alt="image" src="https://github.com/user-attachments/assets/6d19975b-0a82-49cf-be87-7a62c34b957d" />
+
+
+### 9.1 Section Title & Header Overview
+* **Section Category Label:** RESTORATION IN VIEW
+* **Main Headline:** Move the line. See what recovery looks like.
+* **Sub-heading Narrative:** Native planting, waterway repair and local stewardship can transform a damaged corridor into connected habitat.
+
+### 9.2 Slider Visual Component Architecture
+* **Graphic Style:** Interactive split-view dual image canvas.
+* **Left Layer:** RESTORED HABITAT (Labeled as `AFTER` in upper left corner).
+* **Right Layer:** DEGRADED HABITAT (Labeled as `BEFORE` in upper right corner).
+* **Center Divider:** Vertical bar with interactive drag handle `<─ ─>`.
+
+### 9.3 Interactive Drag & Comparison Behaviors
+* **Visual State Left Pane:** Lush green foliage, vibrant river ecosystem, fully restored flora.
+* **Visual State Right Pane:** Dry, eroded riverbanks, degraded soil, sparse vegetation.
+* **User Action 1:** Click and drag handle towards the extreme right boundary.
+* **Visual Output 1:** Reveals 100% of the restored habitat transformation (`AFTER`).
+* **User Action 2:** Click and drag handle towards the extreme left boundary.
+* **Visual Output 2:** Reveals 100% of the original degraded corridor condition (`BEFORE`).
+* **User Action 3:** Release cursor at center position to leave side-by-side comparison active.
+
+  ## 10. Impact Section
 This section is where the NGO shows donors exactly what specific amounts of money accomplish, broken into three concrete "giving tiers."
 
 
@@ -99,7 +321,7 @@ This shows the site isn't a single static donation form — each cause functions
 <img width="984" height="1010" alt="Screenshot 2026-09-08 180006" src="https://github.com/user-attachments/assets/ca46e4c9-09ff-44b7-9220-18a4b43c7ecf" />
 ---
 
-## 6. Habitat Restoration Page (Program Page)
+## 11. Habitat Restoration Page (Program Page)
 Similar to the snow leopard page, this is a separate dedicated page (`/programs/habitat-restoration`) reached by clicking on the "Habitat Restoration" card from the Mission section.
 
 **Features:**
@@ -114,7 +336,7 @@ not just one generic "donate" button — each cause/program has its own content,
 <img width="1282" height="778" alt="Screenshot 2026-09-08 180442" src="https://github.com/user-attachments/assets/05ad6ba2-1464-4b0f-9249-169e01da3fc4" />
 ---
 
-## 7. FAQ Section
+## 12. FAQ Section
 Positioned near the bottom of the homepage, this addresses common donor hesitations before they commit to giving.
 
 **Features:**
@@ -126,7 +348,7 @@ Positioned near the bottom of the homepage, this addresses common donor hesitati
 
 ---
 
-## 8. Payment Page
+## 13. Payment Page
 This is the final step, reached after clicking "Continue to Donate" from the homepage donation widget.
 
 **Features:**
@@ -139,20 +361,35 @@ This is the final step, reached after clicking "Continue to Donate" from the hom
 - A disclaimer at the bottom clearly states: **"This is a demo checkout. No real payment is processed"** — confirming this is a functional prototype built for demonstration, not a live payment gateway
 <img width="1196" height="822" alt="Screenshot 2026-09-08 180125" src="https://github.com/user-attachments/assets/1e0054ef-e923-4245-9262-e0950358d5b4" />
 
+
+
 ---
 
-## Summary Table of All Interactive Features
+---
+
+## 📊 Summary Table of All Interactive Features
 
 | Component | Interactive Feature |
-|---|---|
-| Navbar | Scroll-to-section navigation (no page reload) |
-| Hero Section | Stats build trust; CTA buttons guide user flow |
-| Donation Widget | Live-updating amount selection + One-Time/Monthly toggle |
-| Our Mission | Clickable cards linking to deeper program pages |
-| Impact Section | Each cause opens its own page with live progress tracking |
-| Habitat Restoration Page | Dedicated stats and content, separate from homepage |
-| FAQ | Expandable accordion answers |
-| Payment Page | Auto-filled amount, QR code generation, dual payment methods |
+| :--- | :--- |
+| **Navbar** | Scroll-to-section navigation (no page reload) |
+| **Hero Section** | Stats build trust; CTA buttons guide user flow |
+| **Donation Widget** | Live-updating amount selection + One-Time/Monthly toggle |
+| **Our Mission** | Clickable cards linking to deeper program pages |
+| **Impact Section** | Each cause opens its own page with live progress tracking |
+| **Habitat Restoration Page** | Dedicated stats and content, separate from homepage |
+| **FAQ** | Expandable accordion answers |
+| **Payment Page** | Auto-filled amount, QR code generation, dual payment methods |
+| **How You Can Help Card** | Click `Donate now →` to navigate directly to the Donation Page (`/#donate`) |
+| **Speak Up Card** | Click `Explore stories →` to jump straight to the Conservation Timeline |
+| **Live Lightly Card** | Click `Test your knowledge →` to launch the Interactive Wildlife Quiz |
+| **Stay Curious Card** | Click `Explore the map →` to jump straight to the Endangered Species Map |
+| **Conservation Timeline** | Interactive node year selection (2016–2026) dynamically updating milestone details |
+| **Endangered Species Map** | Region pin selection with live status metrics, population snapshot, and direct action triggers |
+| **Species CTA Button** | Click `Help protect this species →` to launch pre-configured payment options |
+| **Interactive Quiz** | Selectable multiple-choice responses with real-time feedback and dynamic scoring |
+| **Before & After Slider** | Draggable center handle revealing real-time ecosystem restoration comparisons |
+
+
 
 ## Database (Operations Dashboard)
 
@@ -273,7 +510,7 @@ a dedicated, two-path authentication flow here — a strong signal that the syst
 designed around **role-segregated access** from the outset. This suggests the finished backend
 will most likely gate the Donations/Campaigns/Donors screens behind an authenticated staff 
 session, with Google OAuth and/or email-based accounts determining who is allowed in, 
-separating donor-side data flow from staff-side management entirely.
+separating donor-side data flow from staff-side management entirely. 
 
 ## Summary Table: Interactive Features — Employee Portal (Backend Access)
 
